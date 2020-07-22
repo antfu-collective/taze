@@ -41,6 +41,7 @@ export async function check(options: CheckOptions) {
   for (const file of packages)
     await checkSinglePackage(file, options, logger)
 
+  logger.log()
   logger.output()
 }
 
@@ -57,17 +58,17 @@ export async function checkSinglePackage(relative: string, options: CheckOptions
   if (options.write) {
     await writeDependencies(filepath, resolved)
 
-    logger.logRaw(chalk.yellow('changes written to package.json'))
-    logger.logRaw('')
+    logger.log(chalk.yellow('changes written to package.json'))
+    logger.log()
   }
 }
 
 export function logPackagesChanges(pkg: any, deps: ResolvedDependencies[], filepath: string, logger: TableLogger) {
-  logger.logRaw(`${chalk.cyan(pkg.name)} ${chalk.gray(filepath)}`)
-  logger.logRaw('')
+  logger.log(`${chalk.cyan(pkg.name)} ${chalk.gray(filepath)}`)
+  logger.log()
 
   deps.forEach(({ name, currentVersion, latestVersion, source }) =>
-    logger.log(
+    logger.row(
       `  ${name}`,
       chalk.gray(DependenciesTypeShortMap[source]),
       chalk.gray(currentVersion),
@@ -77,7 +78,7 @@ export function logPackagesChanges(pkg: any, deps: ResolvedDependencies[], filep
   )
 
   if (!deps.length)
-    logger.logRaw(chalk.gray('  ✓ up to date'))
+    logger.log(chalk.gray('  ✓ up to date'))
 
-  logger.logRaw('')
+  logger.log()
 }

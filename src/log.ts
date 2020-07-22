@@ -23,11 +23,11 @@ export class TableLogger {
     }
   }
 
-  log(...args: string[]) {
+  row(...args: string[]) {
     this.rows.push(args)
   }
 
-  logRaw(string: string) {
+  log(string = '') {
     this.rows.push(string)
   }
 

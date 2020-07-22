@@ -5,9 +5,9 @@ import { check } from './check'
 // eslint-disable-next-line no-unused-expressions
 yargs
   .scriptName('taze')
-  .usage('$0 <cmd> [args]')
+  .usage('$0 [args]')
   .command(
-    'check',
+    '*',
     'check npm version update',
     {
       path: {
