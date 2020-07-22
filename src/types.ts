@@ -1,6 +1,6 @@
 import type semver from 'semver'
 
-export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'any'
+export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'latest' | 'unstable'
 export type DependenciesType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies'
 export const DependenciesTypeShortMap = {
   dependencies: '',

@@ -4,18 +4,22 @@ import { npmConfig } from '../utils/npm'
 import { RawDependency, ResolvedDependencies, PackageMeta, RangeMode, DependencyFilter } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 
-const versionCache: Record<string, string[]> = {}
+interface PackageCache {tags: Record<string, string>; versions: string[]}
+const versionCache: Record<string, PackageCache > = {}
 
 export async function getLatestVersions(name: string) {
   if (versionCache[name])
     return versionCache[name]
   const data = await pacote.packument(name, { ...npmConfig })
-  versionCache[name] = Object.keys(data.versions || {})
+  versionCache[name] = {
+    tags: data['dist-tags'],
+    versions: Object.keys(data.versions || {}),
+  }
   return versionCache[name]
 }
 
-export function resetRange(version: string, mode: RangeMode) {
-  if (mode === 'any')
+export function resetRange(version: string, mode: Exclude<RangeMode, 'latest'>) {
+  if (mode === 'unstable')
     return '*'
 
   if (!semver.validRange(version))
@@ -50,8 +54,8 @@ export async function resolveDependency(
   }
 
   const dep = { ...raw } as ResolvedDependencies
-  const versions = await getLatestVersions(dep.name)
-  const range = resetRange(dep.currentVersion, mode)
+  const { versions, tags } = await getLatestVersions(dep.name)
+  const range = mode === 'latest' ? tags.latest : resetRange(dep.currentVersion, mode)
   if (range) {
     const max = semver.maxSatisfying(versions, range)
     // TODO: align the range

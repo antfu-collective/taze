@@ -1,4 +1,3 @@
-import path from 'path'
 import yargs from 'yargs'
 import { check } from './check'
 
@@ -15,7 +14,6 @@ yargs
           alias: 'C',
           default: '',
           type: 'string',
-          coerce: (p: string) => path.resolve(p),
           describe: 'specify the current working directory',
         })
         .positional('recursive', {
@@ -35,6 +33,32 @@ yargs
           default: false,
           type: 'boolean',
           describe: 'write to package.json',
+        })
+        // TODO:
+        .positional('filter', {
+          type: 'string',
+          describe: 'filter rules to restrict a subsets of dependencies for updates',
+        })
+        // TODO:
+        .positional('prompt', {
+          alias: 'p',
+          default: false,
+          type: 'boolean',
+          describe: 'prompt whether write to files after update checking',
+        })
+        // TODO:
+        .positional('dev', {
+          alias: 'D',
+          default: false,
+          type: 'boolean',
+          describe: 'update only for devDependencies',
+        })
+        // TODO:
+        .positional('prod', {
+          alias: 'P',
+          default: false,
+          type: 'boolean',
+          describe: 'update only for dependencies',
         })
     },
     check,
