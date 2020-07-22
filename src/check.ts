@@ -1,16 +1,16 @@
 import path from 'path'
 import chalk from 'chalk'
 import fg from 'fast-glob'
-import { loadDependencies, DependenciesTypeShortMap, ResolvedDependencies, DiffType, writeDependencies } from './in/load-dependencies'
+import { loadDependencies, DependenciesTypeShortMap, ResolvedDependencies, writeDependencies } from './in/load-dependencies'
 import { checkUpdates } from './in/check-updates'
 import { colorizeDiff, TableLogger } from './log'
 import { diffSorter } from './filters/diff-sorter'
-import { rangeFilter } from './filters/range-filter'
+import { Modes } from './modes'
 
 interface CheckOptions {
-  path: string
+  cwd: string
   recursive: boolean
-  range: string
+  mode: Modes
   write: boolean
 }
 
@@ -24,7 +24,7 @@ export async function check(options: CheckOptions) {
         '**/dist/**',
         '**/public/**',
       ],
-      cwd: options.path,
+      cwd: options.cwd,
       onlyFiles: true,
     })
   }
@@ -38,27 +38,28 @@ export async function check(options: CheckOptions) {
     align: 'LLRRR',
   })
 
+  logger.log()
+
   for (const file of packages)
     await checkSinglePackage(file, options, logger)
 
-  logger.log()
   logger.output()
 }
 
 export async function checkSinglePackage(relative: string, options: CheckOptions, logger: TableLogger) {
-  const filepath = path.resolve(options.path, relative)
+  const filepath = path.resolve(options.cwd, relative)
   const { pkg, deps } = await loadDependencies(filepath)
 
-  const resolved = await checkUpdates(deps)
-  rangeFilter(resolved, options.range as DiffType)
+  const resolved = await checkUpdates(deps, options.mode)
   diffSorter(resolved)
 
-  logPackagesChanges(pkg, resolved.filter(i => i.update), relative, logger)
+  const changes = resolved.filter(i => i.update)
+  logPackagesChanges(pkg, changes, relative, logger)
 
-  if (options.write) {
+  if (options.write && changes.length) {
     await writeDependencies(filepath, resolved)
 
-    logger.log(chalk.yellow('changes written to package.json'))
+    logger.log(chalk.yellow('changes wrote to package.json'))
     logger.log()
   }
 }

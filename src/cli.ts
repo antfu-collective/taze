@@ -10,8 +10,8 @@ yargs
     '*',
     'check npm version update',
     {
-      path: {
-        alias: 'p',
+      cwd: {
+        alias: 'C',
         default: path.resolve('.'),
         coerce: (p: string) => path.resolve(p),
       },
@@ -20,8 +20,9 @@ yargs
         default: false,
         boolean: true,
       },
-      range: {
-        default: 'major',
+      mode: {
+        alias: 'm',
+        default: 'range',
         string: true,
       },
       write: {
@@ -30,9 +31,7 @@ yargs
         boolean: true,
       },
     },
-    async(args) => {
-      return await check(args)
-    },
+    check as any,
   )
   .help()
   .argv

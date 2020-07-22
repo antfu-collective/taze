@@ -1,47 +1,58 @@
 import pacote from 'pacote'
 import semver from 'semver'
-// @ts-ignore
-import libnpmconfig from 'libnpmconfig'
+import { Modes } from '../modes'
+import { npmConfig } from '../utils/npm'
 import { RawDependencies, ResolvedDependencies } from './load-dependencies'
 
-// needed until pacote supports full npm config compatibility
-// See: https://github.com/zkat/pacote/issues/156
-const npmConfig: any = {}
-libnpmconfig.read().forEach((value: string, key: string) => {
-  // replace env ${VARS} in strings with the process.env value
-  npmConfig[key] = typeof value !== 'string'
-    ? value
-    : value.replace(/\${([^}]+)}/, (_, envVar) =>
-      (process.env as any)[envVar],
-    )
-})
-npmConfig.cache = false
+const versionCache: Record<string, string[]> = {}
 
-const versionCache: Record<string, string> = {}
-
-export async function getLatestVersion(name: string) {
+export async function getLatestVersions(name: string) {
   if (versionCache[name])
     return versionCache[name]
   const data = await pacote.packument(name, { ...npmConfig })
-  versionCache[name] = data['dist-tags'].latest
+  versionCache[name] = Object.keys(data.versions || {})
   return versionCache[name]
 }
 
-export async function checkUpdates(deps: RawDependencies[]) {
+export function resetRange(version: string, mode: Modes) {
+  if (mode === 'any')
+    return '*'
+
+  if (!semver.validRange(version))
+    return null
+
+  if (mode === 'range')
+    return version
+
+  const min = semver.minVersion(version)
+  if (!min)
+    return null
+
+  return {
+    major: '>=',
+    minor: '^',
+    patch: '~',
+  }[mode] + min
+}
+
+export async function checkUpdates(deps: RawDependencies[], mode: Modes) {
   return Promise.all(
     (deps as ResolvedDependencies[]).map(async(dep) => {
-      try {
-        // TODO: range should based on user override or current version range
-        dep.latestVersion = `^${await getLatestVersion(dep.name)}`
+      const versions = await getLatestVersions(dep.name)
+      const range = resetRange(dep.currentVersion, mode)
+      if (range) {
+        const max = semver.maxSatisfying(versions, range)
+        // TODO: align the range
+        dep.latestVersion = max ? `^${max}` : dep.currentVersion
         dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, semver.minVersion(dep.latestVersion)!)
         dep.update = dep.diff !== null
       }
-      catch (e) {
-        console.error(e)
-        dep.latestVersion = dep.currentVersion || 'error'
-        dep.diff = dep.diff || 'error'
+      else {
+        dep.latestVersion = dep.currentVersion
+        dep.diff = 'error'
         dep.update = false
       }
+
       return dep
     }),
   )
