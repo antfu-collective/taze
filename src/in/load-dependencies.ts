@@ -1,11 +1,25 @@
+import semver from 'semver'
 import { readJSON } from './read-packages'
 
 export type DependenciesType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies'
+export const DependenciesTypeShortMap = {
+  dependencies: '',
+  devDependencies: 'dev',
+  peerDependencies: 'peer',
+  optionalDependencies: 'optional',
+}
 
-export interface Dependencies {
+export interface RawDependencies {
   name: string
   currentVersion: string
-  latestVersion?: string
+  source: DependenciesType
+}
+
+export interface ResolvedDependencies {
+  name: string
+  currentVersion: string
+  latestVersion: string
+  diff: ReturnType<typeof semver['diff']>
   source: DependenciesType
 }
 
@@ -23,7 +37,7 @@ export async function loadDependencies(filepath: string) {
   }
 }
 
-export function parseDependencies(pkg: any, type: DependenciesType): Dependencies[] {
+export function parseDependencies(pkg: any, type: DependenciesType): RawDependencies[] {
   return Object.entries(pkg[type] || {}).map(([name, version]) => ({
     name,
     currentVersion: version as string,

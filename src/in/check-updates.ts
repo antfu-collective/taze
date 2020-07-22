@@ -1,11 +1,37 @@
 import pacote from 'pacote'
-import { Dependencies } from './load-dependencies'
+import semver from 'semver'
+// @ts-ignore
+import libnpmconfig from 'libnpmconfig'
+import { RawDependencies, ResolvedDependencies } from './load-dependencies'
 
-export async function checkUpdates(deps: Dependencies[]) {
+// needed until pacote supports full npm config compatibility
+// See: https://github.com/zkat/pacote/issues/156
+const npmConfig: any = {}
+libnpmconfig.read().forEach((value: string, key: string) => {
+  // replace env ${VARS} in strings with the process.env value
+  npmConfig[key] = typeof value !== 'string'
+    ? value
+    : value.replace(/\${([^}]+)}/, (_, envVar) =>
+      (process.env as any)[envVar],
+    )
+})
+npmConfig.cache = false
+
+const versionCache: Record<string, string> = {}
+
+export async function getLatestVersion(name: string) {
+  if (versionCache[name])
+    return versionCache[name]
+  const data = await pacote.packument(name, { ...npmConfig })
+  versionCache[name] = data['dist-tags'].latest
+  return versionCache[name]
+}
+
+export async function checkUpdates(deps: RawDependencies[]) {
   return Promise.all(
-    deps.map(async(dep) => {
-      const data = await pacote.packument(dep.name, { fullMetadata: false })
-      dep.latestVersion = data['dist-tags'].latest
+    (deps as ResolvedDependencies[]).map(async(dep) => {
+      dep.latestVersion = await getLatestVersion(dep.name)
+      dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, dep.latestVersion)
       return dep
     }),
   )

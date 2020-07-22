@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import path from 'path'
 import yargs from 'yargs'
 import { check } from './check'
 
@@ -10,8 +11,21 @@ yargs
   .command(
     'check',
     'check npm verison update',
-    () => {},
-    check,
+    {
+      path: {
+        alias: 'p',
+        default: path.resolve('.'),
+        coerce: (p: string) => path.resolve(p),
+      },
+      recursive: {
+        alias: 'r',
+        default: false,
+        boolean: true,
+      },
+    },
+    async(args) => {
+      return await check(args)
+    },
   )
   .help()
   .argv

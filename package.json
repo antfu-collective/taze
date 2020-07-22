@@ -11,12 +11,14 @@
     "fast-glob": "^3.2.4",
     "pacote": "^11.1.11",
     "semver": "^7.3.2",
+    "libnpmconfig": "^1.2.1",
     "yargs": "^15.3.1"
   },
   "devDependencies": {
     "@antfu/eslint-config-ts": "^0.2.14",
     "@types/node": "^12.0.24",
     "@types/pacote": "^11.1.0",
+    "@types/semver": "^7.3.1",
     "@types/yargs": "^15.0.5",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "eslint": "^7.5.0",
