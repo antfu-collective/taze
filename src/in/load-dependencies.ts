@@ -1,5 +1,5 @@
 import semver from 'semver'
-import { readJSON } from './read-packages'
+import { readJSON, writeJSON } from './read-packages'
 
 export type DependenciesType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies'
 export const DependenciesTypeShortMap = {
@@ -45,4 +45,24 @@ export function parseDependencies(pkg: any, type: DependenciesType): RawDependen
     currentVersion: version as string,
     source: type,
   }))
+}
+
+export function dumpDependencies(deps: ResolvedDependencies[], type: DependenciesType) {
+  const data: Record<string, string> = {}
+  deps
+    .filter(i => i.source === type)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach((i) => {
+      data[i.name] = i.update ? i.latestVersion : i.currentVersion
+    })
+  return data
+}
+
+export async function writeDependencies(filepath: string, deps: ResolvedDependencies[]) {
+  const pkg = await readJSON(filepath)
+  if (pkg.dependencies) pkg.dependencies = dumpDependencies(deps, 'dependencies')
+  if (pkg.devDependencies) pkg.devDependencies = dumpDependencies(deps, 'devDependencies')
+  if (pkg.peerDependencies) pkg.peerDependencies = dumpDependencies(deps, 'peerDependencies')
+  if (pkg.optionalDependencies) pkg.optionalDependencies = dumpDependencies(deps, 'optionalDependencies')
+  await writeJSON(filepath, pkg)
 }

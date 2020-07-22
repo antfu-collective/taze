@@ -10,7 +10,7 @@ yargs
   .usage('$0 <cmd> [args]')
   .command(
     'check',
-    'check npm verison update',
+    'check npm version update',
     {
       path: {
         alias: 'p',
@@ -25,6 +25,11 @@ yargs
       range: {
         default: 'major',
         string: true,
+      },
+      write: {
+        alias: 'w',
+        default: false,
+        boolean: true,
       },
     },
     async(args) => {

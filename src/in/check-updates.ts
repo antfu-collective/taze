@@ -31,8 +31,9 @@ export async function checkUpdates(deps: RawDependencies[]) {
   return Promise.all(
     (deps as ResolvedDependencies[]).map(async(dep) => {
       try {
-        dep.latestVersion = await getLatestVersion(dep.name)
-        dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, dep.latestVersion)
+        // TODO: range should based on user override or current version range
+        dep.latestVersion = `^${await getLatestVersion(dep.name)}`
+        dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, semver.minVersion(dep.latestVersion)!)
         dep.update = dep.diff !== null
       }
       catch (e) {

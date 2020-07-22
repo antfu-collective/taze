@@ -5,5 +5,5 @@ export async function readJSON(filepath: string) {
 }
 
 export async function writeJSON(filepath: string, data: any) {
-  return await fs.writeFile(filepath, JSON.stringify(data), 'utf-8')
+  return await fs.writeFile(filepath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8')
 }

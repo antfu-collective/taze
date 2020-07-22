@@ -1,17 +1,19 @@
 {
   "name": "taze",
   "version": "0.0.0-alpha.0",
-  "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node ./src/index.ts"
+    "dev": "ts-node ./src/cli.ts"
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "chalk": "^4.1.0",
     "fast-glob": "^3.2.4",
+    "libnpmconfig": "^1.2.1",
     "pacote": "^11.1.11",
     "semver": "^7.3.2",
-    "libnpmconfig": "^1.2.1",
     "yargs": "^15.4.1"
   },
   "devDependencies": {
