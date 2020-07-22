@@ -19,7 +19,7 @@ export async function getLatestVersions(name: string) {
 }
 
 export function resetRange(version: string, mode: Exclude<RangeMode, 'latest'>) {
-  if (mode === 'unstable')
+  if (mode === 'newest')
     return '*'
 
   if (!semver.validRange(version))

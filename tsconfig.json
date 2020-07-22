@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ESNext",
     "target": "es2016",
     "lib": ["ESNext"],
     "strict": true,
@@ -12,6 +12,6 @@
   },
   "exclude": [
     "dist",
-    "node_modules",
+    "node_modules"
   ]
 }

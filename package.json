@@ -2,8 +2,11 @@
   "name": "taze",
   "version": "0.0.3",
   "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "typing": "dist/index.d.ts",
   "scripts": {
-    "dev": "ts-node ./src/cli.ts",
+    "dev": "ts-node -O '{\"module\":\"commonjs\"}' ./src/cli.ts",
     "build": "rollup -c",
     "release": "pnpx bumpp --commit --tag && pnpm build && pnpm publish && git push"
   },

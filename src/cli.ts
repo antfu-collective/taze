@@ -7,58 +7,68 @@ yargs
   .usage('$0 [args]')
   .command(
     '*',
-    'check npm version update',
+    'Keeps your deps fresh',
     (args) => {
       args
-        .positional('cwd', {
+        .option('cwd', {
           alias: 'C',
           default: '',
           type: 'string',
           describe: 'specify the current working directory',
         })
-        .positional('recursive', {
+        .option('recursive', {
           alias: 'r',
           default: false,
           type: 'boolean',
           describe: 'recursively search for package.json in subdirectories',
         })
-        .positional('mode', {
+        .option('mode', {
           alias: 'm',
           default: 'default',
           type: 'string',
-          describe: 'dependency range resolve more, can also be "major" and "minor"',
+          describe: 'dependency range resolve more, can be "major" or "minor"',
         })
-        .positional('write', {
+        .option('write', {
           alias: 'w',
           default: false,
           type: 'boolean',
           describe: 'write to package.json',
         })
         // TODO:
-        .positional('filter', {
+        .option('filter', {
           type: 'string',
           describe: 'filter rules to restrict a subsets of dependencies for updates',
         })
+        .option('ignore', {
+          type: 'string',
+          describe: 'ignore rules to restrict a subsets of dependencies for updates',
+        })
         // TODO:
-        .positional('prompt', {
+        .option('prompt', {
           alias: 'p',
           default: false,
           type: 'boolean',
           describe: 'prompt whether write to files after update checking',
         })
         // TODO:
-        .positional('dev', {
+        .option('dev', {
           alias: 'D',
           default: false,
           type: 'boolean',
           describe: 'update only for devDependencies',
         })
         // TODO:
-        .positional('prod', {
+        .option('prod', {
           alias: 'P',
           default: false,
           type: 'boolean',
           describe: 'update only for dependencies',
+        })
+        // TODO:
+        .option('outputRange', {
+          default: 'preseve',
+          type: 'string',
+          describe: 'output version range, can be "fixed", "major", "minor" or "patch"',
         })
     },
     check,
