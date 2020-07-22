@@ -12,11 +12,11 @@
     "pacote": "^11.1.11",
     "semver": "^7.3.2",
     "libnpmconfig": "^1.2.1",
-    "yargs": "^15.3.1"
+    "yargs": "^15.4.1"
   },
   "devDependencies": {
     "@antfu/eslint-config-ts": "^0.2.14",
-    "@types/node": "^12.0.24",
+    "@types/node": "^14.0.24",
     "@types/pacote": "^11.1.0",
     "@types/semver": "^7.3.1",
     "@types/yargs": "^15.0.5",
@@ -25,7 +25,7 @@
     "rollup": "^2.22.2",
     "rollup-plugin-typescript2": "^0.27.1",
     "ts-node": "^8.10.2",
-    "tsup": "^3.1.0",
+    "tsup": "^3.1.1",
     "typescript": "^3.9.7"
   },
   "eslintConfig": {

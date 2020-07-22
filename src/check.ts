@@ -1,15 +1,16 @@
 import path from 'path'
 import chalk from 'chalk'
 import fg from 'fast-glob'
-import { loadDependencies, DependenciesTypeShortMap, ResolvedDependencies } from './in/load-dependencies'
+import { loadDependencies, DependenciesTypeShortMap, ResolvedDependencies, DiffType } from './in/load-dependencies'
 import { checkUpdates } from './in/check-updates'
 import { colorizeDiff, TableLogger } from './log'
-import { changedFilter } from './filters/version-filter'
 import { diffSorter } from './filters/diff-sorter'
+import { rangeFilter } from './filters/range-filter'
 
 interface CheckOptions {
   path: string
   recursive: boolean
+  range: string
 }
 
 export async function check(options: CheckOptions) {
@@ -46,10 +47,10 @@ export async function checkSinglePackage(relative: string, options: CheckOptions
   const { pkg, deps } = await loadDependencies(path.resolve(options.path, relative))
 
   const resolved = await checkUpdates(deps)
-  const filtered = changedFilter(resolved)
-  diffSorter(filtered)
+  rangeFilter(resolved, options.range as DiffType)
+  diffSorter(resolved)
 
-  logPackagesChanges(pkg, filtered, relative, logger)
+  logPackagesChanges(pkg, resolved.filter(i => i.update), relative, logger)
 }
 
 export async function logPackagesChanges(pkg: any, deps: ResolvedDependencies[], filepath: string, logger: TableLogger) {
@@ -65,6 +66,9 @@ export async function logPackagesChanges(pkg: any, deps: ResolvedDependencies[],
       colorizeDiff(currentVersion, `^${latestVersion}`),
     ),
   )
+
+  if (!deps.length)
+    logger.logRaw(chalk.gray('  ✓ up to date'))
 
   logger.logRaw('')
 }

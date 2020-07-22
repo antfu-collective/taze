@@ -33,11 +33,13 @@ export async function checkUpdates(deps: RawDependencies[]) {
       try {
         dep.latestVersion = await getLatestVersion(dep.name)
         dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, dep.latestVersion)
+        dep.update = dep.diff !== null
       }
       catch (e) {
         console.error(e)
-        dep.latestVersion = dep.latestVersion || 'error'
+        dep.latestVersion = dep.currentVersion || 'error'
         dep.diff = dep.diff || 'error'
+        dep.update = false
       }
       return dep
     }),

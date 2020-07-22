@@ -22,6 +22,10 @@ yargs
         default: false,
         boolean: true,
       },
+      range: {
+        default: 'major',
+        string: true,
+      },
     },
     async(args) => {
       return await check(args)

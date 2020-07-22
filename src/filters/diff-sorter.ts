@@ -1,17 +1,6 @@
 import { ResolvedDependencies } from '../in/load-dependencies'
-
-const diffMap = {
-  error: -1,
-  major: 0,
-  premajor: 1,
-  minor: 2,
-  preminor: 3,
-  patch: 4,
-  prepatch: 5,
-  prerelease: 6,
-  '': 7,
-}
+import { DiffMap } from '../utils/diff'
 
 export function diffSorter(deps: ResolvedDependencies[]) {
-  return deps.sort((a, b) => diffMap[a.diff || ''] - diffMap[b.diff || ''])
+  return deps.sort((a, b) => DiffMap[a.diff || ''] - DiffMap[b.diff || ''])
 }

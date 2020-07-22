@@ -22,6 +22,7 @@ export interface ResolvedDependencies {
   latestVersion: string
   diff: DiffType
   source: DependenciesType
+  update: boolean
 }
 
 export async function loadDependencies(filepath: string) {
