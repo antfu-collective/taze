@@ -1,85 +1,87 @@
-import path from 'path'
 import chalk from 'chalk'
-import fg from 'fast-glob'
-import { loadDependencies, DependenciesTypeShortMap, ResolvedDependencies, writeDependencies } from './in/load-dependencies'
-import { checkUpdates } from './in/check-updates'
 import { colorizeDiff, TableLogger } from './log'
-import { diffSorter } from './filters/diff-sorter'
-import { Modes } from './modes'
-
-interface CheckOptions {
-  cwd: string
-  recursive: boolean
-  mode: Modes
-  write: boolean
-}
+import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency } from './types'
+import { loadPackages, writePackage } from './io/packages'
+import { resolvePackage } from './io/resolves'
 
 export async function check(options: CheckOptions) {
-  let packages: string[] = []
-
-  if (options.recursive) {
-    packages = await fg('**/package.json', {
-      ignore: [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/public/**',
-      ],
-      cwd: options.cwd,
-      onlyFiles: true,
-    })
-  }
-  else {
-    packages = ['package.json']
-  }
-
   const logger = new TableLogger({
     columns: 5,
     pending: 2,
     align: 'LLRRR',
   })
 
+  const packages = await loadPackages(options)
+  const privatePackageNames = packages
+    .filter(i => i.raw.private)
+    .map(i => i.raw.name)
+    .filter(i => i)
+
+  const filter = (dep: RawDependency) => {
+    // to filter out private dependency in monorepo
+    return !privatePackageNames.includes(dep.name)
+  }
+
   logger.log()
 
-  for (const file of packages)
-    await checkSinglePackage(file, options, logger)
+  for (const pkg of packages)
+    await checkProject(pkg, options, filter, logger)
 
   logger.output()
 }
 
-export async function checkSinglePackage(relative: string, options: CheckOptions, logger: TableLogger) {
-  const filepath = path.resolve(options.cwd, relative)
-  const { pkg, deps } = await loadDependencies(filepath)
-
-  const resolved = await checkUpdates(deps, options.mode)
-  diffSorter(resolved)
-
+export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, logger: TableLogger) {
+  await resolvePackage(pkg, options.mode, filter)
+  const { relative, resolved } = pkg
   const changes = resolved.filter(i => i.update)
-  logPackagesChanges(pkg, changes, relative, logger)
+
+  printChanges(pkg, changes, relative, logger)
 
   if (options.write && changes.length) {
-    await writeDependencies(filepath, resolved)
+    await writePackage(pkg)
 
     logger.log(chalk.yellow('changes wrote to package.json'))
     logger.log()
   }
 }
 
-export function logPackagesChanges(pkg: any, deps: ResolvedDependencies[], filepath: string, logger: TableLogger) {
+export function printChanges(pkg: PackageMeta, changes: ResolvedDependencies[], filepath: string, logger: TableLogger) {
   logger.log(`${chalk.cyan(pkg.name)} ${chalk.gray(filepath)}`)
   logger.log()
 
-  deps.forEach(({ name, currentVersion, latestVersion, source }) =>
-    logger.row(
-      `  ${name}`,
-      chalk.gray(DependenciesTypeShortMap[source]),
-      chalk.gray(currentVersion),
-      chalk.gray('→'),
-      colorizeDiff(currentVersion, latestVersion),
-    ),
-  )
-
-  if (!deps.length)
+  if (!changes.length) {
     logger.log(chalk.gray('  ✓ up to date'))
+  }
+  else {
+    changes.forEach(({ name, currentVersion, latestVersion, source }) =>
+      logger.row(
+        `  ${name}`,
+        chalk.gray(DependenciesTypeShortMap[source]),
+        chalk.gray(currentVersion),
+        chalk.gray('→'),
+        colorizeDiff(currentVersion, latestVersion),
+      ),
+    )
+
+    const counters: Record<string, number> = {}
+
+    changes.forEach(({ diff }) => {
+      if (!diff)
+        return
+      if (!counters[diff])
+        counters[diff] = 0
+      counters[diff] += 1
+    })
+
+    if (Object.keys(counters).length) {
+      logger.log(`\n  ${
+        Object
+          .entries(counters)
+          .map(([key, value]) => `${value} ${key}`)
+          .join(', ')
+      } updates`)
+    }
+  }
 
   logger.log()
 }

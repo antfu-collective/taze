@@ -9,29 +9,35 @@ yargs
   .command(
     '*',
     'check npm version update',
-    {
-      cwd: {
-        alias: 'C',
-        default: path.resolve('.'),
-        coerce: (p: string) => path.resolve(p),
-      },
-      recursive: {
-        alias: 'r',
-        default: false,
-        boolean: true,
-      },
-      mode: {
-        alias: 'm',
-        default: 'range',
-        string: true,
-      },
-      write: {
-        alias: 'w',
-        default: false,
-        boolean: true,
-      },
+    (args) => {
+      args
+        .positional('cwd', {
+          alias: 'C',
+          default: '',
+          type: 'string',
+          coerce: (p: string) => path.resolve(p),
+          describe: 'specify the current working directory',
+        })
+        .positional('recursive', {
+          alias: 'r',
+          default: false,
+          type: 'boolean',
+          describe: 'recursively search for package.json in subdirectories',
+        })
+        .positional('mode', {
+          alias: 'm',
+          default: 'default',
+          type: 'string',
+          describe: 'dependency range resolve more, can also be "major" and "minor"',
+        })
+        .positional('write', {
+          alias: 'w',
+          default: false,
+          type: 'boolean',
+          describe: 'write to package.json',
+        })
     },
-    check as any,
+    check,
   )
   .help()
   .argv

@@ -1,5 +1,6 @@
 dependencies:
   chalk: 4.1.0
+  cli-progress: 3.8.2
   fast-glob: 3.2.4
   libnpmconfig: 1.2.1
   pacote: 11.1.11
@@ -807,6 +808,15 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==
+  /cli-progress/3.8.2:
+    dependencies:
+      colors: 1.4.0
+      string-width: 4.2.0
+    dev: false
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha512-qRwBxLldMSfxB+YGFgNRaj5vyyHe1yMpVeDL79c+7puGujdKJHQHydgqXDcrkvQgJ5U/d3lpf6vffSoVVUftVQ==
   /cliui/6.0.0:
     dependencies:
       string-width: 4.2.0
@@ -841,6 +851,12 @@ packages:
   /color-name/1.1.4:
     resolution:
       integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
+  /colors/1.4.0:
+    dev: false
+    engines:
+      node: '>=0.1.90'
+    resolution:
+      integrity: sha512-a+UqTh4kgZg/SlGvfbzDHpgRu7AAQOmmqRHJnxhRZICKFUT91brVhNNt58CMWU9PsBbv3PDCZUHbVxuDiH2mtA==
   /combined-stream/1.0.8:
     dependencies:
       delayed-stream: 1.0.0
@@ -3357,6 +3373,7 @@ specifiers:
   '@types/yargs': ^15.0.5
   '@typescript-eslint/eslint-plugin': ^3.7.0
   chalk: ^4.1.0
+  cli-progress: ^3.8.2
   eslint: ^7.5.0
   fast-glob: ^3.2.4
   libnpmconfig: ^1.2.1

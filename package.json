@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "chalk": "^4.1.0",
+    "cli-progress": "^3.8.2",
     "fast-glob": "^3.2.4",
     "libnpmconfig": "^1.2.1",
     "pacote": "^11.1.11",
