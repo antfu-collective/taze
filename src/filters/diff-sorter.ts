@@ -1,6 +1,7 @@
 import { ResolvedDependencies } from '../in/load-dependencies'
 
 const diffMap = {
+  error: -1,
   major: 0,
   premajor: 1,
   minor: 2,

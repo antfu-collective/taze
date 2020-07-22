@@ -14,12 +14,13 @@ export interface RawDependencies {
   currentVersion: string
   source: DependenciesType
 }
+export type DiffType = ReturnType<typeof semver['diff']> | 'error'
 
 export interface ResolvedDependencies {
   name: string
   currentVersion: string
   latestVersion: string
-  diff: ReturnType<typeof semver['diff']>
+  diff: DiffType
   source: DependenciesType
 }
 

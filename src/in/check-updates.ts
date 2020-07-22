@@ -30,8 +30,15 @@ export async function getLatestVersion(name: string) {
 export async function checkUpdates(deps: RawDependencies[]) {
   return Promise.all(
     (deps as ResolvedDependencies[]).map(async(dep) => {
-      dep.latestVersion = await getLatestVersion(dep.name)
-      dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, dep.latestVersion)
+      try {
+        dep.latestVersion = await getLatestVersion(dep.name)
+        dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, dep.latestVersion)
+      }
+      catch (e) {
+        console.error(e)
+        dep.latestVersion = dep.latestVersion || 'error'
+        dep.diff = dep.diff || 'error'
+      }
       return dep
     }),
   )

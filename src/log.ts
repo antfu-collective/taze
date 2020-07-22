@@ -1,38 +1,61 @@
 import chalk from 'chalk'
 
 interface Options {
+  columns: number
   pending: number
-  align: string[]
+  align: string
 }
 
-export async function columnLog(columns: number, fn: (log: (...args: string[]) => void) => void, options: Partial<Options> = {}) {
-  const lines: string[][] = []
-  const {
-    pending = 2,
-    align = [],
-  } = options
+export class TableLogger {
+  private options: Options
+  private rows: (string[] | string)[] = []
 
-  const log = (...args: string[]) => {
-    lines.push(args)
+  constructor(options: Partial<Options> = {}) {
+    const {
+      columns = 3,
+      pending = 2,
+      align = '',
+    } = options
+    this.options = {
+      columns,
+      pending,
+      align,
+    }
   }
 
-  await Promise.resolve(fn(log))
+  log(...args: string[]) {
+    this.rows.push(args)
+  }
 
-  const columnsWidth = new Array(columns).fill(0)
+  logRaw(string: string) {
+    this.rows.push(string)
+  }
 
-  lines.forEach((line) => {
-    for (let i = 0; i < columns; i++)
-      columnsWidth[i] = Math.max(columnsWidth[i], stringLength(line[i] || ''))
-  })
+  output() {
+    const { columns, align, pending } = this.options
+    const columnsWidth = new Array(columns).fill(0)
 
-  lines.forEach((line) => {
-    for (let i = 0; i < columns; i++) {
-      const pad = align[i] === 'right' ? 'padStart' : 'padEnd'
-      const part = line[i] || ''
-      process.stdout.write(part[pad](columnsWidth[i] + pending - padDiff(part)))
-    }
-    process.stdout.write('\n')
-  })
+    this.rows.forEach((line) => {
+      if (typeof line === 'string')
+        return
+      for (let i = 0; i < columns; i++)
+        columnsWidth[i] = Math.max(columnsWidth[i], stringLength(line[i] || ''))
+    })
+
+    this.rows.forEach((line) => {
+      if (typeof line === 'string') {
+        console.log(line)
+        return
+      }
+
+      for (let i = 0; i < columns; i++) {
+        const pad = align[i] === 'R' ? 'padStart' : 'padEnd'
+        const part = line[i] || ''
+        process.stdout.write(part[pad](columnsWidth[i] + pending - padDiff(part)))
+      }
+      process.stdout.write('\n')
+    })
+  }
 }
 
 export function colorizeDiff(from: string, to: string) {
