@@ -1,6 +1,6 @@
 export const createFilterAction = (filterOptions: string[]) => {
   if (!filterOptions || !filterOptions.length)
-    return null
+    return () => true
 
   if (filterOptions.length === 1) {
     const filter = filterOptions[0]
@@ -12,20 +12,20 @@ export const createFilterAction = (filterOptions: string[]) => {
       return (depName: string) => filterArray.includes(depName)
     }
 
-    let a: RegExp | null = null
+    let regex: RegExp | null = null
 
     try {
       const endIndex = filter.lastIndexOf('/')
       const regexp = filter.substring(1, endIndex)
       const flags = filter.substring(endIndex + 1, filter.length)
-      a = new RegExp(regexp, flags)
+      regex = new RegExp(regexp, flags)
     }
     catch (e) {
-      a = null
+      regex = null
     }
 
-    if (a)
-      return (depName: string) => a!.test(depName)
+    if (regex)
+      return (depName: string) => regex!.test(depName)
   }
 
   return (depName: string) => filterOptions.includes(depName)
