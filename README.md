@@ -4,16 +4,21 @@
 
 <pre align="center">npx <b>taze</b></pre>
 
-<p align="center">or recursive for monorepos</p>
+<p align="center">or recursively for <b>monorepos</b></p>
 
 <pre align="center">npx taze <b>-r</b></pre>
 
 ## Usage
 
 
+## Features
+
+- Built-in support for monorepos
+- Update in the version range your defined by default
+
 ## Alternatives
 
-`taze` is great inspired from the following tools. They work well and have different focus and feature sets, also try them out!
+`taze` is great inspired from the following tools. They work well but have different feature sets and focuses, try them out as well!
 
 - [npm-check-updates](https://github.com/raineorshine/npm-check-updates)
 - [npm-check](https://github.com/dylang/npm-check)

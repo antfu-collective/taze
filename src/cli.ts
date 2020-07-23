@@ -36,11 +36,11 @@ yargs
         // TODO:
         .option('filter', {
           type: 'string',
-          describe: 'filter rules to restrict a subsets of dependencies for updates',
+          describe: 'filter rules to restrict dependencies to check updates',
         })
         .option('ignore', {
           type: 'string',
-          describe: 'ignore rules to restrict a subsets of dependencies for updates',
+          describe: 'ignore rules to restrict dependencies to not check updates',
         })
         // TODO:
         .option('prompt', {
