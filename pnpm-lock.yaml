@@ -617,7 +617,8 @@ packages:
   /arg/4.1.3:
     dev: true
     resolution:
-      integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==
+      integrity: sha1-Jp/HrVuOQstjyJbVZmAXJhwUQIk=
+      tarball: arg/download/arg-4.1.3.tgz
   /argparse/1.0.10:
     dependencies:
       sprintf-js: 1.0.3
@@ -718,7 +719,8 @@ packages:
   /buffer-from/1.1.1:
     dev: true
     resolution:
-      integrity: sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A==
+      integrity: sha1-MnE7wCj3XAL9txDXx7zsHyxgcO8=
+      tarball: buffer-from/download/buffer-from-1.1.1.tgz
   /builtin-modules/3.1.0:
     dev: true
     engines:
@@ -980,7 +982,8 @@ packages:
     engines:
       node: '>=0.3.1'
     resolution:
-      integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
+      integrity: sha1-YPOuy4nV+uUgwRqhnvwruYKq3n0=
+      tarball: diff/download/diff-4.0.2.tgz
   /doctrine/1.5.0:
     dependencies:
       esutils: 2.0.3
@@ -1504,10 +1507,9 @@ packages:
     engines:
       node: ^8.16.0 || ^10.6.0 || >=11.0.0
     optional: true
-    os:
-      - darwin
     resolution:
-      integrity: sha512-Auw9a4AxqWpa9GUfj370BMPzzyncfBABW8Mab7BGWBYDj4Isgq+cDKtx0i6u9jcX9pQDnswsaaOTgTmA5pEjuQ==
+      integrity: sha1-+3OHA66NL5/pAMM4Nt3r7ouX8j4=
+      tarball: fsevents/download/fsevents-2.1.3.tgz
   /function-bind/1.1.1:
     dev: true
     resolution:
@@ -2007,7 +2009,8 @@ packages:
   /make-error/1.3.6:
     dev: true
     resolution:
-      integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==
+      integrity: sha1-LrLjfqm2fEiR9oShOUeZr0hM96I=
+      tarball: make-error/download/make-error-1.3.6.tgz
   /make-fetch-happen/8.0.9:
     dependencies:
       agentkeepalive: 4.1.3
@@ -2774,7 +2777,8 @@ packages:
       rollup: ^2.22.1
       typescript: ^3.9.7
     resolution:
-      integrity: sha512-ikEIpVKDhgNFouGQemmVeXojpxEhgSUCPrfEbiDMWg3YmDWYoNifmbmt5AiBqf3KHnv/6Se5+KSgDE11oVlZYg==
+      integrity: sha1-k25MwROdgcXAzmTcHp/gJbs+zK8=
+      tarball: rollup-plugin-dts/download/rollup-plugin-dts-1.4.9.tgz
   /rollup-plugin-typescript2/0.27.1_rollup@2.22.2+typescript@3.9.7:
     dependencies:
       '@rollup/pluginutils': 3.1.0_rollup@2.22.2
@@ -2798,7 +2802,8 @@ packages:
     optionalDependencies:
       fsevents: 2.1.3
     resolution:
-      integrity: sha512-2a4Mch4f0W2lEvkPuxtz0GfrtfgLj9bdd/oC9L3LozGOCnmLqO7ivMfKbCJoRgqWIU2UqAcbxRFSwmIKx+uStA==
+      integrity: sha1-lNUfyMMKLlRdH/Y1jMT6FBMTMu4=
+      tarball: rollup/download/rollup-2.22.2.tgz
   /run-parallel/1.1.9:
     dev: false
     resolution:
@@ -2901,7 +2906,8 @@ packages:
       source-map: 0.6.1
     dev: true
     resolution:
-      integrity: sha512-Wonm7zOCIJzBGQdB+thsPar0kYuCIzYvxZwlBa87yi/Mdjv7Tip2cyVbLj5o0cFPN4EVkuTwb3GDDyUx2DGnGw==
+      integrity: sha1-qYti+G3K9PZzmWSMCFKRq56P7WE=
+      tarball: source-map-support/download/source-map-support-0.5.19.tgz
   /source-map/0.5.7:
     dev: true
     engines:
@@ -2913,7 +2919,8 @@ packages:
     engines:
       node: '>=0.10.0'
     resolution:
-      integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
+      integrity: sha1-dHIq8y6WFOnCh6jQu95IteLxomM=
+      tarball: source-map/download/source-map-0.6.1.tgz
   /spdx-correct/3.1.1:
     dependencies:
       spdx-expression-parse: 3.0.1
@@ -3145,7 +3152,8 @@ packages:
     peerDependencies:
       typescript: '>=2.7'
     resolution:
-      integrity: sha512-ISJJGgkIpDdBhWVu3jufsWpK3Rzo7bdiIXJjQc0ynKxVOVcg2oIrf2H2cejminGrptVc6q6/uynAHNCuWGbpVA==
+      integrity: sha1-7uA3ZGM7EjTd03+NuewQt17H+40=
+      tarball: ts-node/download/ts-node-8.10.2.tgz
   /tsconfig-paths/3.9.0:
     dependencies:
       '@types/json5': 0.0.29
@@ -3370,7 +3378,8 @@ packages:
     engines:
       node: '>=6'
     resolution:
-      integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==
+      integrity: sha1-HodAGgnXZ8HV6rJqbkwYUYLS61A=
+      tarball: yn/download/yn-3.1.1.tgz
 specifiers:
   '@antfu/eslint-config-ts': ^0.2.14
   '@rollup/plugin-node-resolve': ^8.4.0
@@ -3386,11 +3395,11 @@ specifiers:
   fast-glob: ^3.2.4
   libnpmconfig: ^1.2.1
   pacote: ^11.1.11
-  rollup: ^2.20.2
-  rollup-plugin-dts: ^1.4.4
+  rollup: ^2.22.2
+  rollup-plugin-dts: ^1.4.9
   rollup-plugin-typescript2: ^0.27.1
   semver: ^7.3.2
-  ts-node: ^8.9.2
+  ts-node: ^8.10.2
   tslib: ^2.0.0
   typescript: ^3.9.7
   yargs: ^15.4.1

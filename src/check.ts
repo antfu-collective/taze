@@ -4,6 +4,7 @@ import { colorizeDiff, TableLogger } from './log'
 import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency } from './types'
 import { loadPackages, writePackage } from './io/packages'
 import { resolvePackage } from './io/resolves'
+import { createFilterAction } from './utils/createFilterAction'
 
 export async function check(options: CheckOptions) {
   const logger = new TableLogger({
@@ -18,7 +19,13 @@ export async function check(options: CheckOptions) {
     .map(i => i.raw.name)
     .filter(i => i)
 
+  const filterAction = createFilterAction(options.filter)
+
   const filter = (dep: RawDependency) => {
+    if (filterAction)
+      // filter private dependency and filter config
+      return !privatePackageNames.includes(dep.name) && filterAction(dep.name)
+
     // to filter out private dependency in monorepo
     return !privatePackageNames.includes(dep.name)
   }
