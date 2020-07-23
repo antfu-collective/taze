@@ -35,10 +35,10 @@
     "@types/yargs": "^15.0.5",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "eslint": "^7.5.0",
-    "rollup": "^2.20.2",
-    "rollup-plugin-dts": "^1.4.4",
+    "rollup": "^2.22.2",
+    "rollup-plugin-dts": "^1.4.9",
     "rollup-plugin-typescript2": "^0.27.1",
-    "ts-node": "^8.9.2",
+    "ts-node": "^8.10.2",
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
   },
