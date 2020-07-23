@@ -60,11 +60,15 @@ export class TableLogger {
 
 export function colorizeDiff(from: string, to: string) {
   let leadingWildcard = ''
+  let fromLeadingWildcard = ''
 
   // separate out leading ^ or ~
-  if (/^[~^]/.test(to) && to[0] === from[0]) {
+  if (/^[~^]/.test(to)) {
     leadingWildcard = to[0]
     to = to.slice(1)
+  }
+  if (/^[~^]/.test(from)) {
+    fromLeadingWildcard = from[0]
     from = from.slice(1)
   }
 
@@ -85,7 +89,9 @@ export function colorizeDiff(from: string, to: string) {
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
 
-  return chalk.grey(leadingWildcard)
+  const leadingColor = leadingWildcard === fromLeadingWildcard ? 'grey' : 'yellow'
+
+  return chalk[leadingColor](leadingWildcard)
         + partsToColor.slice(0, i).join('.')
         + middot
         + chalk[color](partsToColor.slice(i).join('.')).trim()
