@@ -22,12 +22,10 @@ export async function check(options: CheckOptions) {
   const filterAction = createFilterAction(options.filter)
 
   const filter = (dep: RawDependency) => {
-    if (filterAction)
-      // filter private dependency and filter config
-      return !privatePackageNames.includes(dep.name) && filterAction(dep.name)
-
-    // to filter out private dependency in monorepo
-    return !privatePackageNames.includes(dep.name)
+    return
+      filterAction(dep.name)
+      // to filter out private dependency in monorepo
+      && !privatePackageNames.includes(dep.name)
   }
 
   console.log()
