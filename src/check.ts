@@ -29,16 +29,16 @@ export async function check(options: CheckOptions) {
   const bars = new MultiBar({
     clearOnComplete: true,
     hideCursor: true,
-    format: `${chalk.cyan('{type}')} {bar} {value}/{total} ${chalk.gray('{name}')}`,
+    format: `{type} {bar} {value}/{total} ${chalk.gray('{name}')}`,
     linewrap: false,
     barsize: 40,
   }, Presets.shades_grey)
 
-  const packagesBar = options.recursive ? bars.create(packages.length, 0, { type: 'pkg' }) : null
-  const depBar = bars.create(1, 0, { type: 'dep' })
+  const packagesBar = options.recursive ? bars.create(packages.length, 0, { type: chalk.cyan('pkg') }) : null
+  const depBar = bars.create(1, 0)
 
   for (const pkg of packages) {
-    packagesBar?.increment(0, { name: pkg.name })
+    packagesBar?.increment(0, { name: chalk.cyan(pkg.name) })
     await checkProject(pkg, options, filter, privatePackageNames, logger, depBar)
     packagesBar?.increment(1)
   }
@@ -60,7 +60,7 @@ export async function check(options: CheckOptions) {
 }
 
 export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, privatePackageNames: string[], logger: TableLogger, bar: SingleBar) {
-  bar.start(pkg.deps.length, 0, { type: 'dep' })
+  bar.start(pkg.deps.length, 0, { type: chalk.green('dep') })
 
   await resolvePackage(pkg, options.mode, filter, (c, _, name) => {
     bar.update(c, { name })

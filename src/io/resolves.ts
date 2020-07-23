@@ -3,6 +3,7 @@ import semver from 'semver'
 import { npmConfig } from '../utils/npm'
 import { RawDependency, ResolvedDependencies, PackageMeta, RangeMode, DependencyFilter, ProgressCallback } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
+import { getMaxSatisfying } from '../utils/versions'
 
 interface PackageCache {
   tags: Record<string, string>
@@ -32,31 +33,6 @@ export async function getLatestVersions(name: string) {
   }
 }
 
-export function resetRange(version: string, mode: Exclude<RangeMode, 'latest'>) {
-  if (mode === 'newest')
-    return '*'
-
-  if (!semver.validRange(version))
-    return null
-
-  if (mode === 'default')
-    return version
-
-  const min = semver.minVersion(version)
-  if (!min)
-    return null
-
-  return {
-    major: '>=',
-    minor: '^',
-    patch: '~',
-  }[mode] + min
-}
-
-export function resolveVersion(version: string) {
-  semver.parse(version)
-}
-
 export async function resolveDependency(
   raw: RawDependency,
   mode: RangeMode,
@@ -73,16 +49,19 @@ export async function resolveDependency(
 
   const dep = { ...raw } as ResolvedDependencies
   const { versions, tags, error } = await getLatestVersions(dep.name)
-  const range = mode === 'latest' ? tags.latest : resetRange(dep.currentVersion, mode)
-  if (range && !error) {
-    const max = dep.currentVersion === '*'
-      ? '*' // leave it as-is
-      : semver.maxSatisfying(versions, range)
+  let max: string | null = null
+  if (!error) {
+    max = mode === 'latest'
+      ? tags.latest
+      : getMaxSatisfying(versions, dep.currentVersion, mode)
+  }
+  if (!error && max) {
+    dep.latestVersion = max
+    const current = semver.minVersion(dep.currentVersion)!
+    const latest = semver.minVersion(dep.latestVersion)!
 
-    // TODO: align the range
-    dep.latestVersion = max ? `^${max}` : dep.currentVersion
-    dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, semver.minVersion(dep.latestVersion)!)
-    dep.update = dep.diff !== null
+    dep.diff = semver.diff(current, latest)
+    dep.update = dep.diff !== null && semver.lt(current, latest)
   }
   else {
     dep.latestVersion = dep.currentVersion
