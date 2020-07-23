@@ -27,6 +27,13 @@ export async function check(options: CheckOptions) {
   for (const pkg of packages)
     await checkProject(pkg, options, filter, logger)
 
+  logger.log()
+  if (options.mode === 'default')
+    logger.log(`Run ${chalk.yellow('taze major')} to check major updates`)
+
+  logger.log(`Run ${chalk.cyan('taze -w')} to write package.json`)
+  logger.log()
+
   logger.output()
 }
 

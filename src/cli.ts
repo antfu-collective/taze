@@ -6,10 +6,15 @@ yargs
   .scriptName('taze')
   .usage('$0 [args]')
   .command(
-    '*',
+    '* [mode]',
     'Keeps your deps fresh',
     (args) => {
       args
+        .positional('mode', {
+          default: 'default',
+          type: 'string',
+          describe: 'the mode how version range resolves, can be "default", "major", "minor", "latest" or "newest"',
+        })
         .option('cwd', {
           alias: 'C',
           default: '',
@@ -21,12 +26,6 @@ yargs
           default: false,
           type: 'boolean',
           describe: 'recursively search for package.json in subdirectories',
-        })
-        .option('mode', {
-          alias: 'm',
-          default: 'default',
-          type: 'string',
-          describe: 'dependency range resolve more, can be "major" or "minor"',
         })
         .option('write', {
           alias: 'w',
