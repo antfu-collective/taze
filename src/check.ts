@@ -27,12 +27,14 @@ export async function check(options: CheckOptions) {
   for (const pkg of packages)
     await checkProject(pkg, options, filter, logger)
 
-  logger.log()
-  if (options.mode === 'default')
-    logger.log(`Run ${chalk.yellow('taze major')} to check major updates`)
+  if (!options.write) {
+    logger.log()
+    if (options.mode === 'default')
+      logger.log(`Run ${chalk.yellow('taze major')} to check major updates`)
 
-  logger.log(`Run ${chalk.cyan('taze -w')} to write package.json`)
-  logger.log()
+    logger.log(`Run ${chalk.cyan('taze -w')} to write package.json`)
+    logger.log()
+  }
 
   logger.output()
 }
@@ -81,12 +83,14 @@ export function printChanges(pkg: PackageMeta, changes: ResolvedDependencies[], 
     })
 
     if (Object.keys(counters).length) {
-      logger.log(`\n  ${
-        Object
-          .entries(counters)
-          .map(([key, value]) => `${value} ${key}`)
-          .join(', ')
-      } updates`)
+      logger.log(
+        chalk.gray(`\n  ${
+          Object
+            .entries(counters)
+            .map(([key, value]) => `${chalk.yellow(value)} ${key}`)
+            .join(', ')
+        } updates`),
+      )
     }
   }
 

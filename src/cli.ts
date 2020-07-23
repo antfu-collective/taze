@@ -69,6 +69,12 @@ yargs
           type: 'string',
           describe: 'output version range, can be "fixed", "major", "minor" or "patch"',
         })
+        // TODO:
+        .option('guard', {
+          default: false,
+          type: 'boolean',
+          describe: 'exit with non-zero code if there are existing upgrades',
+        })
     },
     check,
   )
