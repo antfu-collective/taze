@@ -2,10 +2,7 @@
   "name": "@taze/example-foo",
   "private": true,
   "dependencies": {
-    "express": "4.12.x",
-    "multer": "^0.1.8",
-    "react-bootstrap": "^0.22.6",
     "webpack": "~1.9.10",
-    "lodash": "^4.13.19"
+    "lodash": "^4.17.10"
   }
 }
