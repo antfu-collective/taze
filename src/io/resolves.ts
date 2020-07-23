@@ -71,7 +71,10 @@ export async function resolveDependency(
   const { versions, tags, error } = await getLatestVersions(dep.name)
   const range = mode === 'latest' ? tags.latest : resetRange(dep.currentVersion, mode)
   if (range && !error) {
-    const max = semver.maxSatisfying(versions, range)
+    const max = dep.currentVersion === '*'
+      ? '*' // leave it as-is
+      : semver.maxSatisfying(versions, range)
+
     // TODO: align the range
     dep.latestVersion = max ? `^${max}` : dep.currentVersion
     dep.diff = semver.diff(semver.minVersion(dep.currentVersion)!, semver.minVersion(dep.latestVersion)!)
