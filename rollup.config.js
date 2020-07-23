@@ -13,7 +13,9 @@ const external = [
 const preset = {
   plugins: [
     resolve(),
-    typescript(),
+    typescript({
+      tsconfig: './tsconfig.rollup.json',
+    }),
   ],
   external,
   onwarn(msg, warn) {

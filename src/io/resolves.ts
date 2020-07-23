@@ -53,6 +53,10 @@ export function resetRange(version: string, mode: Exclude<RangeMode, 'latest'>) 
   }[mode] + min
 }
 
+export function resolveVersion(version: string) {
+  semver.parse(version)
+}
+
 export async function resolveDependency(
   raw: RawDependency,
   mode: RangeMode,
