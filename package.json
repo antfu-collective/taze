@@ -6,9 +6,10 @@
   "module": "dist/index.esm.js",
   "typing": "dist/index.d.ts",
   "scripts": {
-    "dev": "ts-node -O '{\"module\":\"commonjs\"}' ./src/cli.ts",
+    "dev": "ts-node ./src/cli.ts",
     "build": "rollup -c",
-    "release": "pnpx bumpp --commit --tag && pnpm build && pnpm publish && git push"
+    "release": "pnpx bumpp --commit --tag && pnpm build && pnpm publish && git push",
+    "test": "ava"
   },
   "files": [
     "dist"
@@ -34,6 +35,7 @@
     "@types/semver": "^7.3.1",
     "@types/yargs": "^15.0.5",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
+    "ava": "^3.10.1",
     "eslint": "^7.5.0",
     "rollup": "^2.22.2",
     "rollup-plugin-dts": "^1.4.9",
@@ -44,5 +46,13 @@
   },
   "eslintConfig": {
     "extends": "@antfu/eslint-config-ts"
-  }
+  },
+  "ava": {
+		"extensions": [
+			"ts"
+		],
+		"require": [
+			"ts-node/register"
+		]
+	}
 }

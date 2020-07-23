@@ -1,0 +1,15 @@
+{
+  "name": "@taze/monorepo-example",
+  "private": true,
+  "dependencies": {
+    "express": "4.12.x",
+    "multer": "^0.1.8",
+    "react-bootstrap": "^0.22.6",
+    "webpack": "~1.9.10",
+    "lodash": "^4.13.19"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.0",
+    "typescript": "3.5"
+  }
+}
