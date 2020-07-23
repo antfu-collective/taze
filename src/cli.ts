@@ -37,6 +37,7 @@ yargs
         .option('filter', {
           type: 'string',
           describe: 'filter rules to restrict dependencies to check updates',
+          array: true,
         })
         .option('ignore', {
           type: 'string',

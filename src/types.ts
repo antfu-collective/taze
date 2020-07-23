@@ -32,6 +32,7 @@ export interface CheckOptions {
   recursive: boolean
   mode: RangeMode
   write: boolean
+  filter: string[]
 }
 
 export interface PackageMeta {
