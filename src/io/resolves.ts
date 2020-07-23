@@ -1,7 +1,7 @@
 import pacote from 'pacote'
 import semver from 'semver'
 import { npmConfig } from '../utils/npm'
-import { RawDependency, ResolvedDependencies, PackageMeta, RangeMode, DependencyFilter } from '../types'
+import { RawDependency, ResolvedDependencies, PackageMeta, RangeMode, DependencyFilter, ProgressCallback } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 
 interface PackageCache {tags: Record<string, string>; versions: string[]}
@@ -74,9 +74,10 @@ export async function resolveDependency(
 export async function resolveDependencies(
   deps: RawDependency[],
   mode: RangeMode,
-  filter: DependencyFilter,
-  progressCallback = (i: number) => {},
+  filter: DependencyFilter = () => true,
+  progressCallback: ProgressCallback = (i: number) => {},
 ) {
+  const total = deps.length
   let counter = 0
 
   return Promise.all(
@@ -84,14 +85,14 @@ export async function resolveDependencies(
       .map(async(raw) => {
         const dep = await resolveDependency(raw, mode, filter)
         counter += 1
-        progressCallback(counter)
+        progressCallback(counter, total, raw.name)
         return dep
       }),
   )
 }
 
-export async function resolvePackage(pkg: PackageMeta, mode: RangeMode, filter: DependencyFilter) {
-  const resolved = await resolveDependencies(pkg.deps, mode, filter)
+export async function resolvePackage(pkg: PackageMeta, mode: RangeMode, filter?: DependencyFilter, progress?: ProgressCallback) {
+  const resolved = await resolveDependencies(pkg.deps, mode, filter, progress)
   diffSorter(resolved)
   pkg.resolved = resolved
   return pkg

@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { SingleBar, MultiBar, Presets } from 'cli-progress'
 import { colorizeDiff, TableLogger } from './log'
 import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency } from './types'
 import { loadPackages, writePackage } from './io/packages'
@@ -22,10 +23,26 @@ export async function check(options: CheckOptions) {
     return !privatePackageNames.includes(dep.name)
   }
 
-  logger.log()
+  console.log()
 
-  for (const pkg of packages)
-    await checkProject(pkg, options, filter, logger)
+  const bars = new MultiBar({
+    clearOnComplete: true,
+    hideCursor: true,
+    format: `${chalk.cyan('{type}')} {bar} {value}/{total} ${chalk.gray('{name}')}`,
+    linewrap: false,
+    barsize: 40,
+  }, Presets.shades_grey)
+
+  const packagesBar = options.recursive ? bars.create(packages.length, 0, { type: 'pkg' }) : null
+  const depBar = bars.create(1, 0, { type: 'dep' })
+
+  for (const pkg of packages) {
+    packagesBar?.increment(0, { name: pkg.name })
+    await checkProject(pkg, options, filter, logger, depBar)
+    packagesBar?.increment(1)
+  }
+
+  bars.stop()
 
   if (!options.write) {
     logger.log()
@@ -39,8 +56,15 @@ export async function check(options: CheckOptions) {
   logger.output()
 }
 
-export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, logger: TableLogger) {
-  await resolvePackage(pkg, options.mode, filter)
+export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, logger: TableLogger, bar: SingleBar) {
+  bar.start(pkg.deps.length, 0, { type: 'dep' })
+
+  await resolvePackage(pkg, options.mode, filter, (c, _, name) => {
+    bar.update(c, { name })
+  })
+
+  bar.stop()
+
   const { relative, resolved } = pkg
   const changes = resolved.filter(i => i.update)
 

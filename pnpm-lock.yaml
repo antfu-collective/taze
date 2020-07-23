@@ -9,6 +9,7 @@ dependencies:
 devDependencies:
   '@antfu/eslint-config-ts': 0.2.14_eslint@7.5.0+typescript@3.9.7
   '@rollup/plugin-node-resolve': 8.4.0_rollup@2.22.2
+  '@types/cli-progress': 3.7.0
   '@types/node': 14.0.24
   '@types/pacote': 11.1.0
   '@types/semver': 7.3.1
@@ -246,6 +247,12 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
+  /@types/cli-progress/3.7.0:
+    dependencies:
+      '@types/node': 14.0.24
+    dev: true
+    resolution:
+      integrity: sha512-h/f9+pomRHSodXOPgBjlLEESWhv2Z34pP5djmruylvEZ7MzTd1pljOmdsBpVh3uCGjTVOzb2ux8ZaXYqyPFgpQ==
   /@types/color-name/1.1.1:
     resolution:
       integrity: sha512-rr+OQyAjxze7GgWrSaJwydHStIhHq2lvY3BOC2Mj7KnzI7XK0Uw1TOOdI9lDoajEbSWLiYgoo4f1R51erQfhPQ==
@@ -3367,7 +3374,8 @@ packages:
 specifiers:
   '@antfu/eslint-config-ts': ^0.2.14
   '@rollup/plugin-node-resolve': ^8.4.0
-  '@types/node': ^14.0.24
+  '@types/cli-progress': ^3.7.0
+  '@types/node': ^13.13.14
   '@types/pacote': ^11.1.0
   '@types/semver': ^7.3.1
   '@types/yargs': ^15.0.5
@@ -3378,11 +3386,11 @@ specifiers:
   fast-glob: ^3.2.4
   libnpmconfig: ^1.2.1
   pacote: ^11.1.11
-  rollup: ^2.22.2
-  rollup-plugin-dts: ^1.4.9
+  rollup: ^2.20.2
+  rollup-plugin-dts: ^1.4.4
   rollup-plugin-typescript2: ^0.27.1
   semver: ^7.3.2
-  ts-node: ^8.10.2
+  ts-node: ^8.9.2
   tslib: ^2.0.0
   typescript: ^3.9.7
   yargs: ^15.4.1
