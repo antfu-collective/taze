@@ -12,6 +12,7 @@ export async function check(options: CheckOptions) {
     align: 'LLRRR',
   })
 
+  // packages loading
   const packages = await loadPackages(options)
   const privatePackageNames = packages
     .filter(i => i.raw.private)
@@ -23,8 +24,8 @@ export async function check(options: CheckOptions) {
     return !privatePackageNames.includes(dep.name)
   }
 
+  // progress bar
   console.log()
-
   const bars = new MultiBar({
     clearOnComplete: true,
     hideCursor: true,
@@ -38,25 +39,27 @@ export async function check(options: CheckOptions) {
 
   for (const pkg of packages) {
     packagesBar?.increment(0, { name: pkg.name })
-    await checkProject(pkg, options, filter, logger, depBar)
+    await checkProject(pkg, options, filter, privatePackageNames, logger, depBar)
     packagesBar?.increment(1)
   }
-
   bars.stop()
 
+  // TODO: summary
+
+  // tips
   if (!options.write) {
     logger.log()
     if (options.mode === 'default')
-      logger.log(`Run ${chalk.yellow('taze major')} to check major updates`)
+      logger.log(`Run ${chalk.cyan('taze major')} to check major updates`)
 
-    logger.log(`Run ${chalk.cyan('taze -w')} to write package.json`)
+    logger.log(`Run ${chalk.green('taze -w')} to write package.json`)
     logger.log()
   }
 
   logger.output()
 }
 
-export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, logger: TableLogger, bar: SingleBar) {
+export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, privatePackageNames: string[], logger: TableLogger, bar: SingleBar) {
   bar.start(pkg.deps.length, 0, { type: 'dep' })
 
   await resolvePackage(pkg, options.mode, filter, (c, _, name) => {
@@ -76,6 +79,7 @@ export async function checkProject(pkg: PackageMeta, options: CheckOptions, filt
     logger.log(chalk.yellow('changes wrote to package.json'))
     logger.log()
   }
+  return pkg
 }
 
 export function printChanges(pkg: PackageMeta, changes: ResolvedDependencies[], filepath: string, logger: TableLogger) {
@@ -118,5 +122,28 @@ export function printChanges(pkg: PackageMeta, changes: ResolvedDependencies[], 
     }
   }
 
+  const errors = pkg.resolved.filter(i => i.resolveError != null)
+  if (errors.length) {
+    logger.log()
+    for (const dep of errors)
+      printResolveError(dep, logger)
+  }
+
   logger.log()
+}
+
+function printResolveError(dep: ResolvedDependencies, logger: TableLogger) {
+  if (dep.resolveError == null)
+    return
+
+  if (dep.resolveError === 404) {
+    logger.log(chalk.redBright(`> ${chalk.underline(dep.name)} not found`))
+  }
+  else if (dep.resolveError === 'invalid_range') {
+    logger.log(chalk.yellowBright(`> ${chalk.underline(dep.name)} has an unresolvable version range: ${chalk.underline(dep.currentVersion)}`))
+  }
+  else {
+    logger.log(chalk.redBright(`> ${chalk.underline(dep.name)} unknown error`))
+    logger.log(chalk.redBright(dep.resolveError.toString()))
+  }
 }

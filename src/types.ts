@@ -24,6 +24,7 @@ export interface ResolvedDependencies {
   diff: DiffType
   source: DependenciesType
   update: boolean
+  resolveError?: number | string | Error
 }
 
 export interface CheckOptions {

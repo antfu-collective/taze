@@ -1,0 +1,12 @@
+{
+  "name": "@taze/single",
+  "private": true,
+  "dependencies": {
+    "lodash": "^4.13.19",
+    "@taze/not-exists": "^4.13.19",
+    "axios": "../asx"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.0"
+  }
+}

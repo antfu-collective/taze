@@ -4,18 +4,32 @@ import { npmConfig } from '../utils/npm'
 import { RawDependency, ResolvedDependencies, PackageMeta, RangeMode, DependencyFilter, ProgressCallback } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 
-interface PackageCache {tags: Record<string, string>; versions: string[]}
+interface PackageCache {
+  tags: Record<string, string>
+  versions: string[]
+  error?: number | Error
+}
 const versionCache: Record<string, PackageCache > = {}
 
 export async function getLatestVersions(name: string) {
   if (versionCache[name])
     return versionCache[name]
-  const data = await pacote.packument(name, { ...npmConfig })
-  versionCache[name] = {
-    tags: data['dist-tags'],
-    versions: Object.keys(data.versions || {}),
+  try {
+    const data = await pacote.packument(name, { ...npmConfig })
+    versionCache[name] = {
+      tags: data['dist-tags'],
+      versions: Object.keys(data.versions || {}),
+    }
+    return versionCache[name]
   }
-  return versionCache[name]
+  catch (e) {
+    versionCache[name] = {
+      tags: {},
+      versions: [],
+      error: e.statusCode || e,
+    }
+    return versionCache[name]
+  }
 }
 
 export function resetRange(version: string, mode: Exclude<RangeMode, 'latest'>) {
@@ -54,9 +68,9 @@ export async function resolveDependency(
   }
 
   const dep = { ...raw } as ResolvedDependencies
-  const { versions, tags } = await getLatestVersions(dep.name)
+  const { versions, tags, error } = await getLatestVersions(dep.name)
   const range = mode === 'latest' ? tags.latest : resetRange(dep.currentVersion, mode)
-  if (range) {
+  if (range && !error) {
     const max = semver.maxSatisfying(versions, range)
     // TODO: align the range
     dep.latestVersion = max ? `^${max}` : dep.currentVersion
@@ -67,6 +81,7 @@ export async function resolveDependency(
     dep.latestVersion = dep.currentVersion
     dep.diff = 'error'
     dep.update = false
+    dep.resolveError = error ?? 'invalid_range'
   }
   return dep
 }
