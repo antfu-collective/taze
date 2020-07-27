@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { SingleBar } from 'cli-progress'
 import { colorizeDiff, TableLogger, createMultiProgresBar } from '../log'
-import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency } from '../types'
+import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency, RangeMode } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { resolvePackage } from '../io/resolves'
 import { createFilterAction } from '../utils/createFilterAction'
@@ -14,7 +14,7 @@ export async function check(options: CheckOptions) {
     .map(i => i.raw.name)
     .filter(i => i)
 
-  const filterAction = createFilterAction(options.filter)
+  const filterAction = createFilterAction(options.filter || [])
 
   // to filter out private dependency in monorepo
   const filter = (dep: RawDependency) => filterAction(dep.name) && !privatePackageNames.includes(dep.name)
@@ -61,7 +61,8 @@ async function checkAllPackages(options: CheckOptions, packages: PackageMeta[], 
 export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, logger: TableLogger, bar: SingleBar) {
   bar.start(pkg.deps.length, 0, { type: chalk.green('dep') })
 
-  await resolvePackage(pkg, options.mode, filter, (c, _, name) => {
+  // TODO: rangemode valid check
+  await resolvePackage(pkg, options.mode as RangeMode, filter, (c, _, name) => {
     bar.update(c, { name })
   })
 

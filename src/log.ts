@@ -1,6 +1,5 @@
 import chalk from 'chalk'
 import { MultiBar, Presets } from 'cli-progress'
-import { number } from 'yargs'
 
 interface Options {
   columns: number

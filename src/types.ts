@@ -27,21 +27,22 @@ export interface ResolvedDependencies {
   resolveError?: Error | string | null
 }
 
-export interface LoadOptions {
+export interface CommonOptions {
   cwd: string
   recursive: boolean
+  filter?: string[]
+  ignore?: string[]
+  prod: boolean
+  dev: boolean
 }
 
-export interface UsageOptions extends LoadOptions {
-  filter?: string
+export interface UsageOptions extends CommonOptions {
   detail: boolean
 }
 
-export interface CheckOptions extends LoadOptions {
-  mode: RangeMode
+export interface CheckOptions extends CommonOptions {
+  mode: string
   write: boolean
-  usage: boolean
-  filter: string[]
 }
 
 export interface PackageMeta {

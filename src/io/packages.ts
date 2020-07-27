@@ -1,7 +1,7 @@
 import path from 'path'
 import { promises as fs } from 'fs'
 import fg from 'fast-glob'
-import { PackageMeta, LoadOptions } from '../types'
+import { PackageMeta, CommonOptions } from '../types'
 import { parseDependencies, dumpDependencies } from './dependencies'
 
 export async function readJSON(filepath: string) {
@@ -14,10 +14,12 @@ export async function writeJSON(filepath: string, data: any) {
 
 export async function writePackage(pkg: PackageMeta) {
   const { raw, filepath, resolved } = pkg
-  if (raw.dependencies) raw.dependencies = dumpDependencies(resolved, 'dependencies')
-  if (raw.devDependencies) raw.devDependencies = dumpDependencies(resolved, 'devDependencies')
-  if (raw.peerDependencies) raw.peerDependencies = dumpDependencies(resolved, 'peerDependencies')
-  if (raw.optionalDependencies) raw.optionalDependencies = dumpDependencies(resolved, 'optionalDependencies')
+  if (raw.dependencies)
+    raw.dependencies = dumpDependencies(resolved, 'dependencies')
+  if (raw.devDependencies)
+    raw.devDependencies = dumpDependencies(resolved, 'devDependencies')
+  if (raw.optionalDependencies)
+    raw.optionalDependencies = dumpDependencies(resolved, 'optionalDependencies')
   await writeJSON(filepath, raw)
 }
 
@@ -27,7 +29,6 @@ export async function loadPackage(root: string, relative: string): Promise<Packa
   const deps = [
     ...parseDependencies(raw, 'dependencies'),
     ...parseDependencies(raw, 'devDependencies'),
-    ...parseDependencies(raw, 'peerDependencies'),
     ...parseDependencies(raw, 'optionalDependencies'),
   ]
 
@@ -42,7 +43,7 @@ export async function loadPackage(root: string, relative: string): Promise<Packa
   }
 }
 
-export async function loadPackages(options: LoadOptions) {
+export async function loadPackages(options: CommonOptions) {
   let packagesNames: string[] = []
 
   if (options.recursive) {
