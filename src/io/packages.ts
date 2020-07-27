@@ -1,7 +1,7 @@
 import path from 'path'
 import { promises as fs } from 'fs'
 import fg from 'fast-glob'
-import { CheckOptions, PackageMeta } from '../types'
+import { PackageMeta, LoadOptions } from '../types'
 import { parseDependencies, dumpDependencies } from './dependencies'
 
 export async function readJSON(filepath: string) {
@@ -42,7 +42,7 @@ export async function loadPackage(root: string, relative: string): Promise<Packa
   }
 }
 
-export async function loadPackages(options: CheckOptions) {
+export async function loadPackages(options: LoadOptions) {
   let packagesNames: string[] = []
 
   if (options.recursive) {

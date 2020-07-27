@@ -8,7 +8,7 @@ import { getMaxSatisfying } from '../utils/versions'
 interface PackageCache {
   tags: Record<string, string>
   versions: string[]
-  error?: number | Error
+  error?: Error | string
 }
 const versionCache: Record<string, PackageCache > = {}
 
@@ -27,7 +27,7 @@ export async function getLatestVersions(name: string) {
     versionCache[name] = {
       tags: {},
       versions: [],
-      error: e.statusCode || e,
+      error: e?.statusCode?.toString() || e,
     }
     return versionCache[name]
   }
@@ -49,13 +49,24 @@ export async function resolveDependency(
 
   const dep = { ...raw } as ResolvedDependencies
   const { versions, tags, error } = await getLatestVersions(dep.name)
+  let err: Error | string | null = null
   let max: string | null = null
-  if (!error) {
-    max = mode === 'latest'
-      ? tags.latest
-      : getMaxSatisfying(versions, dep.currentVersion, mode)
+
+  if (error == null) {
+    try {
+      max = mode === 'latest'
+        ? tags.latest
+        : getMaxSatisfying(versions, dep.currentVersion, mode)
+    }
+    catch (e) {
+      err = e.message || e
+    }
   }
-  if (!error && max) {
+  else {
+    err = error
+  }
+
+  if (err != null && max) {
     dep.latestVersion = max
     const current = semver.minVersion(dep.currentVersion)!
     const latest = semver.minVersion(dep.latestVersion)!
@@ -67,7 +78,7 @@ export async function resolveDependency(
     dep.latestVersion = dep.currentVersion
     dep.diff = 'error'
     dep.update = false
-    dep.resolveError = error ?? 'invalid_range'
+    dep.resolveError = err
   }
   return dep
 }

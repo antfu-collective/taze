@@ -24,14 +24,22 @@ export interface ResolvedDependencies {
   diff: DiffType
   source: DependenciesType
   update: boolean
-  resolveError?: number | string | Error
+  resolveError?: Error | string | null
 }
 
-export interface CheckOptions {
+export interface LoadOptions {
   cwd: string
   recursive: boolean
+}
+
+export interface UsageOptions extends LoadOptions {
+  filter?: string
+}
+
+export interface CheckOptions extends LoadOptions {
   mode: RangeMode
   write: boolean
+  usage: boolean
   filter: string[]
 }
 

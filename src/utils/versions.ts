@@ -61,7 +61,7 @@ export function applyVersionRangePrefix(version: string | null, prefix: string |
 export function getMaxSatisfying(versions: string[], current: string, mode: Exclude<RangeMode, 'latest'>) {
   const range = changeVersionRange(current, mode)
   if (!range)
-    return null
+    throw new Error('invalid_range')
 
   const prefix = getVersionRangePrefix(current)
 
