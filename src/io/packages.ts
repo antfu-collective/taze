@@ -1,7 +1,7 @@
 import path from 'path'
 import { promises as fs } from 'fs'
 import fg from 'fast-glob'
-import { PackageMeta, CommonOptions } from '../types'
+import { PackageMeta, CommonOptions, RawDependency } from '../types'
 import { parseDependencies, dumpDependencies } from './dependencies'
 
 export async function readJSON(filepath: string) {
@@ -12,25 +12,35 @@ export async function writeJSON(filepath: string, data: any) {
   return await fs.writeFile(filepath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8')
 }
 
-export async function writePackage(pkg: PackageMeta) {
+export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
   const { raw, filepath, resolved } = pkg
-  if (raw.dependencies)
+  if (raw.dependencies && !options.dev)
     raw.dependencies = dumpDependencies(resolved, 'dependencies')
-  if (raw.devDependencies)
+  if (raw.devDependencies && !options.prod)
     raw.devDependencies = dumpDependencies(resolved, 'devDependencies')
-  if (raw.optionalDependencies)
+  if (raw.optionalDependencies && !options.prod && !options.dev)
     raw.optionalDependencies = dumpDependencies(resolved, 'optionalDependencies')
   await writeJSON(filepath, raw)
 }
 
-export async function loadPackage(root: string, relative: string): Promise<PackageMeta> {
-  const filepath = path.resolve(root, relative)
+export async function loadPackage(relative: string, options: CommonOptions): Promise<PackageMeta> {
+  const filepath = path.resolve(options.cwd, relative)
   const raw = await readJSON(filepath)
-  const deps = [
-    ...parseDependencies(raw, 'dependencies'),
-    ...parseDependencies(raw, 'devDependencies'),
-    ...parseDependencies(raw, 'optionalDependencies'),
-  ]
+  let deps: RawDependency[] = []
+
+  if (options.prod) {
+    deps = parseDependencies(raw, 'dependencies')
+  }
+  else if (options.dev) {
+    deps = parseDependencies(raw, 'devDependencies')
+  }
+  else {
+    deps = [
+      ...parseDependencies(raw, 'dependencies'),
+      ...parseDependencies(raw, 'devDependencies'),
+      ...parseDependencies(raw, 'optionalDependencies'),
+    ]
+  }
 
   return {
     name: raw.name,
@@ -63,7 +73,7 @@ export async function loadPackages(options: CommonOptions) {
 
   const packages = await Promise.all(
     packagesNames.map(
-      relative => loadPackage(options.cwd, relative),
+      relative => loadPackage(relative, options),
     ),
   )
 

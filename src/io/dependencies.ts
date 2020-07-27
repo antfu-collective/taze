@@ -16,5 +16,6 @@ export function dumpDependencies(deps: ResolvedDependencies[], type: Dependencie
     .forEach((i) => {
       data[i.name] = i.update ? i.latestVersion : i.currentVersion
     })
+
   return data
 }

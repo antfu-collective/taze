@@ -74,7 +74,7 @@ export async function checkProject(pkg: PackageMeta, options: CheckOptions, filt
   printChanges(pkg, changes, relative, logger)
 
   if (options.write && changes.length) {
-    await writePackage(pkg)
+    await writePackage(pkg, options)
 
     logger.log(chalk.yellow('changes wrote to package.json'))
     logger.log()

@@ -23,19 +23,18 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       array: true,
       describe: 'filter rules to restrict dependencies to check updates',
     })
+    // TODO:
     .option('ignore', {
       type: 'string',
       array: true,
       describe: 'ignore rules to restrict dependencies to not check updates',
     })
-    // TODO:
     .option('dev', {
       alias: 'D',
       default: false,
       type: 'boolean',
       describe: 'update only for devDependencies',
     })
-    // TODO:
     .option('prod', {
       alias: 'P',
       default: false,
