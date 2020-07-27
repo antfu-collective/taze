@@ -66,7 +66,7 @@ export async function resolveDependency(
     err = error
   }
 
-  if (err != null && max) {
+  if (err == null && max) {
     dep.latestVersion = max
     const current = semver.minVersion(dep.currentVersion)!
     const latest = semver.minVersion(dep.latestVersion)!
