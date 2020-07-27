@@ -1,6 +1,6 @@
 import chalk from 'chalk'
-import { SingleBar, MultiBar, Presets } from 'cli-progress'
-import { colorizeDiff, TableLogger } from '../log'
+import { SingleBar } from 'cli-progress'
+import { colorizeDiff, TableLogger, createMultiProgresBar } from '../log'
 import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { resolvePackage } from '../io/resolves'
@@ -29,13 +29,7 @@ async function checkAllPackages(options: CheckOptions, packages: PackageMeta[], 
     align: 'LLRRR',
   })
 
-  const bars = new MultiBar({
-    clearOnComplete: true,
-    hideCursor: true,
-    format: `{type} {bar} {value}/{total} ${chalk.gray('{name}')}`,
-    linewrap: false,
-    barsize: 40,
-  }, Presets.shades_grey)
+  const bars = createMultiProgresBar()
 
   // progress bar
   console.log()

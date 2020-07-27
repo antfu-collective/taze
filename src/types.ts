@@ -34,6 +34,7 @@ export interface LoadOptions {
 
 export interface UsageOptions extends LoadOptions {
   filter?: string
+  detail: boolean
 }
 
 export interface CheckOptions extends LoadOptions {
