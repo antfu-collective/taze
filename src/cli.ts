@@ -1,4 +1,5 @@
 import yargs, { Argv } from 'yargs'
+import chalk from 'chalk'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
 import { CommonOptions } from './types'
@@ -13,7 +14,6 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
     })
     .option('recursive', {
       alias: 'r',
-      default: false,
       type: 'boolean',
       describe: 'recursively search for package.json in subdirectories',
     })
@@ -31,15 +31,15 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
     })
     .option('dev', {
       alias: 'D',
-      default: false,
       type: 'boolean',
       describe: 'update only for devDependencies',
+      conflicts: ['prod'],
     })
     .option('prod', {
       alias: 'P',
-      default: false,
       type: 'boolean',
       describe: 'update only for dependencies',
+      conflicts: ['dev'],
     })
 }
 
@@ -58,6 +58,7 @@ yargs
           default: false,
           describe: 'show more info',
         })
+        .demandOption('recursive', chalk.yellow('Please add -r to analysis usages'))
     },
     args => usage(args),
   )
@@ -70,6 +71,7 @@ yargs
           default: 'default',
           type: 'string',
           describe: 'the mode how version range resolves, can be "default", "major", "minor", "latest" or "newest"',
+          choices: ['default', 'major', 'minor', 'patch', 'latest', 'newest'],
         })
         .option('write', {
           alias: 'w',
@@ -99,5 +101,6 @@ yargs
     },
     args => check(args),
   )
+  .showHelpOnFail(false)
   .help()
   .argv

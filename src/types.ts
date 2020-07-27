@@ -29,11 +29,11 @@ export interface ResolvedDependencies {
 
 export interface CommonOptions {
   cwd: string
-  recursive: boolean
+  recursive?: boolean
   filter?: string[]
   ignore?: string[]
-  prod: boolean
-  dev: boolean
+  prod?: boolean
+  dev?: boolean
 }
 
 export interface UsageOptions extends CommonOptions {

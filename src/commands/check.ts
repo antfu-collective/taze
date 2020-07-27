@@ -61,7 +61,6 @@ async function checkAllPackages(options: CheckOptions, packages: PackageMeta[], 
 export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, logger: TableLogger, bar: SingleBar) {
   bar.start(pkg.deps.length, 0, { type: chalk.green('dep') })
 
-  // TODO: rangemode valid check
   await resolvePackage(pkg, options.mode as RangeMode, filter, (c, _, name) => {
     bar.update(c, { name })
   })
