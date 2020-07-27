@@ -6,6 +6,7 @@
   "module": "dist/index.esm.js",
   "typing": "dist/index.d.ts",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "ts-node ./src/cli.ts",
     "build": "rollup -c",
     "release": "pnpx bumpp --commit --tag && pnpm build && pnpm publish && git push",
