@@ -38,7 +38,7 @@ export async function resolveDependency(
   mode: RangeMode,
   filter: DependencyFilter = () => true,
 ) {
-  if (!await Promise.resolve(filter(raw))) {
+  if (!raw.update || !await Promise.resolve(filter(raw))) {
     return {
       ...raw,
       diff: null,

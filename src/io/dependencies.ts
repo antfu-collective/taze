@@ -1,10 +1,12 @@
 import { DependenciesType, RawDependency, ResolvedDependencies } from '../types'
 
-export function parseDependencies(pkg: any, type: DependenciesType): RawDependency[] {
+export function parseDependencies(pkg: any, type: DependenciesType, shouldUpdate: (name: string) => boolean): RawDependency[] {
   return Object.entries(pkg[type] || {}).map(([name, version]) => ({
     name,
     currentVersion: version as string,
     source: type,
+    // when `updated` marked to `false`, it will be bypassed on resolving
+    update: shouldUpdate(name),
   }))
 }
 

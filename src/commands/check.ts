@@ -4,7 +4,6 @@ import { colorizeDiff, TableLogger, createMultiProgresBar } from '../log'
 import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency, RangeMode } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { resolvePackage } from '../io/resolves'
-import { createFilterAction } from '../utils/createFilterAction'
 
 export async function check(options: CheckOptions) {
   // packages loading
@@ -14,10 +13,8 @@ export async function check(options: CheckOptions) {
     .map(i => i.raw.name)
     .filter(i => i)
 
-  const filterAction = createFilterAction(options.filter || [])
-
   // to filter out private dependency in monorepo
-  const filter = (dep: RawDependency) => filterAction(dep.name) && !privatePackageNames.includes(dep.name)
+  const filter = (dep: RawDependency) => !privatePackageNames.includes(dep.name)
 
   checkAllPackages(options, packages, filter)
 }

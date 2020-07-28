@@ -2,6 +2,7 @@ import path from 'path'
 import { promises as fs } from 'fs'
 import fg from 'fast-glob'
 import { PackageMeta, CommonOptions, RawDependency } from '../types'
+import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { parseDependencies, dumpDependencies } from './dependencies'
 
 export async function readJSON(filepath: string) {
@@ -23,22 +24,22 @@ export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
   await writeJSON(filepath, raw)
 }
 
-export async function loadPackage(relative: string, options: CommonOptions): Promise<PackageMeta> {
+export async function loadPackage(relative: string, options: CommonOptions, shouldUpdate: (name: string) => boolean): Promise<PackageMeta> {
   const filepath = path.resolve(options.cwd, relative)
   const raw = await readJSON(filepath)
   let deps: RawDependency[] = []
 
   if (options.prod) {
-    deps = parseDependencies(raw, 'dependencies')
+    deps = parseDependencies(raw, 'dependencies', shouldUpdate)
   }
   else if (options.dev) {
-    deps = parseDependencies(raw, 'devDependencies')
+    deps = parseDependencies(raw, 'devDependencies', shouldUpdate)
   }
   else {
     deps = [
-      ...parseDependencies(raw, 'dependencies'),
-      ...parseDependencies(raw, 'devDependencies'),
-      ...parseDependencies(raw, 'optionalDependencies'),
+      ...parseDependencies(raw, 'dependencies', shouldUpdate),
+      ...parseDependencies(raw, 'devDependencies', shouldUpdate),
+      ...parseDependencies(raw, 'optionalDependencies', shouldUpdate),
     ]
   }
 
@@ -55,6 +56,8 @@ export async function loadPackage(relative: string, options: CommonOptions): Pro
 
 export async function loadPackages(options: CommonOptions) {
   let packagesNames: string[] = []
+
+  const filter = createDependenciesFilter(options.include, options.exclude)
 
   if (options.recursive) {
     packagesNames = await fg('**/package.json', {
@@ -73,7 +76,7 @@ export async function loadPackages(options: CommonOptions) {
 
   const packages = await Promise.all(
     packagesNames.map(
-      relative => loadPackage(relative, options),
+      relative => loadPackage(relative, options, filter),
     ),
   )
 

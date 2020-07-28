@@ -13,25 +13,22 @@ export interface RawDependency {
   name: string
   currentVersion: string
   source: DependenciesType
+  update: boolean
 }
 
 export type DiffType = ReturnType<typeof semver['diff']> | 'error'
 
-export interface ResolvedDependencies {
-  name: string
-  currentVersion: string
+export interface ResolvedDependencies extends RawDependency {
   latestVersion: string
   diff: DiffType
-  source: DependenciesType
-  update: boolean
   resolveError?: Error | string | null
 }
 
 export interface CommonOptions {
   cwd: string
   recursive?: boolean
-  filter?: string[]
-  ignore?: string[]
+  include?: string
+  exclude?: string
   prod?: boolean
   dev?: boolean
 }

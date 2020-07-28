@@ -63,19 +63,14 @@ Check up to <b>patch</b> updates
 
 See `taze --help` for more details
 
-### Filter
+### Filters
 
-You can filter out packages you want to check for upgrades by string or regex.
+You can filter out packages you want to check for upgrades by `--include` or `--exclude`, they accept string and regex, separate by command(,).
 
 ```bash
-taze --filter lodash,webpack
-taze --filter /(lo|hi)dash/ # regex is also supported
+taze --include lodash,webpack
+taze --include /react/ --exclude react-dom # regex is also supported
 ```
-
-<p align='center'>
-<img src='./screenshots/filter.png' width='600'/>
-</p>
-
 
 ## Programmatic APIs
 

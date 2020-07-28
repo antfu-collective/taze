@@ -17,17 +17,15 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       type: 'boolean',
       describe: 'recursively search for package.json in subdirectories',
     })
-    // TODO:
-    .option('filter', {
+    .option('include', {
+      alias: 'n',
       type: 'string',
-      array: true,
-      describe: 'filter rules to restrict dependencies to check updates',
+      describe: 'only included dependencies will be checked for updates',
     })
-    // TODO:
-    .option('ignore', {
+    .option('exclude', {
+      alias: 'x',
       type: 'string',
-      array: true,
-      describe: 'ignore rules to restrict dependencies to not check updates',
+      describe: 'exclude dependencies to be checked, will override --include options',
     })
     .option('dev', {
       alias: 'D',
