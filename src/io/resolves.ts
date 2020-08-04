@@ -1,35 +1,46 @@
-import pacote from 'pacote'
+import pacote, { Packument } from 'pacote'
 import semver from 'semver'
 import { npmConfig } from '../utils/npm'
 import { RawDependency, ResolvedDependencies, PackageMeta, RangeMode, DependencyFilter, ProgressCallback } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying } from '../utils/versions'
 
-interface PackageCache {
+interface PackageData {
   tags: Record<string, string>
   versions: string[]
+  time?: Record<string, string>
+  raw?: Packument
   error?: Error | string
 }
-const versionCache: Record<string, PackageCache > = {}
 
-export async function getLatestVersions(name: string) {
-  if (versionCache[name])
-    return versionCache[name]
-  try {
-    const data = await pacote.packument(name, { ...npmConfig })
-    versionCache[name] = {
-      tags: data['dist-tags'],
-      versions: Object.keys(data.versions || {}),
+const versionCache: Record<string, Packument> = {}
+
+export async function getPackageData(name: string): Promise<PackageData> {
+  let error: any
+
+  if (!versionCache[name]) {
+    try {
+      versionCache[name] = await pacote.packument(name, { ...npmConfig, fullMetadata: true })
     }
-    return versionCache[name]
+    catch (e) {
+      error = e
+    }
   }
-  catch (e) {
-    versionCache[name] = {
+
+  const data = versionCache[name]
+  if (!data) {
+    return {
       tags: {},
       versions: [],
-      error: e?.statusCode?.toString() || e,
+      error: error?.statusCode?.toString() || error,
     }
-    return versionCache[name]
+  }
+
+  return {
+    tags: data['dist-tags'],
+    versions: Object.keys(data.versions || {}),
+    time: data.time,
+    raw: data,
   }
 }
 
@@ -42,21 +53,19 @@ export async function resolveDependency(
     return {
       ...raw,
       diff: null,
-      latestVersion: raw.currentVersion,
+      targetVersion: raw.currentVersion,
       update: false,
     } as ResolvedDependencies
   }
 
   const dep = { ...raw } as ResolvedDependencies
-  const { versions, tags, error } = await getLatestVersions(dep.name)
+  const { versions, tags, error, time = {} } = await getPackageData(dep.name)
   let err: Error | string | null = null
-  let max: string | null = null
+  let max: {version: string; prefix: string | null; prefixed: string | null} | null = null
 
   if (error == null) {
     try {
-      max = mode === 'latest'
-        ? tags.latest
-        : getMaxSatisfying(versions, dep.currentVersion, mode)
+      max = getMaxSatisfying(versions, dep.currentVersion, mode, tags)
     }
     catch (e) {
       err = e.message || e
@@ -66,16 +75,19 @@ export async function resolveDependency(
     err = error
   }
 
-  if (err == null && max) {
-    dep.latestVersion = max
-    const current = semver.minVersion(dep.currentVersion)!
-    const latest = semver.minVersion(dep.latestVersion)!
+  if (err == null && max?.prefixed) {
+    dep.targetVersion = max.prefixed
+    dep.targetVersionTime = time[max.version]
 
+    const current = semver.minVersion(dep.currentVersion)!
+    const latest = semver.minVersion(dep.targetVersion)!
+
+    dep.currentVersionTime = time[current.toString()]
     dep.diff = semver.diff(current, latest)
     dep.update = dep.diff !== null && semver.lt(current, latest)
   }
   else {
-    dep.latestVersion = dep.currentVersion
+    dep.targetVersion = dep.currentVersion
     dep.diff = 'error'
     dep.update = false
     dep.resolveError = err

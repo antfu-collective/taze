@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import { UsageOptions, PackageMeta } from '../types'
 import { TableLogger, createMultiProgresBar, colorizeDiff, wrapJoin, visualPadStart } from '../log'
 import { loadPackages } from '../io/packages'
-import { getLatestVersions } from '../io/resolves'
+import { getPackageData } from '../io/resolves'
 
 export async function usage(options: UsageOptions) {
   const packages = await loadPackages(options)
@@ -31,7 +31,7 @@ export async function usage(options: UsageOptions) {
   console.log()
   const depBar = bars.create(usages.length, 0, { type: chalk.green('deps') })
   const resolveUsages = await Promise.all(usages.map(async([name, versionMap]) => {
-    const { tags } = await getLatestVersions(name)
+    const { tags } = await getPackageData(name)
     depBar.increment(1, { name })
     return [name, versionMap, tags.latest || ''] as const
   }))

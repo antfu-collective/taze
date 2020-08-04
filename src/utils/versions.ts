@@ -58,18 +58,33 @@ export function applyVersionRangePrefix(version: string | null, prefix: string |
   return prefix + version
 }
 
-export function getMaxSatisfying(versions: string[], current: string, mode: Exclude<RangeMode, 'latest'>) {
-  const range = changeVersionRange(current, mode)
-  if (!range)
-    throw new Error('invalid_range')
-
+export function getMaxSatisfying(versions: string[], current: string, mode: RangeMode, tags: Record<string, string>) {
   const prefix = getVersionRangePrefix(current)
+  let version = null
 
-  if (range === '*')
-    return '*'
+  if (mode === 'latest') {
+    version = tags.latest
+  }
+  else {
+    const range = changeVersionRange(current, mode)
+    if (!range)
+      throw new Error('invalid_range')
 
-  return applyVersionRangePrefix(
-    semver.maxSatisfying(versions, range),
+    if (range === '*')
+      version = '*'
+    else
+      version = semver.maxSatisfying(versions, range)
+  }
+
+  if (!version)
+    return null
+
+  return {
+    version,
     prefix,
-  )
+    prefixed: applyVersionRangePrefix(
+      version,
+      prefix,
+    ),
+  }
 }

@@ -4,6 +4,7 @@ import { colorizeDiff, TableLogger, createMultiProgresBar } from '../log'
 import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency, RangeMode } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { resolvePackage } from '../io/resolves'
+import { timeDifference } from '../utils/time'
 
 export async function check(options: CheckOptions) {
   // packages loading
@@ -21,9 +22,9 @@ export async function check(options: CheckOptions) {
 
 async function checkAllPackages(options: CheckOptions, packages: PackageMeta[], filter: DependencyFilter) {
   const logger = new TableLogger({
-    columns: 5,
+    columns: 7,
     pending: 2,
-    align: 'LLRRR',
+    align: 'LLRRRRRR',
   })
 
   const bars = createMultiProgresBar()
@@ -86,13 +87,15 @@ export function printChanges(pkg: PackageMeta, changes: ResolvedDependencies[], 
     logger.log(chalk.gray('  ✓ up to date'))
   }
   else {
-    changes.forEach(({ name, currentVersion, latestVersion, source }) =>
+    changes.forEach(({ name, currentVersion, targetVersion: latestVersion, source, currentVersionTime, targetVersionTime }) =>
       logger.row(
         `  ${name}`,
         chalk.gray(DependenciesTypeShortMap[source]),
+        timeDifference(currentVersionTime),
         chalk.gray(currentVersion),
         chalk.gray('→'),
         colorizeDiff(currentVersion, latestVersion),
+        timeDifference(targetVersionTime),
       ),
     )
 

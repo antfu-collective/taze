@@ -16,7 +16,7 @@ export function dumpDependencies(deps: ResolvedDependencies[], type: Dependencie
     .filter(i => i.source === type)
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((i) => {
-      data[i.name] = i.update ? i.latestVersion : i.currentVersion
+      data[i.name] = i.update ? i.targetVersion : i.currentVersion
     })
 
   return data
