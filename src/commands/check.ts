@@ -1,44 +1,49 @@
 import chalk from 'chalk'
 import { SingleBar } from 'cli-progress'
 import { colorizeDiff, TableLogger, createMultiProgresBar } from '../log'
-import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap, DependencyFilter, RawDependency, RangeMode } from '../types'
-import { loadPackages, writePackage } from '../io/packages'
-import { resolvePackage } from '../io/resolves'
+import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap } from '../types'
 import { timeDifference } from '../utils/time'
+import { CheckPackages } from '../api/check'
 
 export async function check(options: CheckOptions) {
-  // packages loading
-  const packages = await loadPackages(options)
-  const privatePackageNames = packages
-    .filter(i => i.raw.private)
-    .map(i => i.raw.name)
-    .filter(i => i)
-
-  // to filter out private dependency in monorepo
-  const filter = (dep: RawDependency) => !privatePackageNames.includes(dep.name)
-
-  checkAllPackages(options, packages, filter)
-}
-
-async function checkAllPackages(options: CheckOptions, packages: PackageMeta[], filter: DependencyFilter) {
   const logger = new TableLogger({
     columns: 7,
     pending: 2,
     align: 'LLRRRRRR',
   })
 
-  const bars = createMultiProgresBar()
-
   // progress bar
+  const bars = createMultiProgresBar()
   console.log()
-  const packagesBar = options.recursive ? bars.create(packages.length, 0, { type: chalk.cyan('pkg') }) : null
+  let packagesBar: SingleBar | null = null
   const depBar = bars.create(1, 0)
 
-  for (const pkg of packages) {
-    packagesBar?.increment(0, { name: chalk.cyan(pkg.name) })
-    await checkProject(pkg, options, filter, logger, depBar)
-    packagesBar?.increment(1)
-  }
+  await CheckPackages(options, {
+    afterPackagesLoaded(pkgs) {
+      packagesBar = options.recursive ? bars.create(pkgs.length, 0, { type: chalk.cyan('pkg') }) : null
+    },
+    beforePackageStart(pkg) {
+      packagesBar?.increment(0, { name: chalk.cyan(pkg.name) })
+      depBar.start(pkg.deps.length, 0, { type: chalk.green('dep') })
+    },
+    afterPackageEnd(pkg) {
+      packagesBar?.increment(1)
+      depBar.stop()
+
+      const { relative, resolved } = pkg
+      const changes = resolved.filter(i => i.update)
+
+      printChanges(pkg, changes, relative, logger)
+    },
+    onDependencyResolved(pkgName, name, progress) {
+      depBar.update(progress, { name })
+    },
+    afterPackageWrite() {
+      logger.log(chalk.yellow('changes wrote to package.json'))
+      logger.log()
+    },
+  })
+
   bars.stop()
 
   // TODO: summary
@@ -54,29 +59,6 @@ async function checkAllPackages(options: CheckOptions, packages: PackageMeta[], 
   }
 
   logger.output()
-}
-
-export async function checkProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter, logger: TableLogger, bar: SingleBar) {
-  bar.start(pkg.deps.length, 0, { type: chalk.green('dep') })
-
-  await resolvePackage(pkg, options.mode as RangeMode, filter, (c, _, name) => {
-    bar.update(c, { name })
-  })
-
-  bar.stop()
-
-  const { relative, resolved } = pkg
-  const changes = resolved.filter(i => i.update)
-
-  printChanges(pkg, changes, relative, logger)
-
-  if (options.write && changes.length) {
-    await writePackage(pkg, options)
-
-    logger.log(chalk.yellow('changes wrote to package.json'))
-    logger.log()
-  }
-  return pkg
 }
 
 export function printChanges(pkg: PackageMeta, changes: ResolvedDependencies[], filepath: string, logger: TableLogger) {

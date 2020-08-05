@@ -76,4 +76,4 @@ export interface PackageMeta {
 }
 
 export type DependencyFilter = (dep: RawDependency) => boolean | Promise<boolean>
-export type ProgressCallback = (v: number, total: number, current: string) => void
+export type DependencyResolvedCallback = (packageName: string, depName: string, progress: number, total: number) => void
