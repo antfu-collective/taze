@@ -2,7 +2,7 @@ import { CheckOptions, RawDependency, PackageMeta, DependencyFilter, RangeMode, 
 import { loadPackages, writePackage } from '../io/packages'
 import { resolvePackage } from '../io/resolves'
 
-export interface EventCallbacks {
+export interface CheckEventCallbacks {
   afterPackagesLoaded?: (pkgs: PackageMeta[]) => void
   beforePackageStart?: (pkg: PackageMeta) => void
   afterPackageEnd?: (pkg: PackageMeta) => void
@@ -11,7 +11,7 @@ export interface EventCallbacks {
   onDependencyResolved?: DependencyResolvedCallback
 }
 
-export async function CheckPackages(options: CheckOptions, callbacks: EventCallbacks = {}) {
+export async function CheckPackages(options: CheckOptions, callbacks: CheckEventCallbacks = {}) {
   // packages loading
   const packages = await loadPackages(options)
   callbacks.afterPackagesLoaded?.(packages)
@@ -35,7 +35,7 @@ export async function CheckPackages(options: CheckOptions, callbacks: EventCallb
   }
 }
 
-export async function CheckSingleProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter = () => true, callbacks: EventCallbacks = {}) {
+async function CheckSingleProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter = () => true, callbacks: CheckEventCallbacks = {}) {
   await resolvePackage(pkg, options.mode as RangeMode, filter, callbacks.onDependencyResolved)
 
   const { resolved } = pkg

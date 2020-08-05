@@ -37,6 +37,7 @@ export interface CommonOptions {
 
 export interface UsageOptions extends CommonOptions {
   detail: boolean
+  recursive: true
 }
 
 export interface CheckOptions extends CommonOptions {
@@ -76,4 +77,4 @@ export interface PackageMeta {
 }
 
 export type DependencyFilter = (dep: RawDependency) => boolean | Promise<boolean>
-export type DependencyResolvedCallback = (packageName: string, depName: string, progress: number, total: number) => void
+export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void

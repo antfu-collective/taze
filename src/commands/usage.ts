@@ -1,41 +1,14 @@
 import chalk from 'chalk'
-import { UsageOptions, PackageMeta } from '../types'
+import { SingleBar } from 'cli-progress'
+import { UsageOptions } from '../types'
 import { TableLogger, createMultiProgresBar, colorizeDiff, wrapJoin, visualPadStart } from '../log'
-import { loadPackages } from '../io/packages'
-import { getPackageData } from '../io/resolves'
+import { CheckUsages } from '../api/usage'
 
 export async function usage(options: UsageOptions) {
-  const packages = await loadPackages(options)
-  const names: Record<string, Record<string, PackageMeta[]>> = {}
-
-  for (const pkg of packages) {
-    for (const dep of pkg.deps) {
-      if (!names[dep.name])
-        names[dep.name] = {}
-      if (!names[dep.name][dep.currentVersion])
-        names[dep.name][dep.currentVersion] = []
-
-      names[dep.name][dep.currentVersion].push(pkg)
-    }
-  }
-
-  const usages = Object.entries(names)
-    // only check deps with more then 1 version in use
-    .filter(i => Object.keys(i[1]).length > 1)
-    // sort by the number of versions
-    .sort((a, b) => Object.keys(b[1]).length - Object.keys(a[1]).length)
-
   const bars = createMultiProgresBar()
 
   // progress bar
   console.log()
-  const depBar = bars.create(usages.length, 0, { type: chalk.green('deps') })
-  const resolveUsages = await Promise.all(usages.map(async([name, versionMap]) => {
-    const { tags } = await getPackageData(name)
-    depBar.increment(1, { name })
-    return [name, versionMap, tags.latest || ''] as const
-  }))
-  bars.stop()
 
   // print usage table
   const logger = new TableLogger({
@@ -43,7 +16,20 @@ export async function usage(options: UsageOptions) {
     align: 'LRRRR',
   })
 
-  for (const [name, versionMap, latest] of resolveUsages) {
+  let depBar: SingleBar | undefined
+
+  const resolveUsages = await CheckUsages(options, {
+    onLoaded(usages) {
+      depBar = bars.create(usages.length, 0, { type: chalk.green('deps') })
+    },
+    onDependencyResolved(_, name) {
+      depBar?.increment(1, { name })
+    },
+  })
+
+  bars.stop()
+
+  for (const { name, versionMap, latest } of resolveUsages) {
     const versions = Object.keys(versionMap).sort()
     const packagesCount = Object.values(versionMap).flatMap(i => i).length
 

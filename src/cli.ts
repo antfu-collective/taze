@@ -58,7 +58,7 @@ yargs
         })
         .demandOption('recursive', chalk.yellow('Please add -r to analysis usages'))
     },
-    args => usage(args),
+    args => usage({ ...args, recursive: true }),
   )
   .command(
     '* [mode]',
