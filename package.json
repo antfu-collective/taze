@@ -1,6 +1,6 @@
 {
   "name": "taze",
-  "version": "0.3.0-beta.1",
+  "version": "0.3.0",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
