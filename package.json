@@ -3,12 +3,12 @@
   "version": "0.2.4",
   "license": "MIT",
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "module": "dist/esm/index.js",
   "typing": "dist/index.d.ts",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "dev": "esno ./src/cli.ts",
-    "build": "rollup -c",
+    "build": "tsup ./src/index.ts ./src/cli.ts --dts --format esm,cjs --legacy-output",
     "release": "pnpx bumpp --commit --tag && pnpm build && esno ./scripts/prepublish.ts && pnpm publish --no-git-checks && esno ./scripts/postpublish.ts && git push",
     "test": "ava"
   },
@@ -31,19 +31,16 @@
     "@antfu/eslint-config-ts": "^0.2.14",
     "@rollup/plugin-node-resolve": "^8.4.0",
     "@types/cli-progress": "^3.7.0",
-    "@types/node": "^14.0.26",
+    "@types/node": "^14.0.27",
     "@types/pacote": "^11.1.0",
     "@types/semver": "^7.3.1",
     "@types/yargs": "^15.0.5",
-    "@typescript-eslint/eslint-plugin": "^3.7.1",
-    "ava": "^3.11.0",
-    "eslint": "^7.5.0",
+    "@typescript-eslint/eslint-plugin": "^3.8.0",
+    "ava": "^3.11.1",
+    "eslint": "^7.6.0",
+    "esm": "^3.2.25",
     "esno": "^0.2.0",
-    "rollup": "^2.23.0",
-    "rollup-plugin-dts": "^1.4.9",
-    "rollup-plugin-typescript2": "^0.27.1",
-    "ts-node": "^8.10.2",
-    "tslib": "^2.0.0",
+    "tsup": "^3.4.2",
     "typescript": "^3.9.7"
   },
   "eslintConfig": {
@@ -54,7 +51,8 @@
       "ts"
     ],
     "require": [
-      "ts-node/register"
+      "esm",
+      "esbuild-register"
     ]
   }
 }
