@@ -1,22 +1,16 @@
 {
   "name": "taze",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "typing": "dist/index.d.ts",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "dev": "ts-node ./src/cli.ts",
+    "dev": "esno ./src/cli.ts",
     "build": "rollup -c",
-    "release": "pnpx bumpp --commit --tag && pnpm build && pnpm publish && git push",
+    "release": "pnpx bumpp --commit --tag && pnpm build && esno ./scripts/prepublish.ts && pnpm publish --no-git-checks && esno ./scripts/postpublish.ts && git push",
     "test": "ava"
-  },
-  "publishConfig": {
-    "scripts": {},
-    "devDependencies": {},
-    "eslintConfig": {},
-    "ava": {}
   },
   "files": [
     "dist"
@@ -44,6 +38,7 @@
     "@typescript-eslint/eslint-plugin": "^3.7.1",
     "ava": "^3.11.0",
     "eslint": "^7.5.0",
+    "esno": "^0.2.0",
     "rollup": "^2.23.0",
     "rollup-plugin-dts": "^1.4.9",
     "rollup-plugin-typescript2": "^0.27.1",
