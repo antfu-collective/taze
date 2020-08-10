@@ -12,6 +12,12 @@
     "release": "pnpx bumpp --commit --tag && pnpm build && pnpm publish && git push",
     "test": "ava"
   },
+  "publishConfig": {
+    "scripts": {},
+    "devDependencies": {},
+    "eslintConfig": {},
+    "ava": {}
+  },
   "files": [
     "dist"
   ],
