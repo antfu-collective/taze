@@ -88,3 +88,7 @@ They work well but have different focuses and feature sets, try them out as well
 ## Thanks
 
 Great thanks to [@sinoon](https://github.com/sinoon) who helped a lot on having idea brainstroming and feedback discussion. 
+
+## License
+
+MIT License © 2020 [Anthony Fu](https://github.com/antfu)
