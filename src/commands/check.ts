@@ -18,6 +18,8 @@ export async function check(options: CheckOptions) {
   let packagesBar: SingleBar | null = null
   const depBar = bars.create(1, 0)
 
+  let hasChanges = false
+
   await CheckPackages(options, {
     afterPackagesLoaded(pkgs) {
       packagesBar = options.recursive ? bars.create(pkgs.length, 0, { type: chalk.cyan('pkg') }) : null
@@ -32,15 +34,13 @@ export async function check(options: CheckOptions) {
 
       const { relative, resolved } = pkg
       const changes = resolved.filter(i => i.update)
+      if (changes.length)
+        hasChanges = true
 
       printChanges(pkg, changes, relative, logger)
     },
     onDependencyResolved(pkgName, name, progress) {
       depBar.update(progress, { name })
-    },
-    afterPackageWrite() {
-      logger.log(chalk.yellow('changes wrote to package.json'))
-      logger.log()
     },
   })
 
@@ -51,10 +51,17 @@ export async function check(options: CheckOptions) {
   // tips
   if (!options.write) {
     logger.log()
+
     if (options.mode === 'default')
       logger.log(`Run ${chalk.cyan('taze major')} to check major updates`)
 
-    logger.log(`Run ${chalk.green('taze -w')} to write package.json`)
+    if (hasChanges)
+      logger.log(`Run ${chalk.green('taze -w')} to write package.json`)
+
+    logger.log()
+  }
+  else if (hasChanges) {
+    logger.log(chalk.yellow(`changes wrote to package.json, run ${chalk.cyan('npm i')} to install updates.`))
     logger.log()
   }
 
