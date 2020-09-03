@@ -96,7 +96,7 @@ yargs
           type: 'boolean',
           describe: 'exit with non-zero code if there are existing upgrades',
         })
-        .option('showAll', {
+        .option('all', {
           alias: 'a',
           default: false,
           type: 'boolean',
