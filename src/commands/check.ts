@@ -1,7 +1,12 @@
 import chalk from 'chalk'
 import { SingleBar } from 'cli-progress'
 import { colorizeDiff, TableLogger, createMultiProgresBar } from '../log'
-import { CheckOptions, PackageMeta, ResolvedDependencies, DependenciesTypeShortMap } from '../types'
+import {
+  CheckOptions,
+  PackageMeta,
+  ResolvedDependencies,
+  DependenciesTypeShortMap,
+} from '../types'
 import { timeDifference } from '../utils/time'
 import { CheckPackages } from '../api/check'
 
@@ -20,9 +25,11 @@ export async function check(options: CheckOptions) {
 
   let hasChanges = false
 
-  await CheckPackages(options, {
+  await CheckPackages(options, logger, {
     afterPackagesLoaded(pkgs) {
-      packagesBar = options.recursive ? bars.create(pkgs.length, 0, { type: chalk.cyan('pkg') }) : null
+      packagesBar = options.recursive
+        ? bars.create(pkgs.length, 0, { type: chalk.cyan('pkg') })
+        : null
     },
     beforePackageStart(pkg) {
       packagesBar?.increment(0, { name: chalk.cyan(pkg.name) })
@@ -34,10 +41,11 @@ export async function check(options: CheckOptions) {
 
       const { relative, resolved } = pkg
       const changes = resolved.filter(i => i.update)
-      if (changes.length)
-        hasChanges = true
+      if (changes.length) hasChanges = true
 
       printChanges(pkg, changes, relative, logger)
+
+      return changes.length > 0
     },
     onDependencyResolved(pkgName, name, progress) {
       depBar.update(progress, { name })
@@ -61,74 +69,94 @@ export async function check(options: CheckOptions) {
     logger.log()
   }
   else if (hasChanges) {
-    logger.log(chalk.yellow(`changes wrote to package.json, run ${chalk.cyan('npm i')} to install updates.`))
+    logger.log(
+      chalk.yellow(
+        `changes wrote to package.json, run ${chalk.cyan(
+          'npm i',
+        )} to install updates.`,
+      ),
+    )
     logger.log()
   }
 
   logger.output()
 }
 
-export function printChanges(pkg: PackageMeta, changes: ResolvedDependencies[], filepath: string, logger: TableLogger) {
-  logger.log(`${chalk.cyan(pkg.name)} ${chalk.gray(filepath)}`)
-  logger.log()
+export function printChanges(
+  pkg: PackageMeta,
+  changes: ResolvedDependencies[],
+  filepath: string,
+  logger: TableLogger,
+) {
+  if (changes.length) {
+    logger.log(`${chalk.cyan(pkg.name)} ${chalk.gray(filepath)}`)
+    logger.log()
 
-  if (!changes.length) {
-    logger.log(chalk.gray('  ✓ up to date'))
-  }
-  else {
-    changes.forEach(({ name, currentVersion, targetVersion: latestVersion, source, currentVersionTime, targetVersionTime }) =>
-      logger.row(
-        `  ${name}`,
-        chalk.gray(DependenciesTypeShortMap[source]),
-        timeDifference(currentVersionTime),
-        chalk.gray(currentVersion),
-        chalk.gray('→'),
-        colorizeDiff(currentVersion, latestVersion),
-        timeDifference(targetVersionTime),
-      ),
+    changes.forEach(
+      ({
+        name,
+        currentVersion,
+        targetVersion: latestVersion,
+        source,
+        currentVersionTime,
+        targetVersionTime,
+      }) =>
+        logger.row(
+          `  ${name}`,
+          chalk.gray(DependenciesTypeShortMap[source]),
+          timeDifference(currentVersionTime),
+          chalk.gray(currentVersion),
+          chalk.gray('→'),
+          colorizeDiff(currentVersion, latestVersion),
+          timeDifference(targetVersionTime),
+        ),
     )
 
     const counters: Record<string, number> = {}
 
     changes.forEach(({ diff }) => {
-      if (!diff)
-        return
-      if (!counters[diff])
-        counters[diff] = 0
+      if (!diff) return
+      if (!counters[diff]) counters[diff] = 0
       counters[diff] += 1
     })
 
     if (Object.keys(counters).length) {
       logger.log(
-        chalk.gray(`\n  ${
-          Object
-            .entries(counters)
+        chalk.gray(
+          `\n  ${Object.entries(counters)
             .map(([key, value]) => `${chalk.yellow(value)} ${key}`)
-            .join(', ')
-        } updates`),
+            .join(', ')} updates`,
+        ),
       )
     }
   }
 
   const errors = pkg.resolved.filter(i => i.resolveError != null)
+
   if (errors.length) {
     logger.log()
-    for (const dep of errors)
-      printResolveError(dep, logger)
+    for (const dep of errors) printResolveError(dep, logger)
   }
 
   logger.log()
 }
 
 function printResolveError(dep: ResolvedDependencies, logger: TableLogger) {
-  if (dep.resolveError == null)
-    return
+  if (dep.resolveError == null) return
 
   if (dep.resolveError === '404') {
     logger.log(chalk.redBright(`> ${chalk.underline(dep.name)} not found`))
   }
   else if (dep.resolveError === 'invalid_range') {
-    logger.log(chalk.yellowBright(`> ${chalk.underline(dep.name)} has an unresolvable version range: ${chalk.underline(dep.currentVersion)}`))
+    logger.log(
+      chalk.yellowBright(
+        `> ${chalk.underline(
+          dep.name,
+        )} has an unresolvable version range: ${chalk.underline(
+          dep.currentVersion,
+        )}`,
+      ),
+    )
   }
   else {
     logger.log(chalk.redBright(`> ${chalk.underline(dep.name)} unknown error`))

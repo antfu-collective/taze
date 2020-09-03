@@ -31,7 +31,7 @@ importers:
       '@types/pacote': ^11.1.0
       '@types/semver': ^7.3.1
       '@types/yargs': ^15.0.5
-      '@typescript-eslint/eslint-plugin': ^3.8.0
+      '@typescript-eslint/eslint-plugin': ^3.9.0
       ava: ^3.11.1
       chalk: ^4.1.0
       cli-progress: ^3.8.2
