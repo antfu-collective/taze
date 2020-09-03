@@ -43,6 +43,7 @@ export interface UsageOptions extends CommonOptions {
 export interface CheckOptions extends CommonOptions {
   mode: string
   write: boolean
+  showAll: boolean
 }
 
 export interface PackageMeta {

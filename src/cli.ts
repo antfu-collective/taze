@@ -96,6 +96,12 @@ yargs
           type: 'boolean',
           describe: 'exit with non-zero code if there are existing upgrades',
         })
+        .option('showAll', {
+          alias: 'a',
+          default: false,
+          type: 'boolean',
+          describe: 'show all packages up to date info',
+        })
     },
     args => check(args),
   )

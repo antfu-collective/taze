@@ -43,7 +43,7 @@ export async function check(options: CheckOptions) {
       const changes = resolved.filter(i => i.update)
       if (changes.length) hasChanges = true
 
-      printChanges(pkg, changes, relative, logger)
+      printChanges(pkg, changes, relative, logger, options.showAll)
 
       return changes.length > 0
     },
@@ -87,6 +87,7 @@ export function printChanges(
   changes: ResolvedDependencies[],
   filepath: string,
   logger: TableLogger,
+  showAll: boolean,
 ) {
   if (changes.length) {
     logger.log(`${chalk.cyan(pkg.name)} ${chalk.gray(filepath)}`)
@@ -129,6 +130,11 @@ export function printChanges(
         ),
       )
     }
+  }
+  else if (showAll) {
+    logger.log(`${chalk.cyan(pkg.name)} ${chalk.gray(filepath)}`)
+    logger.log()
+    logger.log(`${chalk.gray('  ✓ up to date')}`)
   }
 
   const errors = pkg.resolved.filter(i => i.resolveError != null)

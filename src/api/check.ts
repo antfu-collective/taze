@@ -35,7 +35,8 @@ export async function CheckPackages(options: CheckOptions, tableLogger: TableLog
       counter++
   }
 
-  tableLogger.log(`${chalk.green(`${counter} packages are already up-to-date`)}`)
+  if (!options.showAll)
+    tableLogger.log(`${chalk.green(`${counter} packages are already up-to-date`)}`)
 
   return {
     packages,
