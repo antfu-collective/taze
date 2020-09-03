@@ -25,7 +25,7 @@ export async function check(options: CheckOptions) {
 
   let hasChanges = false
 
-  await CheckPackages(options, logger, {
+  await CheckPackages(options, {
     afterPackagesLoaded(pkgs) {
       packagesBar = options.recursive
         ? bars.create(pkgs.length, 0, { type: chalk.cyan('pkg') })
@@ -45,8 +45,6 @@ export async function check(options: CheckOptions) {
         hasChanges = true
 
       printChanges(pkg, changes, relative, logger, options.showAll)
-
-      return changes.length > 0
     },
     afterPackagesEnd(packages) {
       if (!options.showAll) {
@@ -159,14 +157,16 @@ export function printChanges(
 
   if (errors.length) {
     logger.log()
-    for (const dep of errors) printResolveError(dep, logger)
+    for (const dep of errors)
+      printResolveError(dep, logger)
   }
 
   logger.log()
 }
 
 function printResolveError(dep: ResolvedDependencies, logger: TableLogger) {
-  if (dep.resolveError == null) return
+  if (dep.resolveError == null)
+    return
 
   if (dep.resolveError === '404') {
     logger.log(chalk.redBright(`> ${chalk.underline(dep.name)} not found`))

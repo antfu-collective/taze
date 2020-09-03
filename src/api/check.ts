@@ -12,7 +12,7 @@ export interface CheckEventCallbacks {
   onDependencyResolved?: DependencyResolvedCallback
 }
 
-export async function CheckPackages(options: CheckOptions, tableLogger: TableLogger, callbacks: CheckEventCallbacks = {}) {
+export async function CheckPackages(options: CheckOptions, callbacks: CheckEventCallbacks = {}) {
   // packages loading
   const packages = await loadPackages(options)
   callbacks.afterPackagesLoaded?.(packages)
