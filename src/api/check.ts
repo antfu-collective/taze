@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import { CheckOptions, RawDependency, PackageMeta, DependencyFilter, RangeMode, DependencyResolvedCallback } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { resolvePackage } from '../io/resolves'
@@ -8,6 +7,7 @@ export interface CheckEventCallbacks {
   beforePackageStart?: (pkg: PackageMeta) => void
   afterPackageEnd?: (pkg: PackageMeta) => boolean
   beforePackageWrite?: (pkg: PackageMeta) => boolean | Promise<boolean>
+  afterPackagesEnd?: (pkgs: PackageMeta[]) => void
   afterPackageWrite?: (pkg: PackageMeta) => void
   onDependencyResolved?: DependencyResolvedCallback
 }
@@ -25,18 +25,14 @@ export async function CheckPackages(options: CheckOptions, tableLogger: TableLog
   // to filter out private dependency in monorepo
   const filter = (dep: RawDependency) => !privatePackageNames.includes(dep.name)
 
-  let counter = 0
-
   for (const pkg of packages) {
     callbacks.beforePackageStart?.(pkg)
     await CheckSingleProject(pkg, options, filter, callbacks)
 
-    if (!callbacks.afterPackageEnd?.(pkg))
-      counter++
+    callbacks.afterPackageEnd?.(pkg)
   }
 
-  if (!options.showAll)
-    tableLogger.log(`${chalk.green(`${counter} packages are already up-to-date`)}`)
+  callbacks.afterPackagesEnd?.(packages)
 
   return {
     packages,

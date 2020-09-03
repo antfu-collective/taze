@@ -41,11 +41,29 @@ export async function check(options: CheckOptions) {
 
       const { relative, resolved } = pkg
       const changes = resolved.filter(i => i.update)
-      if (changes.length) hasChanges = true
+      if (changes.length)
+        hasChanges = true
 
       printChanges(pkg, changes, relative, logger, options.showAll)
 
       return changes.length > 0
+    },
+    afterPackagesEnd(packages) {
+      if (!options.showAll) {
+        const counter = packages.reduce((counter, pkg) => {
+          for (let i = 0; i < pkg.resolved.length; i++) {
+            if (pkg.resolved[i].update)
+              return ++counter
+          }
+
+          return counter
+        }, 0)
+
+        const last = packages.length - counter
+
+        if (last > 0)
+          logger.log(`${chalk.green(`${last} packages are already up-to-date`)}`)
+      }
     },
     onDependencyResolved(pkgName, name, progress) {
       depBar.update(progress, { name })
