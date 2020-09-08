@@ -1,12 +1,12 @@
 import { CheckOptions, RawDependency, PackageMeta, DependencyFilter, RangeMode, DependencyResolvedCallback } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { resolvePackage } from '../io/resolves'
-
 export interface CheckEventCallbacks {
   afterPackagesLoaded?: (pkgs: PackageMeta[]) => void
   beforePackageStart?: (pkg: PackageMeta) => void
   afterPackageEnd?: (pkg: PackageMeta) => void
   beforePackageWrite?: (pkg: PackageMeta) => boolean | Promise<boolean>
+  afterPackagesEnd?: (pkgs: PackageMeta[]) => void
   afterPackageWrite?: (pkg: PackageMeta) => void
   onDependencyResolved?: DependencyResolvedCallback
 }
@@ -27,8 +27,11 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
   for (const pkg of packages) {
     callbacks.beforePackageStart?.(pkg)
     await CheckSingleProject(pkg, options, filter, callbacks)
+
     callbacks.afterPackageEnd?.(pkg)
   }
+
+  callbacks.afterPackagesEnd?.(packages)
 
   return {
     packages,
