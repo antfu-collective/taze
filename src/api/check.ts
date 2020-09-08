@@ -1,7 +1,6 @@
 import { CheckOptions, RawDependency, PackageMeta, DependencyFilter, RangeMode, DependencyResolvedCallback } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { resolvePackage } from '../io/resolves'
-import { TableLogger } from '../log'
 export interface CheckEventCallbacks {
   afterPackagesLoaded?: (pkgs: PackageMeta[]) => void
   beforePackageStart?: (pkg: PackageMeta) => void
