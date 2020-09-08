@@ -47,7 +47,7 @@ export async function check(options: CheckOptions) {
       printChanges(pkg, changes, relative, logger, options.showAll)
     },
     afterPackagesEnd(packages) {
-      if (!options.showAll) {
+      if (!options.all) {
         const counter = packages.reduce((counter, pkg) => {
           for (let i = 0; i < pkg.resolved.length; i++) {
             if (pkg.resolved[i].update)
