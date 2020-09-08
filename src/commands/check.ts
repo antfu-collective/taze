@@ -132,8 +132,10 @@ export function printChanges(
     const counters: Record<string, number> = {}
 
     changes.forEach(({ diff }) => {
-      if (!diff) return
-      if (!counters[diff]) counters[diff] = 0
+      if (!diff) 
+        return
+      if (!counters[diff]) 
+        counters[diff] = 0
       counters[diff] += 1
     })
 
