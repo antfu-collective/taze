@@ -44,7 +44,7 @@ export async function check(options: CheckOptions) {
       if (changes.length)
         hasChanges = true
 
-      printChanges(pkg, changes, relative, logger, options.showAll)
+      printChanges(pkg, changes, relative, logger, options.all)
     },
     afterPackagesEnd(packages) {
       if (!options.all) {
