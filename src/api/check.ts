@@ -4,7 +4,7 @@ import { resolvePackage } from '../io/resolves'
 export interface CheckEventCallbacks {
   afterPackagesLoaded?: (pkgs: PackageMeta[]) => void
   beforePackageStart?: (pkg: PackageMeta) => void
-  afterPackageEnd?: (pkg: PackageMeta) => boolean
+  afterPackageEnd?: (pkg: PackageMeta) => void
   beforePackageWrite?: (pkg: PackageMeta) => boolean | Promise<boolean>
   afterPackagesEnd?: (pkgs: PackageMeta[]) => void
   afterPackageWrite?: (pkg: PackageMeta) => void
