@@ -106,7 +106,7 @@ export function printChanges(
   options: CheckOptions,
 ) {
   if (changes.length) {
-    logger.log(`${chalk.cyan(pkg.name)} ${chalk.gray(filepath)}`)
+    logger.log(`${chalk.cyan(pkg.name ?? '›')} ${chalk.gray(filepath)}`)
     logger.log()
 
     changes.forEach(
