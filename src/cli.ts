@@ -57,6 +57,7 @@ yargs
           default: false,
           describe: 'show more info',
         })
+        .help()
         .demandOption('recursive', chalk.yellow('Please add -r to analysis usages'))
     },
     async args => usage(await resolveConfig({ ...args, recursive: true })),
@@ -103,9 +104,12 @@ yargs
           type: 'boolean',
           describe: 'show all packages up to date info',
         })
+        .help()
     },
     async args => check(await resolveConfig(args)),
   )
   .showHelpOnFail(false)
+  .alias('h', 'help')
+  .alias('v', 'version')
   .help()
   .argv
