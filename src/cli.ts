@@ -3,6 +3,7 @@ import chalk from 'chalk'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
 import { CommonOptions } from './types'
+import { resolveConfig } from './config'
 
 function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
   return args
@@ -58,7 +59,7 @@ yargs
         })
         .demandOption('recursive', chalk.yellow('Please add -r to analysis usages'))
     },
-    args => usage({ ...args, recursive: true }),
+    async args => usage(await resolveConfig({ ...args, recursive: true })),
   )
   .command(
     '* [mode]',
@@ -103,7 +104,7 @@ yargs
           describe: 'show all packages up to date info',
         })
     },
-    args => check(args),
+    async args => check(await resolveConfig(args)),
   )
   .showHelpOnFail(false)
   .help()

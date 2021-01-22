@@ -29,8 +29,8 @@ export interface ResolvedDependencies extends RawDependency {
 export interface CommonOptions {
   cwd: string
   recursive?: boolean
-  include?: string
-  exclude?: string
+  include?: string | string[]
+  exclude?: string | string[]
   prod?: boolean
   dev?: boolean
 }

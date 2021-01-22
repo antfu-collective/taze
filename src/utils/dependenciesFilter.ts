@@ -1,3 +1,5 @@
+import { toArray } from './toArray'
+
 function escapeRegExp(str: string) {
   return str.replace(/[.+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
 }
@@ -12,11 +14,11 @@ export function filterToRegex(str: string) {
   return new RegExp(`^${escapeRegExp(str).replace(/\*+/g, '.*?')}$`)
 }
 
-export function parseFilter(str?: string, defaultValue = true): ((name: string) => boolean) {
-  if (!str)
+export function parseFilter(str?: string | string[], defaultValue = true): ((name: string) => boolean) {
+  if (!str || str.length === 0)
     return () => defaultValue
 
-  const regex = str.split(',').map(filterToRegex)
+  const regex = toArray(str).flatMap(i => i.split(',')).map(filterToRegex)
 
   return (name) => {
     for (const reg of regex) {
@@ -27,7 +29,7 @@ export function parseFilter(str?: string, defaultValue = true): ((name: string) 
   }
 }
 
-export function createDependenciesFilter(include?: string, exclude?: string) {
+export function createDependenciesFilter(include?: string | string[], exclude?: string | string[]) {
   const i = parseFilter(include, true)
   const e = parseFilter(exclude, false)
   return (name: string) => !e(name) && i(name)
