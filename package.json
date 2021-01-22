@@ -18,6 +18,14 @@
   "bin": {
     "taze": "bin/taze.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antfu/taze.git"
+  },
+  "bugs": {
+    "url": "https://github.com/antfu/taze/issues"
+  },
+  "homepage": "https://github.com/antfu/taze#readme",
   "dependencies": {
     "chalk": "^4.1.0",
     "cli-progress": "^3.8.2",
