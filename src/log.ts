@@ -61,7 +61,7 @@ export class TableLogger {
   }
 }
 
-export function colorizeDiff(from: string, to: string, hightlightRange = true) {
+export function colorizeVersionDiff(from: string, to: string, hightlightRange = true) {
   let leadingWildcard = ''
   let fromLeadingWildcard = ''
 

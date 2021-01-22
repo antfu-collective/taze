@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { SingleBar } from 'cli-progress'
-import { colorizeDiff, TableLogger, createMultiProgresBar } from '../log'
+import { colorizeVersionDiff, TableLogger, createMultiProgresBar } from '../log'
 import {
   CheckOptions,
   PackageMeta,
@@ -12,9 +12,9 @@ import { CheckPackages } from '../api/check'
 
 export async function check(options: CheckOptions) {
   const logger = new TableLogger({
-    columns: 7,
+    columns: 8,
     pending: 2,
-    align: 'LLRRRRRR',
+    align: 'LLRRRRRL',
   })
 
   // progress bar
@@ -113,10 +113,11 @@ export function printChanges(
       ({
         name,
         currentVersion,
-        targetVersion: latestVersion,
+        targetVersion,
         source,
         currentVersionTime,
         targetVersionTime,
+        latestVersionAvaliable,
       }) =>
         logger.row(
           `  ${name}`,
@@ -124,8 +125,9 @@ export function printChanges(
           timeDifference(currentVersionTime),
           chalk.gray(currentVersion),
           chalk.gray('→'),
-          colorizeDiff(currentVersion, latestVersion),
+          colorizeVersionDiff(currentVersion, targetVersion),
           timeDifference(targetVersionTime),
+          latestVersionAvaliable ? chalk.yellow(`  (${latestVersionAvaliable} avaliable)`) : '',
         ),
     )
 

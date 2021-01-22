@@ -85,6 +85,9 @@ export async function resolveDependency(
     dep.currentVersionTime = time[current.toString()]
     dep.diff = semver.diff(current, latest)
     dep.update = dep.diff !== null && semver.lt(current, latest)
+
+    if (tags.latest && semver.gt(tags.latest, max.version))
+      dep.latestVersionAvaliable = tags.latest
   }
   else {
     dep.targetVersion = dep.currentVersion

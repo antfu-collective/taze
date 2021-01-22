@@ -19,6 +19,7 @@ export interface RawDependency {
 export type DiffType = ReturnType<typeof semver['diff']> | 'error'
 
 export interface ResolvedDependencies extends RawDependency {
+  latestVersionAvaliable?: string
   targetVersion: string
   targetVersionTime?: string
   currentVersionTime?: string

@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { SingleBar } from 'cli-progress'
 import { UsageOptions } from '../types'
-import { TableLogger, createMultiProgresBar, colorizeDiff, wrapJoin, visualPadStart } from '../log'
+import { TableLogger, createMultiProgresBar, colorizeVersionDiff, wrapJoin, visualPadStart } from '../log'
 import { CheckUsages } from '../api/usage'
 
 export async function usage(options: UsageOptions) {
@@ -51,7 +51,7 @@ export async function usage(options: UsageOptions) {
           const lines = wrapJoin(pkgs.map(p => p.name), chalk.gray(', '), 80)
           lines.forEach((line, i) => {
             if (i === 0)
-              logger.log(`${visualPadStart(chalk.gray(colorizeDiff(latest || version, version, false)), pad, ' ')}  ${line}`)
+              logger.log(`${visualPadStart(chalk.gray(colorizeVersionDiff(latest || version, version, false)), pad, ' ')}  ${line}`)
             else
               logger.log(`${' '.padStart(pad, ' ')}  ${line}`)
           })
@@ -61,7 +61,7 @@ export async function usage(options: UsageOptions) {
         logger.row(
           chalk.green(name),
           chalk.gray(`${chalk.cyan(packagesCount.toString())} in use / ${chalk[color](versions.length.toString())} versions`),
-          versions.map(v => chalk.gray(colorizeDiff(latest || v, v, false))).join(chalk.gray(', ')),
+          versions.map(v => chalk.gray(colorizeVersionDiff(latest || v, v, false))).join(chalk.gray(', ')),
           chalk.gray('→'),
           latest,
         )
