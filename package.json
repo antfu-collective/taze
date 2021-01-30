@@ -1,7 +1,7 @@
 {
   "name": "taze",
   "description": "A modern cli tool that keeps your deps fresh",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
