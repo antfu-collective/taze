@@ -34,6 +34,7 @@ export interface CommonOptions {
   exclude?: string | string[]
   prod?: boolean
   dev?: boolean
+  loglevel: string
 }
 
 export interface UsageOptions extends CommonOptions {
