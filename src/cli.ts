@@ -30,6 +30,11 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       type: 'boolean',
       describe: 'recursively search for package.json in subdirectories',
     })
+    .option('force', {
+      alias: 'f',
+      type: 'boolean',
+      describe: 'force fetching from server, bypass cache',
+    })
     .option('include', {
       alias: 'n',
       type: 'string',

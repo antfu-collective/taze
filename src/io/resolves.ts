@@ -1,9 +1,17 @@
+import fs from 'fs'
+import { join } from 'path'
 import pacote, { Packument } from 'pacote'
 import semver from 'semver'
+import _debug from 'debug'
 import { npmConfig } from '../utils/npm'
 import { RawDependency, ResolvedDependencies, PackageMeta, RangeMode, DependencyFilter, DependencyResolvedCallback } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying } from '../utils/versions'
+
+const debug = {
+  cache: _debug('taze:cache'),
+  resolve: _debug('taze:resolve'),
+}
 
 interface PackageData {
   tags: Record<string, string>
@@ -13,34 +21,75 @@ interface PackageData {
   error?: Error | string
 }
 
-const versionCache: Record<string, Packument> = {}
+let cache: Record<string, { cacheTime: number; data: PackageData }> = {}
+let cacheChanged = false
+
+const cachePath = join(__dirname, 'cache.json')
+const cacheTTL = 5 * 60_000 // 5min
+
+function now() {
+  return +new Date()
+}
+
+function ttl(n: number) {
+  return now() - n
+}
+
+export function loadCache() {
+  if (fs.existsSync(cachePath) && ttl(fs.lstatSync(cachePath).mtimeMs) < cacheTTL) {
+    debug.cache(`cache loaded from ${cachePath}`)
+    cache = JSON.parse(fs.readFileSync(cachePath, 'utf-8'))
+  }
+  else {
+    debug.cache('no cache found')
+  }
+}
+
+export function dumpCache() {
+  if (!cacheChanged)
+    return
+  fs.writeFileSync(cachePath, JSON.stringify(cache), 'utf-8')
+  debug.cache(`cache saved to ${cachePath}`)
+}
 
 export async function getPackageData(name: string): Promise<PackageData> {
   let error: any
 
-  if (!versionCache[name]) {
-    try {
-      versionCache[name] = await pacote.packument(name, { ...npmConfig, fullMetadata: true })
+  if (cache[name]) {
+    if (ttl(cache[name].cacheTime) < cacheTTL) {
+      debug.cache(`cache hit for ${name}`)
+      return cache[name].data
     }
-    catch (e) {
-      error = e
-    }
+    else { delete cache[name] }
   }
 
-  const data = versionCache[name]
-  if (!data) {
-    return {
-      tags: {},
-      versions: [],
-      error: error?.statusCode?.toString() || error,
+  try {
+    debug.resolve(`resolving ${name}`)
+    const data = await pacote.packument(name, { ...npmConfig, fullMetadata: true })
+
+    if (data) {
+      const result = {
+        tags: data['dist-tags'],
+        versions: Object.keys(data.versions || {}),
+        time: data.time,
+        // raw: data,
+      }
+
+      cache[name] = { data: result, cacheTime: now() }
+
+      cacheChanged = true
+
+      return result
     }
+  }
+  catch (e) {
+    error = e
   }
 
   return {
-    tags: data['dist-tags'],
-    versions: Object.keys(data.versions || {}),
-    time: data.time,
-    raw: data,
+    tags: {},
+    versions: [],
+    error: error?.statusCode?.toString() || error,
   }
 }
 

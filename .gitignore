@@ -4,3 +4,4 @@ node_modules
 dist
 test/**/pnpm-lock.yaml
 package.back.json
+cache.json

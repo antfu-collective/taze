@@ -1,6 +1,7 @@
 import { CheckOptions, RawDependency, PackageMeta, DependencyFilter, RangeMode, DependencyResolvedCallback } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
-import { resolvePackage } from '../io/resolves'
+import { dumpCache, loadCache, resolvePackage } from '../io/resolves'
+
 export interface CheckEventCallbacks {
   afterPackagesLoaded?: (pkgs: PackageMeta[]) => void
   beforePackageStart?: (pkg: PackageMeta) => void
@@ -12,6 +13,9 @@ export interface CheckEventCallbacks {
 }
 
 export async function CheckPackages(options: CheckOptions, callbacks: CheckEventCallbacks = {}) {
+  if (!options.force)
+    loadCache()
+
   // packages loading
   const packages = await loadPackages(options)
   callbacks.afterPackagesLoaded?.(packages)
@@ -32,6 +36,8 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
   }
 
   callbacks.afterPackagesEnd?.(packages)
+
+  dumpCache()
 
   return {
     packages,

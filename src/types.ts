@@ -36,6 +36,7 @@ export interface CommonOptions {
   dev?: boolean
   loglevel: string
   silent?: boolean
+  force?: boolean
 }
 
 export interface UsageOptions extends CommonOptions {
