@@ -1,10 +1,16 @@
 import chalk from 'chalk'
 import { MultiBar, Presets } from 'cli-progress'
+import { LOGLEVELS } from './config'
 
 interface Options {
   columns: number
   pending: number
   align: string
+  loglevel: string
+}
+
+export function shouldLog(level: string, messageLevel: string) {
+  return LOGLEVELS.indexOf(level) <= LOGLEVELS.indexOf(messageLevel)
 }
 
 export class TableLogger {
@@ -16,11 +22,13 @@ export class TableLogger {
       columns = 3,
       pending = 2,
       align = '',
+      loglevel = 'error',
     } = options
     this.options = {
       columns,
       pending,
       align,
+      loglevel,
     }
   }
 
@@ -30,6 +38,21 @@ export class TableLogger {
 
   log(string = '') {
     this.rows.push(string)
+  }
+
+  error(string = '') {
+    if (shouldLog(this.options.loglevel, 'error'))
+      this.rows.push(string)
+  }
+
+  warn(string = '') {
+    if (shouldLog(this.options.loglevel, 'warn'))
+      this.rows.push(string)
+  }
+
+  debug(string = '') {
+    if (shouldLog(this.options.loglevel, 'debug'))
+      this.rows.push(string)
   }
 
   output() {

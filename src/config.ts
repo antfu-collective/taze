@@ -5,9 +5,10 @@ import _debug from 'debug'
 import { CommonOptions } from './types'
 import { toArray } from './utils/toArray'
 
-const CONFIG_FILES = ['.tazerc.json', '.tazerc']
-
 const debug = _debug('taze:config')
+
+export const CONFIG_FILES = ['.tazerc.json', '.tazerc']
+export const LOGLEVELS = ['debug', 'info', 'warn', 'error']
 
 export async function resolveConfig<T extends CommonOptions>(options: T): Promise<T> {
   const match = await findUp(CONFIG_FILES, { cwd: options.cwd || process.cwd() })

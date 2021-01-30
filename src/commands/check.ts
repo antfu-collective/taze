@@ -15,6 +15,7 @@ export async function check(options: CheckOptions) {
     columns: 8,
     pending: 2,
     align: 'LLRRRRRL',
+    loglevel: options.loglevel,
   })
 
   // progress bar
@@ -127,7 +128,7 @@ export function printChanges(
           chalk.gray('→'),
           colorizeVersionDiff(currentVersion, targetVersion),
           timeDifference(targetVersionTime),
-          latestVersionAvaliable ? chalk.yellow(`  (${latestVersionAvaliable} avaliable)`) : '',
+          latestVersionAvaliable ? chalk.magenta(`  (${latestVersionAvaliable} avaliable)`) : '',
         ),
     )
 
@@ -174,10 +175,10 @@ function printResolveError(dep: ResolvedDependencies, logger: TableLogger, optio
     return
 
   if (dep.resolveError === '404') {
-    logger.log(chalk.redBright(`> ${chalk.underline(dep.name)} not found`))
+    logger.error(chalk.redBright(`> ${chalk.underline(dep.name)} not found`))
   }
-  else if (dep.resolveError === 'invalid_range' && options.loglevel === 'warn') {
-    logger.log(
+  else if (dep.resolveError === 'invalid_range') {
+    logger.warn(
       chalk.yellowBright(
         `> ${chalk.underline(
           dep.name,
@@ -188,7 +189,7 @@ function printResolveError(dep: ResolvedDependencies, logger: TableLogger, optio
     )
   }
   else {
-    logger.log(chalk.redBright(`> ${chalk.underline(dep.name)} unknown error`))
-    logger.log(chalk.redBright(dep.resolveError.toString()))
+    logger.error(chalk.redBright(`> ${chalk.underline(dep.name)} unknown error`))
+    logger.error(chalk.redBright(dep.resolveError.toString()))
   }
 }

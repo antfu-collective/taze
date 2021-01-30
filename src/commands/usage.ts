@@ -14,6 +14,7 @@ export async function usage(options: UsageOptions) {
   const logger = new TableLogger({
     columns: 5,
     align: 'LRRRR',
+    loglevel: options.loglevel,
   })
 
   let depBar: SingleBar | undefined

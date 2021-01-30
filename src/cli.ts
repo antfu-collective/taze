@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
 import { CommonOptions } from './types'
-import { resolveConfig } from './config'
+import { LOGLEVELS, resolveConfig } from './config'
 
 function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
   return args
@@ -16,8 +16,8 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
     .option('loglevel', {
       default: 'error',
       type: 'string',
-      describe: '',
-      choices: ['warn', 'error']
+      describe: 'log level',
+      choices: LOGLEVELS,
     })
     .option('recursive', {
       alias: 'r',
