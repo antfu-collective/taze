@@ -7,15 +7,15 @@ import { CheckUsages } from '../api/usage'
 export async function usage(options: UsageOptions) {
   const bars = createMultiProgresBar()
 
-  // progress bar
-  console.log()
-
   // print usage table
   const logger = new TableLogger({
     columns: 5,
     align: 'LRRRR',
     loglevel: options.loglevel,
   })
+
+  // progress bar
+  logger.log()
 
   let depBar: SingleBar | undefined
 

@@ -19,26 +19,26 @@ export async function check(options: CheckOptions) {
   })
 
   // progress bar
-  const bars = createMultiProgresBar()
-  console.log()
-  let packagesBar: SingleBar | null = null
-  const depBar = bars.create(1, 0)
+  const bars = options.loglevel === 'silent' ? null : createMultiProgresBar()
+  logger.log()
+  let packagesBar: SingleBar | undefined
+  const depBar = bars?.create(1, 0)
 
   let hasChanges = false
 
   await CheckPackages(options, {
     afterPackagesLoaded(pkgs) {
-      packagesBar = options.recursive
-        ? bars.create(pkgs.length, 0, { type: chalk.cyan('pkg') })
-        : null
+      packagesBar = options.recursive && pkgs.length
+        ? bars?.create(pkgs.length, 0, { type: chalk.cyan('pkg'), name: chalk.cyan(pkgs[0].name) })
+        : undefined
     },
     beforePackageStart(pkg) {
       packagesBar?.increment(0, { name: chalk.cyan(pkg.name) })
-      depBar.start(pkg.deps.length, 0, { type: chalk.green('dep') })
+      depBar?.start(pkg.deps.length, 0, { type: chalk.green('dep') })
     },
     afterPackageEnd(pkg) {
       packagesBar?.increment(1)
-      depBar.stop()
+      depBar?.stop()
 
       const { relative, resolved } = pkg
       const changes = resolved.filter(i => i.update)
@@ -60,16 +60,18 @@ export async function check(options: CheckOptions) {
 
         const last = packages.length - counter
 
-        if (last > 0)
-          logger.log(`${chalk.green(`${last} packages are already up-to-date`)}`)
+        if (last === 1)
+          logger.log(`${chalk.green('dependencies are already up-to-date in one package')}`)
+        else if (last > 0)
+          logger.log(`${chalk.green(`dependencies are already up-to-date in ${last} packages`)}`)
       }
     },
     onDependencyResolved(pkgName, name, progress) {
-      depBar.update(progress, { name })
+      depBar?.update(progress, { name })
     },
   })
 
-  bars.stop()
+  bars?.stop()
 
   // TODO: summary
 
@@ -107,7 +109,7 @@ export function printChanges(
   options: CheckOptions,
 ) {
   if (changes.length) {
-    logger.log(`${chalk.cyan(pkg.name ?? '›')} ${chalk.gray(filepath)}`)
+    logger.log(`${chalk.cyan(pkg.name ?? '›')} ${chalk.dim(filepath)}`)
     logger.log()
 
     changes.forEach(

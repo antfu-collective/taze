@@ -19,6 +19,12 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       describe: 'log level',
       choices: LOGLEVELS,
     })
+    .option('silent', {
+      alias: 's',
+      default: false,
+      type: 'boolean',
+      describe: 'complete silent',
+    })
     .option('recursive', {
       alias: 'r',
       type: 'boolean',

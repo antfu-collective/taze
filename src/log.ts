@@ -56,6 +56,9 @@ export class TableLogger {
   }
 
   output() {
+    if (this.options.loglevel === 'silent')
+      return
+
     const { columns, align, pending } = this.options
     const columnsWidth = new Array(columns).fill(0)
 
@@ -70,7 +73,7 @@ export class TableLogger {
     // print
     this.rows.forEach((line) => {
       if (typeof line === 'string') {
-        console.log(line)
+        process.stdout.write(`${line}\n`)
         return
       }
 

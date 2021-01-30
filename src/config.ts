@@ -8,19 +8,27 @@ import { toArray } from './utils/toArray'
 const debug = _debug('taze:config')
 
 export const CONFIG_FILES = ['.tazerc.json', '.tazerc']
-export const LOGLEVELS = ['debug', 'info', 'warn', 'error']
+export const LOGLEVELS = ['debug', 'info', 'warn', 'error', 'silent']
 
-export async function resolveConfig<T extends CommonOptions>(options: T): Promise<T> {
-  const match = await findUp(CONFIG_FILES, { cwd: options.cwd || process.cwd() })
-  if (!match)
-    return options
-
+function normalizeConfig<T extends CommonOptions >(options: T) {
   options.exclude = toArray(options.exclude)
   options.include = toArray(options.include)
 
-  debug(`config file found ${match}`)
+  if (options.silent)
+    options.loglevel = 'silent'
 
-  const configOptions = JSON.parse(await fs.readFile(match, 'utf-8'))
+  return options
+}
+
+export async function resolveConfig<T extends CommonOptions>(options: T): Promise<T> {
+  options = normalizeConfig(options)
+  const match = await findUp(CONFIG_FILES, { cwd: options.cwd || process.cwd() })
+
+  if (!match)
+    return options
+
+  debug(`config file found ${match}`)
+  const configOptions = normalizeConfig(JSON.parse(await fs.readFile(match, 'utf-8')))
 
   return deepmerge(configOptions, options) as T
 }
