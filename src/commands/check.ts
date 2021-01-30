@@ -1,6 +1,6 @@
 import { green, cyan, magenta, yellow, dim, gray, underline, redBright, yellowBright } from 'chalk'
 import { SingleBar } from 'cli-progress'
-import execa from 'execa'
+import { run, parseNi } from '@antfu/ni'
 import { colorizeVersionDiff, TableLogger, createMultiProgresBar } from '../log'
 import {
   CheckOptions,
@@ -102,7 +102,7 @@ export async function check(options: CheckOptions) {
   logger.output()
 
   if (options.install && options.write && hasChanges)
-    await execa.command('npx -p @antfu/ni ni', { stdio: 'inherit' })
+    await run(parseNi, [])
 }
 
 export function printChanges(
