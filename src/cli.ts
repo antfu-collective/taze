@@ -13,6 +13,12 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       type: 'string',
       describe: 'specify the current working directory',
     })
+    .option('loglevel', {
+      default: 'error',
+      type: 'string',
+      describe: '',
+      choices: ['warn', 'error']
+    })
     .option('recursive', {
       alias: 'r',
       type: 'boolean',

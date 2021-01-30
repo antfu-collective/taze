@@ -163,20 +163,20 @@ export function printChanges(
   if (errors.length) {
     logger.log()
     for (const dep of errors)
-      printResolveError(dep, logger)
+      printResolveError(dep, logger, options)
   }
 
   logger.log()
 }
 
-function printResolveError(dep: ResolvedDependencies, logger: TableLogger) {
+function printResolveError(dep: ResolvedDependencies, logger: TableLogger, options: CheckOptions) {
   if (dep.resolveError == null)
     return
 
   if (dep.resolveError === '404') {
     logger.log(chalk.redBright(`> ${chalk.underline(dep.name)} not found`))
   }
-  else if (dep.resolveError === 'invalid_range') {
+  else if (dep.resolveError === 'invalid_range' && options.loglevel === 'warn') {
     logger.log(
       chalk.yellowBright(
         `> ${chalk.underline(
