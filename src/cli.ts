@@ -96,6 +96,12 @@ yargs
           type: 'boolean',
           describe: 'write to package.json',
         })
+        .option('install', {
+          alias: 'i',
+          default: false,
+          type: 'boolean',
+          describe: 'install directly after bumpping',
+        })
         // TODO：
         .option('prompt', {
           alias: 'p',

@@ -48,6 +48,7 @@ export interface CheckOptions extends CommonOptions {
   mode: string
   write: boolean
   all: boolean
+  install?: boolean
 }
 
 export interface PackageMeta {
