@@ -1,6 +1,6 @@
 import { green, cyan, magenta, yellow, dim, gray, underline, redBright, yellowBright } from 'chalk'
 import { SingleBar } from 'cli-progress'
-import { run, parseNi } from '@antfu/ni'
+import { run, parseNi, parseNu } from '@antfu/ni'
 import { colorizeVersionDiff, TableLogger, createMultiProgresBar } from '../log'
 import {
   CheckOptions,
@@ -87,22 +87,35 @@ export async function check(options: CheckOptions) {
     logger.log()
   }
   else if (hasChanges) {
-    if (!options.install) {
+    if (!options.install && !options.update) {
       logger.log(
         yellow`changes wrote to package.json, run ${cyan`npm i`} to install updates.`,
       )
     }
-    else {
+
+    if (options.install || options.update)
       logger.log(yellow`changes wrote to package.json`)
+
+    if (options.install) {
       logger.log(magenta`installing...`)
+      logger.log()
     }
-    logger.log()
+
+    if (options.write && options.install) {
+      logger.output()
+      await run(parseNi, [])
+    }
+
+    if (options.update) {
+      logger.log(magenta`updating...`)
+      logger.log()
+    }
+
+    if (options.write && options.update) {
+      logger.output()
+      await run(parseNu, options.recursive ? ['-r'] : [])
+    }
   }
-
-  logger.output()
-
-  if (options.install && options.write && hasChanges)
-    await run(parseNi, [])
 }
 
 export function printChanges(
