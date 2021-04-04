@@ -102,6 +102,12 @@ yargs
           type: 'boolean',
           describe: 'install directly after bumpping',
         })
+        .option('update', {
+          alias: 'u',
+          default: false,
+          type: 'boolean',
+          describe: 'update directly after bumpping',
+        })
         // TODO：
         .option('prompt', {
           alias: 'p',

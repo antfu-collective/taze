@@ -84,6 +84,9 @@ export class TableLogger {
       }
       process.stdout.write('\n')
     })
+
+    // clear rows for next use
+    this.rows = []
   }
 }
 
