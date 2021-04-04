@@ -99,9 +99,7 @@ export async function check(options: CheckOptions) {
     if (options.install) {
       logger.log(magenta`installing...`)
       logger.log()
-    }
 
-    if (options.write && options.install) {
       logger.output()
       await run(parseNi, [])
     }
@@ -109,13 +107,13 @@ export async function check(options: CheckOptions) {
     if (options.update) {
       logger.log(magenta`updating...`)
       logger.log()
-    }
 
-    if (options.write && options.update) {
       logger.output()
       await run(parseNu, options.recursive ? ['-r'] : [])
     }
   }
+
+  logger.output()
 }
 
 export function printChanges(
@@ -183,13 +181,13 @@ export function printChanges(
   if (errors.length) {
     logger.log()
     for (const dep of errors)
-      printResolveError(dep, logger, options)
+      printResolveError(dep, logger/*, options */)
   }
 
   logger.log()
 }
 
-function printResolveError(dep: ResolvedDependencies, logger: TableLogger, options: CheckOptions) {
+function printResolveError(dep: ResolvedDependencies, logger: TableLogger/*, options: CheckOptions */) {
   if (dep.resolveError == null)
     return
 

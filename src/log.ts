@@ -114,8 +114,10 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
   // major = red (or any change before 1.0.0)
   // minor = cyan
   // patch = green
-  const color = i === 0 || partsToColor[0] === '0' ? 'red'
-    : i === 1 ? 'cyan'
+  const color = i === 0 || partsToColor[0] === '0'
+    ? 'red'
+    : i === 1
+      ? 'cyan'
       : 'green'
 
   // if we are colorizing only part of the word, add a dot in the middle
@@ -167,7 +169,8 @@ const ansiRegex = ({ onlyFirst = false } = {}) => {
   return new RegExp(pattern, onlyFirst ? undefined : 'g')
 }
 const stripAnsi = (str: string) => typeof str === 'string' ? str.replace(ansiRegex(), '') : str
-export const visualLength = (str: string) => {
+
+export function visualLength(str: string) {
   if (str === '')
     return 0
 
@@ -198,10 +201,10 @@ export const visualLength = (str: string) => {
   return width
 }
 
-export const visualPadStart = (str: string, pad: number, char = ' ') => {
+export function visualPadStart(str: string, pad: number, char = ' ') {
   return str.padStart(pad - visualLength(str) + str.length, char)
 }
 
-export const visualPadEnd = (str: string, pad: number, char = ' ') => {
+export function visualPadEnd(str: string, pad: number, char = ' ') {
   return str.padEnd(pad - visualLength(str) + str.length, char)
 }

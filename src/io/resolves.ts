@@ -151,7 +151,7 @@ export async function resolveDependencies(
   deps: RawDependency[],
   mode: RangeMode,
   filter: DependencyFilter = () => true,
-  progressCallback = (name: string, counter: number, total: number) => {},
+  progressCallback: (name: string, counter: number, total: number) => void = () => {},
 ) {
   const total = deps.length
   let counter = 0
