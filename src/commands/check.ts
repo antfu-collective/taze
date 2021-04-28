@@ -182,9 +182,8 @@ export function printChanges(
     logger.log()
     for (const dep of errors)
       printResolveError(dep, logger/*, options */)
+    logger.log()
   }
-
-  logger.log()
 }
 
 function printResolveError(dep: ResolvedDependencies, logger: TableLogger/*, options: CheckOptions */) {
