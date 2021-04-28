@@ -53,6 +53,7 @@
     "@types/yargs": "^16.0.1",
     "@typescript-eslint/eslint-plugin": "^4.20.0",
     "ava": "^3.15.0",
+    "bumpp": "^6.0.6",
     "cross-env": "^7.0.3",
     "eslint": "^7.23.0",
     "esm": "^3.2.25",
