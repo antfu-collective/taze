@@ -1,11 +1,13 @@
-import { green, cyan, magenta, yellow, dim, gray, underline, redBright, yellowBright } from 'chalk'
-import { SingleBar } from 'cli-progress'
-import { run, parseNi, parseNu } from '@antfu/ni'
-import { colorizeVersionDiff, TableLogger, createMultiProgresBar } from '../log'
-import {
+import { cyan, dim, gray, green, magenta, redBright, underline, yellow, yellowBright } from 'chalk'
+import type { SingleBar } from 'cli-progress'
+import { parseNi, parseNu, run } from '@antfu/ni'
+import { TableLogger, colorizeVersionDiff, createMultiProgresBar } from '../log'
+import type {
   CheckOptions,
   PackageMeta,
   ResolvedDependencies,
+} from '../types'
+import {
   DependenciesTypeShortMap,
 } from '../types'
 import { timeDifference } from '../utils/time'
@@ -181,12 +183,12 @@ export function printChanges(
   if (errors.length) {
     logger.log()
     for (const dep of errors)
-      printResolveError(dep, logger/*, options */)
+      printResolveError(dep, logger/* , options */)
     logger.log()
   }
 }
 
-function printResolveError(dep: ResolvedDependencies, logger: TableLogger/*, options: CheckOptions */) {
+function printResolveError(dep: ResolvedDependencies, logger: TableLogger/* , options: CheckOptions */) {
   if (dep.resolveError == null)
     return
 

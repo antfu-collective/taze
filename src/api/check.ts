@@ -1,4 +1,4 @@
-import { CheckOptions, RawDependency, PackageMeta, DependencyFilter, RangeMode, DependencyResolvedCallback } from '../types'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDependency } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { dumpCache, loadCache, resolvePackage } from '../io/resolves'
 

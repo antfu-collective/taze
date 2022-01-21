@@ -1,5 +1,5 @@
 import { DiffMap } from '../utils/diff'
-import { ResolvedDependencies } from '../types'
+import type { ResolvedDependencies } from '../types'
 
 /**
  * Sort based on the version diff (marjor, minor, etc.)

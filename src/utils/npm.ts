@@ -1,6 +1,6 @@
 // ported from: https://github.com/raineorshine/npm-check-updates/blob/master/lib/package-managers/npm.js
 
-// @ts-ignore
+// @ts-expect-error missing types
 import libnpmconfig from 'libnpmconfig'
 
 // needed until pacote supports full npm config compatibility

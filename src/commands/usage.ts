@@ -1,7 +1,7 @@
 import chalk from 'chalk'
-import { SingleBar } from 'cli-progress'
-import { UsageOptions } from '../types'
-import { TableLogger, createMultiProgresBar, colorizeVersionDiff, wrapJoin, visualPadStart } from '../log'
+import type { SingleBar } from 'cli-progress'
+import type { UsageOptions } from '../types'
+import { TableLogger, colorizeVersionDiff, createMultiProgresBar, visualPadStart, wrapJoin } from '../log'
 import { CheckUsages } from '../api/usage'
 
 export async function usage(options: UsageOptions) {

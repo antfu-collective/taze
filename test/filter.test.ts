@@ -1,5 +1,5 @@
 import test from 'ava'
-import { filterToRegex, createDependenciesFilter } from '../src/utils/dependenciesFilter'
+import { createDependenciesFilter, filterToRegex } from '../src/utils/dependenciesFilter'
 
 test('filterToRegex', (t) => {
   // exact match

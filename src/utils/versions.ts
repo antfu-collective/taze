@@ -1,5 +1,5 @@
 import semver from 'semver'
-import { RangeMode } from '../types'
+import type { RangeMode } from '../types'
 
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']

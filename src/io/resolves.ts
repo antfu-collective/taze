@@ -1,10 +1,11 @@
 import fs from 'fs'
 import { join } from 'path'
-import pacote, { Packument } from 'pacote'
+import type { Packument } from 'pacote'
+import pacote from 'pacote'
 import semver from 'semver'
 import _debug from 'debug'
 import { npmConfig } from '../utils/npm'
-import { RawDependency, ResolvedDependencies, PackageMeta, RangeMode, DependencyFilter, DependencyResolvedCallback } from '../types'
+import type { DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDependency, ResolvedDependencies } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying } from '../utils/versions'
 
@@ -110,13 +111,13 @@ export async function resolveDependency(
   const dep = { ...raw } as ResolvedDependencies
   const { versions, tags, error, time = {} } = await getPackageData(dep.name)
   let err: Error | string | null = null
-  let max: {version: string; prefix: string | null; prefixed: string | null} | null = null
+  let max: { version: string; prefix: string | null; prefixed: string | null } | null = null
 
   if (error == null) {
     try {
       max = getMaxSatisfying(versions, dep.currentVersion, mode, tags)
     }
-    catch (e) {
+    catch (e: any) {
       err = e.message || e
     }
   }

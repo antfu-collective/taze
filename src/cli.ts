@@ -1,8 +1,9 @@
-import yargs, { Argv } from 'yargs'
+import type { Argv } from 'yargs'
+import yargs from 'yargs'
 import chalk from 'chalk'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
-import { CommonOptions } from './types'
+import type { CommonOptions } from './types'
 import { LOGLEVELS, resolveConfig } from './config'
 
 function commonOptions(args: Argv<{}>): Argv<CommonOptions> {

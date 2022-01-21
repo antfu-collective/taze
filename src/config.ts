@@ -2,7 +2,7 @@ import { promises as fs } from 'fs'
 import findUp from 'find-up'
 import deepmerge from 'deepmerge'
 import _debug from 'debug'
-import { CommonOptions } from './types'
+import type { CommonOptions } from './types'
 import { toArray } from './utils/toArray'
 
 const debug = _debug('taze:config')

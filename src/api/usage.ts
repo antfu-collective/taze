@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { UsageOptions, PackageMeta, DependencyResolvedCallback } from '../types'
+import type { DependencyResolvedCallback, PackageMeta, UsageOptions } from '../types'
 import { loadPackages } from '../io/packages'
 import { getPackageData } from '../io/resolves'
 

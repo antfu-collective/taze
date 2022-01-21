@@ -1,9 +1,9 @@
 import path from 'path'
 import { promises as fs } from 'fs'
 import fg from 'fast-glob'
-import { PackageMeta, CommonOptions, RawDependency } from '../types'
+import type { CommonOptions, PackageMeta, RawDependency } from '../types'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
-import { parseDependencies, dumpDependencies } from './dependencies'
+import { dumpDependencies, parseDependencies } from './dependencies'
 
 export async function readJSON(filepath: string) {
   return JSON.parse(await fs.readFile(filepath, 'utf-8'))

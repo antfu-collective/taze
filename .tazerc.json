@@ -1,0 +1,7 @@
+{
+  "exclude": [
+    "chalk",
+    "execa",
+    "find-up"
+  ]
+}
