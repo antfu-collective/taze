@@ -1,4 +1,4 @@
-import { cyan, dim, gray, green, magenta, redBright, underline, yellow, yellowBright } from 'chalk'
+import c from 'picocolors'
 import type { SingleBar } from 'cli-progress'
 import { parseNi, parseNu, run } from '@antfu/ni'
 import { TableLogger, colorizeVersionDiff, createMultiProgresBar } from '../log'
@@ -32,12 +32,12 @@ export async function check(options: CheckOptions) {
   await CheckPackages(options, {
     afterPackagesLoaded(pkgs) {
       packagesBar = options.recursive && pkgs.length
-        ? bars?.create(pkgs.length, 0, { type: cyan`pkg`, name: cyan(pkgs[0].name) })
+        ? bars?.create(pkgs.length, 0, { type: c.cyan('pkg'), name: c.cyan(pkgs[0].name) })
         : undefined
     },
     beforePackageStart(pkg) {
-      packagesBar?.increment(0, { name: cyan(pkg.name) })
-      depBar?.start(pkg.deps.length, 0, { type: green`dep` })
+      packagesBar?.increment(0, { name: c.cyan(pkg.name) })
+      depBar?.start(pkg.deps.length, 0, { type: c.green('dep') })
     },
     afterPackageEnd(pkg) {
       packagesBar?.increment(1)
@@ -64,9 +64,9 @@ export async function check(options: CheckOptions) {
         const last = packages.length - counter
 
         if (last === 1)
-          logger.log(green`dependencies are already up-to-date in one package`)
+          logger.log(c.green('dependencies are already up-to-date in one package'))
         else if (last > 0)
-          logger.log(green`dependencies are already up-to-date in ${last} packages`)
+          logger.log(c.green(`dependencies are already up-to-date in ${last} packages`))
       }
     },
     onDependencyResolved(pkgName, name, progress) {
@@ -81,25 +81,25 @@ export async function check(options: CheckOptions) {
     logger.log()
 
     if (options.mode === 'default')
-      logger.log(`Run ${cyan`taze major`} to check major updates`)
+      logger.log(`Run ${c.cyan('taze major')} to check major updates`)
 
     if (hasChanges)
-      logger.log(`Run ${green`taze -w`} to write package.json`)
+      logger.log(`Run ${c.green('taze -w')} to write package.json`)
 
     logger.log()
   }
   else if (hasChanges) {
     if (!options.install && !options.update) {
       logger.log(
-        yellow`changes wrote to package.json, run ${cyan`npm i`} to install updates.`,
+        c.yellow(`changes wrote to package.json, run ${c.cyan('npm i')} to install updates.`),
       )
     }
 
     if (options.install || options.update)
-      logger.log(yellow`changes wrote to package.json`)
+      logger.log(c.yellow('changes wrote to package.json'))
 
     if (options.install) {
-      logger.log(magenta`installing...`)
+      logger.log(c.magenta('installing...'))
       logger.log()
 
       logger.output()
@@ -107,7 +107,7 @@ export async function check(options: CheckOptions) {
     }
 
     if (options.update) {
-      logger.log(magenta`updating...`)
+      logger.log(c.magenta('updating...'))
       logger.log()
 
       logger.output()
@@ -126,7 +126,7 @@ export function printChanges(
   options: CheckOptions,
 ) {
   if (changes.length) {
-    logger.log(`${cyan(pkg.name ?? '›')} ${dim(filepath)}`)
+    logger.log(`${c.cyan(pkg.name ?? '›')} ${c.dim(filepath)}`)
     logger.log()
 
     changes.forEach(
@@ -141,13 +141,13 @@ export function printChanges(
       }) =>
         logger.row(
           `  ${name}`,
-          gray(DependenciesTypeShortMap[source]),
+          c.gray(DependenciesTypeShortMap[source]),
           timeDifference(currentVersionTime),
-          gray(currentVersion),
-          gray`→`,
+          c.gray(currentVersion),
+          c.gray('→'),
           colorizeVersionDiff(currentVersion, targetVersion),
           timeDifference(targetVersionTime),
-          latestVersionAvaliable ? magenta`  (${latestVersionAvaliable} avaliable)` : '',
+          latestVersionAvaliable ? c.magenta(`  (${latestVersionAvaliable} avaliable)`) : '',
         ),
     )
 
@@ -164,18 +164,18 @@ export function printChanges(
 
     if (Object.keys(counters).length) {
       logger.log(
-        gray`\n  ${
+        c.gray(`\n  ${
           Object.entries(counters)
-            .map(([key, value]) => `${yellow(value)} ${key}`)
+            .map(([key, value]) => `${c.yellow(value)} ${key}`)
             .join(', ')
-        } updates`,
+        } updates`),
       )
     }
   }
   else if (options.all) {
-    logger.log(`${cyan(pkg.name)} ${dim(filepath)}`)
+    logger.log(`${c.cyan(pkg.name)} ${c.dim(filepath)}`)
     logger.log()
-    logger.log(gray`  ✓ up to date`)
+    logger.log(c.gray('  ✓ up to date'))
   }
 
   const errors = pkg.resolved.filter(i => i.resolveError != null)
@@ -193,19 +193,19 @@ function printResolveError(dep: ResolvedDependencies, logger: TableLogger/* , op
     return
 
   if (dep.resolveError === '404') {
-    logger.error(redBright`> ${underline(dep.name)} not found`)
+    logger.error(c.red(`> ${c.underline(dep.name)} not found`))
   }
   else if (dep.resolveError === 'invalid_range') {
     logger.warn(
-      yellowBright`> ${
-        underline(dep.name)
+      c.yellow(`> ${
+        c.underline(dep.name)
       } has an unresolvable version range: ${
-        underline(dep.currentVersion)
-      }`,
+        c.underline(dep.currentVersion)
+      }`),
     )
   }
   else {
-    logger.error(redBright`> ${underline(dep.name)} unknown error`)
-    logger.error(redBright(dep.resolveError.toString()))
+    logger.error(c.red(`> ${c.underline(dep.name)} unknown error`))
+    logger.error(c.red(dep.resolveError.toString()))
   }
 }

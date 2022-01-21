@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import c from 'picocolors'
 import type { SingleBar } from 'cli-progress'
 import type { UsageOptions } from '../types'
 import { TableLogger, colorizeVersionDiff, createMultiProgresBar, visualPadStart, wrapJoin } from '../log'
@@ -21,7 +21,7 @@ export async function usage(options: UsageOptions) {
 
   const resolveUsages = await CheckUsages(options, {
     onLoaded(usages) {
-      depBar = bars.create(usages.length, 0, { type: chalk.green('deps') })
+      depBar = bars.create(usages.length, 0, { type: c.green('deps') })
     },
     onDependencyResolved(_, name) {
       depBar?.increment(1, { name })
@@ -44,15 +44,15 @@ export async function usage(options: UsageOptions) {
       if (options.detail) {
         logger.log()
         logger.row(
-          `${chalk.green(name)} ${chalk.gray(`· ${versions.length} versions · latest: ${chalk.blue(latest)}`)}`,
+          `${c.green(name)} ${c.gray(`· ${versions.length} versions · latest: ${c.blue(latest)}`)}`,
         )
         const pad = Math.max(8, ...Object.keys(versionMap).map(i => i.length)) + 2
 
         for (const [version, pkgs] of Object.entries(versionMap)) {
-          const lines = wrapJoin(pkgs.map(p => p.name), chalk.gray(', '), 80)
+          const lines = wrapJoin(pkgs.map(p => p.name), c.gray(', '), 80)
           lines.forEach((line, i) => {
             if (i === 0)
-              logger.log(`${visualPadStart(chalk.gray(colorizeVersionDiff(latest || version, version, false)), pad, ' ')}  ${line}`)
+              logger.log(`${visualPadStart(c.gray(colorizeVersionDiff(latest || version, version, false)), pad, ' ')}  ${line}`)
             else
               logger.log(`${' '.padStart(pad, ' ')}  ${line}`)
           })
@@ -60,10 +60,10 @@ export async function usage(options: UsageOptions) {
       }
       else {
         logger.row(
-          chalk.green(name),
-          chalk.gray(`${chalk.cyan(packagesCount.toString())} in use / ${chalk[color](versions.length.toString())} versions`),
-          versions.map(v => chalk.gray(colorizeVersionDiff(latest || v, v, false))).join(chalk.gray(', ')),
-          chalk.gray('→'),
+          c.green(name),
+          c.gray(`${c.cyan(packagesCount.toString())} in use / ${c[color](versions.length.toString())} versions`),
+          versions.map(v => c.gray(colorizeVersionDiff(latest || v, v, false))).join(c.gray(', ')),
+          c.gray('→'),
           latest,
         )
       }

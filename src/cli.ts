@@ -1,6 +1,6 @@
 import type { Argv } from 'yargs'
 import yargs from 'yargs'
-import chalk from 'chalk'
+import c from 'picocolors'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
 import type { CommonOptions } from './types'
@@ -76,7 +76,7 @@ yargs
           describe: 'show more info',
         })
         .help()
-        .demandOption('recursive', chalk.yellow('Please add -r to analysis usages'))
+        .demandOption('recursive', c.yellow('Please add -r to analysis usages'))
     },
     async args => usage(await resolveConfig({ ...args, recursive: true })),
   )

@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import c from 'picocolors'
 import { MultiBar, Presets } from 'cli-progress'
 import { LOGLEVELS } from './config'
 
@@ -124,20 +124,20 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
 
   const leadingColor = (leadingWildcard === fromLeadingWildcard || !hightlightRange)
-    ? 'grey'
+    ? 'gray'
     : 'yellow'
 
-  return chalk[leadingColor](leadingWildcard)
+  return c[leadingColor](leadingWildcard)
         + partsToColor.slice(0, i).join('.')
         + middot
-        + chalk[color](partsToColor.slice(i).join('.')).trim()
+        + c[color](partsToColor.slice(i).join('.')).trim()
 }
 
 export function createMultiProgresBar() {
   return new MultiBar({
     clearOnComplete: true,
     hideCursor: true,
-    format: `{type} {bar} {value}/{total} ${chalk.gray('{name}')}`,
+    format: `{type} {bar} {value}/{total} ${c.gray('{name}')}`,
     linewrap: false,
     barsize: 40,
   }, Presets.shades_grey)

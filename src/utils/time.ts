@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import c from 'picocolors'
 
 const msPerMinute = 60 * 1000
 const msPerHour = msPerMinute * 60
@@ -16,14 +16,14 @@ export function timeDifference(from?: number | string, to = +new Date()) {
   const elapsed = to - from
 
   if (elapsed < msPerDay)
-    return chalk.gray('⩽1d')
+    return c.gray('⩽1d')
 
   else if (elapsed < msPerMonth)
-    return chalk.green(`~${Math.round(elapsed / msPerDay)}d`)
+    return c.green(`~${Math.round(elapsed / msPerDay)}d`)
 
   else if (elapsed < msPerYear)
-    return chalk.yellow(`~${Math.round(elapsed / msPerMonth)}mo`)
+    return c.yellow(`~${Math.round(elapsed / msPerMonth)}mo`)
 
   else
-    return chalk.red(`~${+(elapsed / msPerYear).toFixed(1)}y`)
+    return c.red(`~${+(elapsed / msPerYear).toFixed(1)}y`)
 }
