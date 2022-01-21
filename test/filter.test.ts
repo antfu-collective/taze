@@ -1,46 +1,46 @@
-import test from 'ava'
+import { expect, test } from 'vitest'
 import { createDependenciesFilter, filterToRegex } from '../src/utils/dependenciesFilter'
 
-test('filterToRegex', (t) => {
+test('filterToRegex', () => {
   // exact match
-  t.is(filterToRegex('hello').source, '^hello$')
+  expect(filterToRegex('hello').source).toBe('^hello$')
 
   // wildcard
-  t.is(filterToRegex('react-*').source, '^react-.*?$')
+  expect(filterToRegex('react-*').source).toBe('^react-.*?$')
 
   // escape control chars
-  t.is(filterToRegex('@p?react/*').source, '^@p\\?react\\/.*?$')
+  expect(filterToRegex('@p?react/*').source).toBe('^@p\\?react\\/.*?$')
 
   // support regex
-  t.is(filterToRegex('/@p?react\\/.*/').source, '@p?react\\/.*')
+  expect(filterToRegex('/@p?react\\/.*/').source).toBe('@p?react\\/.*')
 
   // flags
-  t.is(filterToRegex('/react/gi').source, 'react')
-  t.is(filterToRegex('/react/gi').flags, 'gi')
+  expect(filterToRegex('/react/gi').source).toBe('react')
+  expect(filterToRegex('/react/gi').flags).toBe('gi')
 })
 
-test('filterToRegex match', (t) => {
-  t.is(filterToRegex('hello').test('hello'), true)
-  t.is(filterToRegex('hello').test('hell'), false)
+test('filterToRegex match', () => {
+  expect(filterToRegex('hello').test('hello')).toBe(true)
+  expect(filterToRegex('hello').test('hell')).toBe(false)
 
-  t.is(filterToRegex('react-*').test('react-hello-world'), true)
+  expect(filterToRegex('react-*').test('react-hello-world')).toBe(true)
 
-  t.is(filterToRegex('/@p?react\\/.*/').test('@react/hello'), true)
-  t.is(filterToRegex('/@p?react\\/.*/').test('@preact/hello'), true)
+  expect(filterToRegex('/@p?react\\/.*/').test('@react/hello')).toBe(true)
+  expect(filterToRegex('/@p?react\\/.*/').test('@preact/hello')).toBe(true)
 })
 
-test('createDependenciesFilter', (t) => {
+test('createDependenciesFilter', () => {
   const filter = createDependenciesFilter(
     'react-*',
     'react-hello,react-hey,/react-\\d[a-z]/',
   )
 
-  t.is(filter('vue'), false)
-  t.is(filter('react'), false)
-  t.is(filter('react-hello'), false)
-  t.is(filter('react-haha'), true)
-  t.is(filter('react-hey'), false)
-  t.is(filter('react-0'), true)
-  t.is(filter('react-00'), true)
-  t.is(filter('react-0w'), false)
+  expect(filter('vue')).toBe(false)
+  expect(filter('react')).toBe(false)
+  expect(filter('react-hello')).toBe(false)
+  expect(filter('react-haha')).toBe(true)
+  expect(filter('react-hey')).toBe(false)
+  expect(filter('react-0')).toBe(true)
+  expect(filter('react-00')).toBe(true)
+  expect(filter('react-0w')).toBe(false)
 })
