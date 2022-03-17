@@ -5,7 +5,7 @@ export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
   const ver = v.trim()
 
-  if (ver === '*')
+  if (ver === '*' || ver === '')
     return '*'
   if (ver[0] === '~' || ver[0] === '^')
     return ver[0]
@@ -27,10 +27,7 @@ export function getVersionRangePrefix(v: string) {
   return null
 }
 
-export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest'>) {
-  if (mode === 'newest')
-    return '*'
-
+export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest'|'newest'>) {
   if (!semver.validRange(version))
     return null
 
@@ -65,15 +62,18 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
   if (mode === 'latest') {
     version = tags.latest
   }
+  else if (mode === 'newest') {
+    version = tags.next
+  }
+  else if (mode === 'default' && (current === '*' || current.trim() === '')) {
+    return null
+  }
   else {
     const range = changeVersionRange(current, mode)
     if (!range)
       throw new Error('invalid_range')
 
-    if (range === '*')
-      version = '*'
-    else
-      version = semver.maxSatisfying(versions, range)
+    version = semver.maxSatisfying(versions, range)
   }
 
   if (!version)
