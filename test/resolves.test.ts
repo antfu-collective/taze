@@ -15,13 +15,6 @@ const makePkg = (ver: string): RawDependency => {
 }
 
 test('resolveDependency', async() => {
-  // expect(false).toBe((await resolveDependency(makePkg('4.0.0'), 'default', filter)).update)
-  // expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'major', filter)).update)
-  // expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'minor', filter)).update)
-  // expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'patch', filter)).update)
-  // expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'latest', filter)).update)
-  // expect(false).toBe((await resolveDependency(makePkg('4.0.0'), 'newest', filter)).update)
-
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), 'default', filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), 'default', filter)).update)
