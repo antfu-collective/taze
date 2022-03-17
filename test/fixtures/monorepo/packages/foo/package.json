@@ -2,7 +2,7 @@
   "name": "@taze/example-foo",
   "private": true,
   "dependencies": {
-    "webpack": "~1.9.10",
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "webpack": "~1.9.10"
   }
 }

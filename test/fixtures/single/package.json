@@ -2,13 +2,13 @@
   "name": "@taze/package1",
   "private": true,
   "dependencies": {
+    "@taze/not-exists": "^4.13.19",
+    "axios": "git:axios/axios",
     "express": "4.12.x",
+    "lodash": "^4.13.19",
     "multer": "^0.1.8",
     "react-bootstrap": "^0.22.6",
-    "webpack": "~1.9.10",
-    "lodash": "^4.13.19",
-    "@taze/not-exists": "^4.13.19",
-    "axios": "git:axios/axios"
+    "webpack": "~1.9.10"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.0"

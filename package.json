@@ -1,35 +1,36 @@
 {
   "name": "taze",
-  "description": "A modern cli tool that keeps your deps fresh",
   "version": "0.4.6",
+  "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antfu/taze.git"
+  },
+  "funding": "https://github.com/sponsors/antfu",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
-  "scripts": {
-    "preinstall": "npx only-allow pnpm",
-    "dev": "cross-env DEBUG=taze:* esno ./src/cli.ts",
-    "build": "rimraf dist && tsup ./src/index.ts ./src/cli.ts --dts --format esm,cjs",
-    "release": "pnpx bumpp --commit --tag && pnpm build && esno ./scripts/prepublish.ts && pnpm publish --no-git-checks && esno ./scripts/postpublish.ts && git push",
-    "test": "vitest"
-  },
   "files": [
     "dist"
   ],
   "bin": {
     "taze": "bin/taze.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/antfu/taze.git"
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "lint": "eslint .",
+    "dev": "cross-env DEBUG=taze:* esno ./src/cli.ts",
+    "build": "rimraf dist && tsup ./src/index.ts ./src/cli.ts --dts --format esm,cjs",
+    "release": "pnpx bumpp --commit --tag && pnpm build && esno ./scripts/prepublish.ts && pnpm publish --no-git-checks && esno ./scripts/postpublish.ts && git push",
+    "test": "vitest"
   },
   "bugs": {
     "url": "https://github.com/antfu/taze/issues"
   },
   "homepage": "https://github.com/antfu/taze#readme",
-  "funding": "https://github.com/sponsors/antfu",
   "dependencies": {
-    "@antfu/ni": "^0.12.0",
+    "@antfu/ni": "^0.13.2",
     "cli-progress": "^3.10.0",
     "debug": "^4.3.3",
     "deepmerge": "^4.2.2",
@@ -43,22 +44,22 @@
     "yargs": "^17.3.1"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.16.0",
+    "@antfu/eslint-config": "^0.18.8",
     "@rollup/plugin-node-resolve": "^13.1.3",
     "@types/cli-progress": "^3.9.2",
     "@types/debug": "^4.1.7",
-    "@types/node": "^17.0.10",
+    "@types/node": "^17.0.21",
     "@types/pacote": "^11.1.3",
     "@types/semver": "^7.3.9",
-    "@types/yargs": "^17.0.8",
+    "@types/yargs": "^17.0.9",
     "bumpp": "^7.1.1",
     "cross-env": "^7.0.3",
-    "eslint": "^8.7.0",
-    "esno": "^0.14.0",
+    "eslint": "^8.11.0",
+    "esno": "^0.14.1",
     "rimraf": "^3.0.2",
-    "tsup": "^5.11.11",
-    "typescript": "^4.5.5",
-    "vitest": "^0.1.25"
+    "tsup": "^5.12.1",
+    "typescript": "^4.6.2",
+    "vitest": "^0.7.0"
   },
   "eslintConfig": {
     "extends": "@antfu/eslint-config"
