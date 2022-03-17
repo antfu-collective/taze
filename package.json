@@ -1,6 +1,6 @@
 {
   "name": "taze",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
   "repository": {
