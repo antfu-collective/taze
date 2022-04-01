@@ -137,7 +137,7 @@ export function printChanges(
         source,
         currentVersionTime,
         targetVersionTime,
-        latestVersionAvaliable,
+        latestVersionAvailable,
       }) =>
         logger.row(
           `  ${name}`,
@@ -147,7 +147,7 @@ export function printChanges(
           c.gray('→'),
           colorizeVersionDiff(currentVersion, targetVersion),
           timeDifference(targetVersionTime),
-          latestVersionAvaliable ? c.magenta(`  (${latestVersionAvaliable} avaliable)`) : '',
+          latestVersionAvailable ? c.magenta(`  (${latestVersionAvailable} available)`) : '',
         ),
     )
 
