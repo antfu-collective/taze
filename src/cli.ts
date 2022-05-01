@@ -1,5 +1,6 @@
 import type { Argv } from 'yargs'
 import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 import c from 'picocolors'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
@@ -61,7 +62,7 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
 }
 
 // eslint-disable-next-line no-unused-expressions
-yargs
+yargs(hideBin(process.argv))
   .scriptName('taze')
   .usage('$0 [args]')
   .command(
