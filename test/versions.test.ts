@@ -27,7 +27,7 @@ test('getVersionRange', () => {
   expect('*').toBe(getVersionRangePrefix('x'))
 })
 
-test('getMaxSatisfying', async() => {
+test('getMaxSatisfying', async () => {
   const { versions, tags } = await getPackageData('typescript')
   const latest = tags.latest
   const newest = tags.next

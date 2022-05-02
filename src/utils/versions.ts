@@ -27,7 +27,7 @@ export function getVersionRangePrefix(v: string) {
   return null
 }
 
-export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest'|'newest'>) {
+export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest' | 'newest'>) {
   if (!semver.validRange(version))
     return null
 

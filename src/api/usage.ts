@@ -45,7 +45,7 @@ export async function CheckUsages(options: UsageOptions, callbacks: UsageEventCa
   const total = usages.length
 
   const resolveUsages = await Promise.all(
-    usages.map(async({ name, versionMap }) => {
+    usages.map(async ({ name, versionMap }) => {
       const { tags } = await getPackageData(name)
       progress += 1
       callbacks.onDependencyResolved?.(null, name, progress, total)

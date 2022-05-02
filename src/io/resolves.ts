@@ -160,7 +160,7 @@ export async function resolveDependencies(
 
   return Promise.all(
     deps
-      .map(async(raw) => {
+      .map(async (raw) => {
         const dep = await resolveDependency(raw, mode, filter)
         counter += 1
         progressCallback(raw.name, counter, total)

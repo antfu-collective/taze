@@ -14,7 +14,7 @@ const makePkg = (ver: string): RawDependency => {
   return pkg
 }
 
-test('resolveDependency', async() => {
+test('resolveDependency', async () => {
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), 'default', filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), 'default', filter)).update)
