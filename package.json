@@ -24,7 +24,8 @@
     "lint": "eslint .",
     "dev": "cross-env DEBUG=taze:* esmo ./src/cli.ts",
     "build": "unbuild",
-    "release": "pnpx bumpp --commit --tag && pnpm build && esno ./scripts/prepublish.ts && pnpm publish --no-git-checks && esno ./scripts/postpublish.ts && git push",
+    "prepublishOnly": "nr build",
+    "release": "bumpp --commit --tag --push && pnpm publish --no-git-checks",
     "test": "vitest"
   },
   "bugs": {
