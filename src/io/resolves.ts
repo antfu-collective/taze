@@ -1,5 +1,6 @@
 import fs from 'fs'
-import { join } from 'path'
+import { resolve } from 'path'
+import { fileURLToPath } from 'url'
 import type { Packument } from 'pacote'
 import pacote from 'pacote'
 import semver from 'semver'
@@ -25,7 +26,7 @@ interface PackageData {
 let cache: Record<string, { cacheTime: number; data: PackageData }> = {}
 let cacheChanged = false
 
-const cachePath = join(__dirname, 'cache.json')
+const cachePath = resolve(fileURLToPath(import.meta.url), '../cache.json')
 const cacheTTL = 5 * 60_000 // 5min
 
 function now() {

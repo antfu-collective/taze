@@ -1,7 +1,5 @@
 {
   "exclude": [
-    "execa",
-    "find-up",
     "pacote"
   ]
 }
