@@ -1,17 +1,14 @@
 import c from 'picocolors'
 import type { SingleBar } from 'cli-progress'
 import { parseNi, parseNu, run } from '@antfu/ni'
-import { TableLogger, colorizeVersionDiff, createMultiProgresBar } from '../log'
+import { TableLogger, createMultiProgresBar } from '../log'
 import type {
   CheckOptions,
   PackageMeta,
   ResolvedDependencies,
 } from '../types'
-import {
-  DependenciesTypeShortMap,
-} from '../types'
-import { timeDifference } from '../utils/time'
 import { CheckPackages } from '../api/check'
+import { generateStringDependency } from '../utils/generateStringDependency'
 
 export async function check(options: CheckOptions) {
   const logger = new TableLogger({
@@ -129,27 +126,7 @@ export function printChanges(
     logger.log(`${c.cyan(pkg.name ?? '›')} ${c.dim(filepath)}`)
     logger.log()
 
-    changes.forEach(
-      ({
-        name,
-        currentVersion,
-        targetVersion,
-        source,
-        currentVersionTime,
-        targetVersionTime,
-        latestVersionAvailable,
-      }) =>
-        logger.row(
-          `  ${name}`,
-          c.gray(DependenciesTypeShortMap[source]),
-          timeDifference(currentVersionTime),
-          c.gray(currentVersion),
-          c.gray('→'),
-          colorizeVersionDiff(currentVersion, targetVersion),
-          timeDifference(targetVersionTime),
-          latestVersionAvailable ? c.magenta(`  (${latestVersionAvailable} available)`) : '',
-        ),
-    )
+    changes.forEach(change => logger.row(`  ${generateStringDependency(change)}`))
 
     const counters: Record<string, number> = {}
 
