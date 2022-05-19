@@ -98,6 +98,13 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           describe: 'write to package.json',
         })
+        .option('askWrite', {
+          alias: 'a',
+          default: false,
+          type: 'boolean',
+          describe: 'ask each package to write',
+          implies: ['write'],
+        })
         .option('install', {
           alias: 'i',
           default: false,

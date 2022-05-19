@@ -36,6 +36,10 @@ export async function check(options: CheckOptions) {
       packagesBar?.increment(0, { name: c.cyan(pkg.name) })
       depBar?.start(pkg.deps.length, 0, { type: c.green('dep') })
     },
+    beforeInteractivePackage() {
+      depBar?.stop()
+      depBar?.render() // Clear the bar
+    },
     afterPackageEnd(pkg) {
       packagesBar?.increment(1)
       depBar?.stop()

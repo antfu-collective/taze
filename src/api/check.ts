@@ -1,12 +1,15 @@
+import prompts from 'prompts'
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDependency } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { dumpCache, loadCache, resolvePackage } from '../io/resolves'
+import { generateStringDependency } from '../utils/generateStringDependency'
 
 export interface CheckEventCallbacks {
   afterPackagesLoaded?: (pkgs: PackageMeta[]) => void
   beforePackageStart?: (pkg: PackageMeta) => void
   afterPackageEnd?: (pkg: PackageMeta) => void
   beforePackageWrite?: (pkg: PackageMeta) => boolean | Promise<boolean>
+  beforeInteractivePackage?: (pkg: PackageMeta) => void
   afterPackagesEnd?: (pkgs: PackageMeta[]) => void
   afterPackageWrite?: (pkg: PackageMeta) => void
   onDependencyResolved?: DependencyResolvedCallback
@@ -52,6 +55,28 @@ async function CheckSingleProject(pkg: PackageMeta, options: CheckOptions, filte
 
   if (options.write && changes.length) {
     const shouldWrite = await Promise.resolve(callbacks.beforePackageWrite?.(pkg))
+
+    if (options.askWrite) {
+      callbacks.beforeInteractivePackage?.(pkg)
+
+      for (const indexChange in changes) {
+        const change = changes[indexChange]
+
+        const response = await prompts({
+          type: 'confirm',
+          name: 'updateDependency',
+          message: `Upgrade ${generateStringDependency(change)}`,
+          initial: true,
+        })
+
+        if (!response.updateDependency) {
+          const depIndex = pkg.resolved.findIndex(a => a.name === change.name)
+
+          if (depIndex !== -1)
+            pkg.resolved[depIndex] = { ...pkg.resolved[depIndex], update: false }
+        }
+      }
+    }
 
     if (shouldWrite !== false) {
       await writePackage(pkg, options)
