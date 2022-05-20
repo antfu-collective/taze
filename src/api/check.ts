@@ -116,7 +116,7 @@ async function CheckSingleProject(pkg: PackageMeta, options: CheckOptions, filte
     }
 
     if (shouldWrite !== false) {
-      // await writePackage(pkg, options)
+      await writePackage(pkg, options)
       callbacks.afterPackageWrite?.(pkg)
     }
   }
