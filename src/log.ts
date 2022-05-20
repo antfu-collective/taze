@@ -55,15 +55,14 @@ export class TableLogger {
       this.rows.push(string)
   }
 
-  output() {
-    if (this.options.loglevel === 'silent')
-      return
+  getStringRow(rows: (string | string[])[]) {
+    const result: string[] = []
 
     const { columns, align, pending } = this.options
     const columnsWidth = new Array(columns).fill(0)
 
     // calc the max width of columns
-    this.rows.forEach((line) => {
+    rows.forEach((line) => {
       if (typeof line === 'string')
         return
       for (let i = 0; i < columns; i++)
@@ -71,19 +70,31 @@ export class TableLogger {
     })
 
     // print
-    this.rows.forEach((line) => {
+    rows.forEach((line) => {
       if (typeof line === 'string') {
-        process.stdout.write(`${line}\n`)
+        result.push(`${line}\n`)
         return
       }
-
+      let tempResult = ''
       for (let i = 0; i < columns; i++) {
         const pad = align[i] === 'R' ? visualPadStart : visualPadEnd
         const part = line[i] || ''
-        process.stdout.write(pad(part, columnsWidth[i] + pending))
+        tempResult += pad(part, columnsWidth[i] + pending)
       }
-      process.stdout.write('\n')
+      result.push(`${tempResult}\n`)
     })
+
+    return result
+  }
+
+  output() {
+    if (this.options.loglevel === 'silent')
+      return
+
+    const rowsToPrint = this.getStringRow(this.rows)
+
+    for (const row of rowsToPrint)
+      process.stdout.write(row)
 
     // clear rows for next use
     this.rows = []
@@ -128,9 +139,9 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
     : 'yellow'
 
   return c[leadingColor](leadingWildcard)
-        + partsToColor.slice(0, i).join('.')
-        + middot
-        + c[color](partsToColor.slice(i).join('.')).trim()
+    + partsToColor.slice(0, i).join('.')
+    + middot
+    + c[color](partsToColor.slice(i).join('.')).trim()
 }
 
 export function createMultiProgresBar() {

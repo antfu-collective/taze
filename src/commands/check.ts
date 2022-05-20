@@ -26,7 +26,7 @@ export async function check(options: CheckOptions) {
 
   let hasChanges = false
 
-  await CheckPackages(options, {
+  await CheckPackages(options, logger, {
     afterPackagesLoaded(pkgs) {
       packagesBar = options.recursive && pkgs.length
         ? bars?.create(pkgs.length, 0, { type: c.cyan('pkg'), name: c.cyan(pkgs[0].name) })
@@ -39,6 +39,7 @@ export async function check(options: CheckOptions) {
     beforeInteractivePackage() {
       depBar?.stop()
       depBar?.render() // Clear the bar
+      process.stdout.write('\n')
     },
     afterPackageEnd(pkg) {
       packagesBar?.increment(1)
