@@ -21,7 +21,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "dev": "esmo ./src/cli.ts -wI",
+    "dev": "cross-env DEBUG=taze:* esmo ./src/cli.ts",
     "build": "unbuild",
     "prepublishOnly": "nr build",
     "release": "bumpp --commit --tag --push && pnpm publish --no-git-checks",
