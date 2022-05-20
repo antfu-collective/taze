@@ -130,7 +130,13 @@ export function printChanges(
     logger.log(`${c.cyan(pkg.name ?? '›')} ${c.dim(filepath)}`)
     logger.log()
 
-    changes.forEach(change => logger.row(`  ${generateStringDependency(change)}`))
+    changes.forEach((change) => {
+      const result = generateStringDependency(change)
+
+      result[0] = `  ${result[0]}`
+
+      return logger.row(...result)
+    })
 
     const counters: Record<string, number> = {}
 

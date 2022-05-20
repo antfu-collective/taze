@@ -13,15 +13,15 @@ export function generateStringDependency({
   targetVersionTime,
   latestVersionAvailable,
 }: ResolvedDependencies) {
-  let initial = name
+  const initial = [name]
 
-  initial += ` ${c.gray(DependenciesTypeShortMap[source])}`
-  initial += ` ${timeDifference(currentVersionTime)}`
-  initial += ` ${c.gray(currentVersion)}`
-  initial += ` ${c.gray('→')}`
-  initial += ` ${colorizeVersionDiff(currentVersion, targetVersion)}`
-  initial += ` ${timeDifference(targetVersionTime)}`
-  initial += latestVersionAvailable ? c.magenta(`  (${latestVersionAvailable} available)`) : ''
+  initial.push(c.gray(DependenciesTypeShortMap[source]))
+  initial.push(timeDifference(currentVersionTime))
+  initial.push(c.gray(currentVersion))
+  initial.push(c.gray('→'))
+  initial.push(colorizeVersionDiff(currentVersion, targetVersion))
+  initial.push(timeDifference(targetVersionTime))
+  initial.push(latestVersionAvailable ? c.magenta(`  (${latestVersionAvailable} available)`) : '')
 
   return initial
 }
