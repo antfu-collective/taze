@@ -56,7 +56,7 @@ async function CheckSingleProject(pkg: PackageMeta, options: CheckOptions, filte
   if (options.write && changes.length) {
     const shouldWrite = await Promise.resolve(callbacks.beforePackageWrite?.(pkg))
 
-    if (options.askWrite) {
+    if (options.interactive) {
       callbacks.beforeInteractivePackage?.(pkg)
 
       for (const indexChange in changes) {

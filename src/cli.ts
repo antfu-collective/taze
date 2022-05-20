@@ -98,11 +98,11 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           describe: 'write to package.json',
         })
-        .option('askWrite', {
-          alias: 'a',
+        .option('interactive', {
+          alias: 'I',
           default: false,
           type: 'boolean',
-          describe: 'ask each package to write',
+          describe: 'interactive write',
           implies: ['write'],
         })
         .option('install', {

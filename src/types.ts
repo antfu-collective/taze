@@ -50,7 +50,7 @@ export interface CheckOptions extends CommonOptions {
   all: boolean
   install?: boolean
   update?: boolean
-  askWrite?: boolean
+  interactive?: boolean
 }
 
 export interface PackageMeta {
