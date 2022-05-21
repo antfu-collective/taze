@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
-import type { DependencyFilter, RawDependency } from '../src'
+import type { DependencyFilter, RawDep } from '../src'
 import { resolveDependency } from '../src'
 
 const filter: DependencyFilter = () => true
 
-const makePkg = (ver: string): RawDependency => {
-  const pkg: RawDependency = {
+const makePkg = (ver: string): RawDep => {
+  const pkg: RawDep = {
     name: 'typescript',
     currentVersion: ver,
     source: 'dependencies',

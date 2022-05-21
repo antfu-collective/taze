@@ -1,7 +1,7 @@
 import type semver from 'semver'
 
 export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'latest' | 'newest'
-export type DependenciesType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies'
+export type DepType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies'
 export const DependenciesTypeShortMap = {
   dependencies: '',
   devDependencies: 'dev',
@@ -9,16 +9,16 @@ export const DependenciesTypeShortMap = {
   optionalDependencies: 'optional',
 }
 
-export interface RawDependency {
+export interface RawDep {
   name: string
   currentVersion: string
-  source: DependenciesType
+  source: DepType
   update: boolean
 }
 
 export type DiffType = ReturnType<typeof semver['diff']> | 'error'
 
-export interface ResolvedDependencies extends RawDependency {
+export interface ResolvedDepChange extends RawDep {
   latestVersionAvailable?: string
   targetVersion: string
   targetVersionTime?: string
@@ -76,12 +76,12 @@ export interface PackageMeta {
   /**
    * Dependencies
    */
-  deps: RawDependency[]
+  deps: RawDep[]
   /**
    * Resolved dependencies
    */
-  resolved: ResolvedDependencies[]
+  resolved: ResolvedDepChange[]
 }
 
-export type DependencyFilter = (dep: RawDependency) => boolean | Promise<boolean>
+export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void

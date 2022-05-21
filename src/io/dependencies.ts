@@ -1,6 +1,6 @@
-import type { DependenciesType, RawDependency, ResolvedDependencies } from '../types'
+import type { DepType, RawDep, ResolvedDepChange } from '../types'
 
-export function parseDependencies(pkg: any, type: DependenciesType, shouldUpdate: (name: string) => boolean): RawDependency[] {
+export function parseDependencies(pkg: any, type: DepType, shouldUpdate: (name: string) => boolean): RawDep[] {
   return Object.entries(pkg[type] || {}).map(([name, version]) => ({
     name,
     currentVersion: version as string,
@@ -10,7 +10,7 @@ export function parseDependencies(pkg: any, type: DependenciesType, shouldUpdate
   }))
 }
 
-export function dumpDependencies(deps: ResolvedDependencies[], type: DependenciesType) {
+export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
   const data: Record<string, string> = {}
   deps
     .filter(i => i.source === type)

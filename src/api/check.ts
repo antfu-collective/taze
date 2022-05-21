@@ -1,4 +1,4 @@
-import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDependency } from '../types'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDep } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { dumpCache, loadCache, resolvePackage } from '../io/resolves'
 
@@ -26,7 +26,7 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
     .filter(i => i)
 
   // to filter out private dependency in monorepo
-  const filter = (dep: RawDependency) => !privatePackageNames.includes(dep.name)
+  const filter = (dep: RawDep) => !privatePackageNames.includes(dep.name)
 
   for (const pkg of packages) {
     callbacks.beforePackageStart?.(pkg)

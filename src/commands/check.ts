@@ -5,7 +5,7 @@ import { TableLogger, colorizeVersionDiff, createMultiProgresBar } from '../log'
 import type {
   CheckOptions,
   PackageMeta,
-  ResolvedDependencies,
+  ResolvedDepChange,
 } from '../types'
 import {
   DependenciesTypeShortMap,
@@ -118,9 +118,22 @@ export async function check(options: CheckOptions) {
   logger.output()
 }
 
+export function renderChange(change: ResolvedDepChange) {
+  return [
+    `  ${change.name}`,
+    c.gray(DependenciesTypeShortMap[change.source]),
+    timeDifference(change.currentVersionTime),
+    c.gray(change.currentVersion),
+    c.gray('→'),
+    colorizeVersionDiff(change.currentVersion, change.targetVersion),
+    timeDifference(change.targetVersionTime),
+    change.latestVersionAvailable ? c.magenta(`  (${change.latestVersionAvailable} available)`) : '',
+  ]
+}
+
 export function printChanges(
   pkg: PackageMeta,
-  changes: ResolvedDependencies[],
+  changes: ResolvedDepChange[],
   filepath: string,
   logger: TableLogger,
   options: CheckOptions,
@@ -129,27 +142,7 @@ export function printChanges(
     logger.log(`${c.cyan(pkg.name ?? '›')} ${c.dim(filepath)}`)
     logger.log()
 
-    changes.forEach(
-      ({
-        name,
-        currentVersion,
-        targetVersion,
-        source,
-        currentVersionTime,
-        targetVersionTime,
-        latestVersionAvailable,
-      }) =>
-        logger.row(
-          `  ${name}`,
-          c.gray(DependenciesTypeShortMap[source]),
-          timeDifference(currentVersionTime),
-          c.gray(currentVersion),
-          c.gray('→'),
-          colorizeVersionDiff(currentVersion, targetVersion),
-          timeDifference(targetVersionTime),
-          latestVersionAvailable ? c.magenta(`  (${latestVersionAvailable} available)`) : '',
-        ),
-    )
+    changes.forEach(c => logger.row(...renderChange(c)))
 
     const counters: Record<string, number> = {}
 
@@ -163,13 +156,11 @@ export function printChanges(
     })
 
     if (Object.keys(counters).length) {
-      logger.log(
-        c.gray(`\n  ${
-          Object.entries(counters)
-            .map(([key, value]) => `${c.yellow(value)} ${key}`)
-            .join(', ')
-        } updates`),
-      )
+      const versionEntries = Object.entries(counters)
+        .map(([key, value]) => `${c.yellow(value)} ${key}`)
+        .join(', ')
+
+      logger.log(c.gray(`\n  ${versionEntries} updates`))
     }
   }
   else if (options.all) {
@@ -188,7 +179,7 @@ export function printChanges(
   }
 }
 
-function printResolveError(dep: ResolvedDependencies, logger: TableLogger/* , options: CheckOptions */) {
+function printResolveError(dep: ResolvedDepChange, logger: TableLogger/* , options: CheckOptions */) {
   if (dep.resolveError == null)
     return
 

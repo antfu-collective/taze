@@ -1,7 +1,7 @@
 import path from 'path'
 import { promises as fs } from 'fs'
 import fg from 'fast-glob'
-import type { CommonOptions, PackageMeta, RawDependency } from '../types'
+import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { dumpDependencies, parseDependencies } from './dependencies'
 
@@ -27,7 +27,7 @@ export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
 export async function loadPackage(relative: string, options: CommonOptions, shouldUpdate: (name: string) => boolean): Promise<PackageMeta> {
   const filepath = path.resolve(options.cwd, relative)
   const raw = await readJSON(filepath)
-  let deps: RawDependency[] = []
+  let deps: RawDep[] = []
 
   if (options.prod) {
     deps = parseDependencies(raw, 'dependencies', shouldUpdate)

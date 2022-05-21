@@ -6,7 +6,7 @@ import pacote from 'pacote'
 import semver from 'semver'
 import _debug from 'debug'
 import { npmConfig } from '../utils/npm'
-import type { DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDependency, ResolvedDependencies } from '../types'
+import type { DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying } from '../utils/versions'
 
@@ -96,7 +96,7 @@ export async function getPackageData(name: string): Promise<PackageData> {
 }
 
 export async function resolveDependency(
-  raw: RawDependency,
+  raw: RawDep,
   mode: RangeMode,
   filter: DependencyFilter = () => true,
 ) {
@@ -106,10 +106,10 @@ export async function resolveDependency(
       diff: null,
       targetVersion: raw.currentVersion,
       update: false,
-    } as ResolvedDependencies
+    } as ResolvedDepChange
   }
 
-  const dep = { ...raw } as ResolvedDependencies
+  const dep = { ...raw } as ResolvedDepChange
   const { versions, tags, error, time = {} } = await getPackageData(dep.name)
   let err: Error | string | null = null
   let max: { version: string; prefix: string | null; prefixed: string | null } | null = null
@@ -150,7 +150,7 @@ export async function resolveDependency(
 }
 
 export async function resolveDependencies(
-  deps: RawDependency[],
+  deps: RawDep[],
   mode: RangeMode,
   filter: DependencyFilter = () => true,
   progressCallback: (name: string, counter: number, total: number) => void = () => {},
