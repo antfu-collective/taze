@@ -91,16 +91,24 @@ export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
   return getMaxSatisfying(versions, dep.currentVersion, range, tags)
 }
 
-export function updateTargetVersion(dep: ResolvedDepChange, version: string) {
+export function updateTargetVersion(dep: ResolvedDepChange, version: string, forgiving = true) {
   dep.targetVersion = getPrefixedVersion(dep.currentVersion, version) || dep.currentVersion
   dep.targetVersionTime = dep.pkgData.time?.[version]
 
-  const current = semver.minVersion(dep.currentVersion)!
-  const target = semver.minVersion(dep.targetVersion)!
+  try {
+    const current = semver.minVersion(dep.currentVersion)!
+    const target = semver.minVersion(dep.targetVersion)!
 
-  dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
-  dep.diff = semver.diff(current, target)
-  dep.update = dep.diff !== null && semver.lt(current, target)
+    dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
+    dep.diff = semver.diff(current, target)
+    dep.update = dep.diff !== null && semver.lt(current, target)
+  }
+  catch (e) {
+    if (!forgiving)
+      throw e
+    dep.diff = 'error'
+    dep.update = false
+  }
 }
 
 export async function resolveDependency(
@@ -141,9 +149,12 @@ export async function resolveDependency(
   else
     dep.targetVersion = dep.currentVersion
 
-  const targetVersion = semver.minVersion(target || dep.targetVersion)
-  if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
-    dep.latestVersionAvailable = tags.latest
+  try {
+    const targetVersion = semver.minVersion(target || dep.targetVersion)
+    if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
+      dep.latestVersionAvailable = tags.latest
+  }
+  catch {}
 
   if (err) {
     dep.diff = 'error'
