@@ -1,8 +1,9 @@
 import c from 'picocolors'
 import type { SingleBar } from 'cli-progress'
 import type { UsageOptions } from '../types'
-import { TableLogger, colorizeVersionDiff, createMultiProgresBar, visualPadStart, wrapJoin } from '../log'
+import { TableLogger, createMultiProgresBar, wrapJoin } from '../log'
 import { CheckUsages } from '../api/usage'
+import { colorizeVersionDiff, visualPadStart } from '../render'
 
 export async function usage(options: UsageOptions) {
   const bars = createMultiProgresBar()

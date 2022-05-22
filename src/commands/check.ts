@@ -1,7 +1,8 @@
+/* eslint-disable no-console */
 import c from 'picocolors'
 import type { SingleBar } from 'cli-progress'
 import { parseNi, parseNu, run } from '@antfu/ni'
-import { TableLogger, colorizeVersionDiff, createMultiProgresBar } from '../log'
+import { createMultiProgresBar } from '../log'
 import type {
   CheckOptions,
   PackageMeta,
@@ -12,22 +13,15 @@ import {
 } from '../types'
 import { timeDifference } from '../utils/time'
 import { CheckPackages } from '../api/check'
+import { colorizeVersionDiff, formatTable } from '../render'
 
 export async function check(options: CheckOptions) {
-  const logger = new TableLogger({
-    columns: 8,
-    pending: 2,
-    align: 'LLRRRRRL',
-    loglevel: options.loglevel,
-  })
-
-  // progress bar
   const bars = options.loglevel === 'silent' ? null : createMultiProgresBar()
-  logger.log()
+  console.log()
   let packagesBar: SingleBar | undefined
   const depBar = bars?.create(1, 0)
 
-  let hasChanges = false
+  const resolvePkgs: PackageMeta[] = []
 
   await CheckPackages(options, {
     afterPackagesLoaded(pkgs) {
@@ -43,12 +37,7 @@ export async function check(options: CheckOptions) {
       packagesBar?.increment(1)
       depBar?.stop()
 
-      const { relative, resolved } = pkg
-      const changes = resolved.filter(i => i.update)
-      if (changes.length)
-        hasChanges = true
-
-      printChanges(pkg, changes, relative, logger, options)
+      resolvePkgs.push(pkg)
     },
     afterPackagesEnd(packages) {
       if (!options.all) {
@@ -64,9 +53,9 @@ export async function check(options: CheckOptions) {
         const last = packages.length - counter
 
         if (last === 1)
-          logger.log(c.green('dependencies are already up-to-date in one package'))
+          console.log(c.green('dependencies are already up-to-date in one package'))
         else if (last > 0)
-          logger.log(c.green(`dependencies are already up-to-date in ${last} packages`))
+          console.log(c.green(`dependencies are already up-to-date in ${last} packages`))
       }
     },
     onDependencyResolved(pkgName, name, progress) {
@@ -76,73 +65,97 @@ export async function check(options: CheckOptions) {
 
   bars?.stop()
 
+  const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
+
+  const lines: string[] = []
+  const errLines: string[] = []
+
+  resolvePkgs.forEach((pkg) => {
+    const result = printChanges(pkg, options)
+    lines.push(...result.lines)
+    errLines.push(...result.errLines)
+  })
+
+  if (!options.silent)
+    console.log(lines.join('\n'))
+
+  if (errLines.length) {
+    console.error(c.inverse(c.red(c.bold(' ERROR '))))
+    console.error()
+    console.error(errLines.join('\n'))
+    console.error()
+  }
+
   // tips
   if (!options.write) {
-    logger.log()
+    console.log()
 
     if (options.mode === 'default')
-      logger.log(`Run ${c.cyan('taze major')} to check major updates`)
+      console.log(`Run ${c.cyan('taze major')} to check major updates`)
 
     if (hasChanges)
-      logger.log(`Run ${c.green('taze -w')} to write package.json`)
+      console.log(`Run ${c.green('taze -w')} to write package.json`)
 
-    logger.log()
+    console.log()
   }
   else if (hasChanges) {
     if (!options.install && !options.update) {
-      logger.log(
+      console.log(
         c.yellow(`changes wrote to package.json, run ${c.cyan('npm i')} to install updates.`),
       )
     }
 
     if (options.install || options.update)
-      logger.log(c.yellow('changes wrote to package.json'))
+      console.log(c.yellow('changes wrote to package.json'))
 
     if (options.install) {
-      logger.log(c.magenta('installing...'))
-      logger.log()
+      console.log(c.magenta('installing...'))
+      console.log()
 
-      logger.output()
       await run(parseNi, [])
     }
 
     if (options.update) {
-      logger.log(c.magenta('updating...'))
-      logger.log()
+      console.log(c.magenta('updating...'))
+      console.log()
 
-      logger.output()
       await run(parseNu, options.recursive ? ['-r'] : [])
     }
   }
-
-  logger.output()
 }
 
 export function renderChange(change: ResolvedDepChange) {
   return [
     `  ${change.name}`,
     c.gray(DependenciesTypeShortMap[change.source]),
-    timeDifference(change.currentVersionTime),
-    c.gray(change.currentVersion),
-    c.gray('→'),
-    colorizeVersionDiff(change.currentVersion, change.targetVersion),
+    change.update ? timeDifference(change.currentVersionTime) : '',
+    change.update ? c.gray(change.currentVersion) : '',
+    c.dim(c.gray(change.update ? '→' : '-')),
+    change.update ? colorizeVersionDiff(change.currentVersion, change.targetVersion) : c.gray(change.targetVersion),
     timeDifference(change.targetVersionTime),
-    change.latestVersionAvailable ? c.magenta(`  (${change.latestVersionAvailable} available)`) : '',
+    change.latestVersionAvailable ? c.dim(c.magenta(`(${change.latestVersionAvailable} available)`)) : '',
   ]
 }
 
 export function printChanges(
   pkg: PackageMeta,
-  changes: ResolvedDepChange[],
-  filepath: string,
-  logger: TableLogger,
   options: CheckOptions,
 ) {
-  if (changes.length) {
-    logger.log(`${c.cyan(pkg.name ?? '›')} ${c.dim(filepath)}`)
-    logger.log()
+  const { resolved, relative: filepath } = pkg
+  const lines: string[] = []
+  const errLines: string[] = []
 
-    changes.forEach(c => logger.row(...renderChange(c)))
+  const changes = options.all
+    ? resolved
+    : resolved.filter(i => i.update)
+
+  if (changes.length) {
+    lines.push(`${c.cyan(pkg.name ?? '›')} ${c.dim(filepath)}`, '')
+
+    lines.push(...formatTable(
+      changes.map(c => renderChange(c)),
+      'LLRRRRRL',
+    ))
 
     const counters: Record<string, number> = {}
 
@@ -160,34 +173,41 @@ export function printChanges(
         .map(([key, value]) => `${c.yellow(value)} ${key}`)
         .join(', ')
 
-      logger.log(c.gray(`\n  ${versionEntries} updates`))
+      lines.push('', c.gray(`  ${versionEntries} updates`), '')
     }
   }
   else if (options.all) {
-    logger.log(`${c.cyan(pkg.name)} ${c.dim(filepath)}`)
-    logger.log()
-    logger.log(c.gray('  ✓ up to date'))
+    lines.push(`${c.cyan(pkg.name)} ${c.dim(filepath)}`)
+    lines.push()
+    lines.push(c.gray('  ✓ up to date'))
   }
 
   const errors = pkg.resolved.filter(i => i.resolveError != null)
 
   if (errors.length) {
-    logger.log()
+    lines.push()
     for (const dep of errors)
-      printResolveError(dep, logger/* , options */)
-    logger.log()
+      errLines.push(...printResolveError(dep))
+    lines.push()
+  }
+
+  return {
+    lines,
+    errLines,
   }
 }
 
-function printResolveError(dep: ResolvedDepChange, logger: TableLogger/* , options: CheckOptions */) {
+function printResolveError(dep: ResolvedDepChange) {
+  const lines: string[] = []
+
   if (dep.resolveError == null)
-    return
+    return lines
 
   if (dep.resolveError === '404') {
-    logger.error(c.red(`> ${c.underline(dep.name)} not found`))
+    lines.push(c.red(`> ${c.underline(dep.name)} not found`))
   }
   else if (dep.resolveError === 'invalid_range') {
-    logger.warn(
+    lines.push(
       c.yellow(`> ${
         c.underline(dep.name)
       } has an unresolvable version range: ${
@@ -196,7 +216,8 @@ function printResolveError(dep: ResolvedDepChange, logger: TableLogger/* , optio
     )
   }
   else {
-    logger.error(c.red(`> ${c.underline(dep.name)} unknown error`))
-    logger.error(c.red(dep.resolveError.toString()))
+    lines.push(c.red(`> ${c.underline(dep.name)} unknown error`))
+    lines.push(c.red(dep.resolveError.toString()))
   }
+  return lines
 }
