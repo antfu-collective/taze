@@ -126,26 +126,32 @@ export async function resolveDependency(
     err = error
   }
 
-  if (err == null && max?.prefixed) {
-    dep.targetVersion = max.prefixed
-    dep.targetVersionTime = time[max.version]
-
-    const current = semver.minVersion(dep.currentVersion)!
-    const latest = semver.minVersion(dep.targetVersion)!
-
-    dep.currentVersionTime = time[current.toString()]
-    dep.diff = semver.diff(current, latest)
-    dep.update = dep.diff !== null && semver.lt(current, latest)
-
-    if (tags.latest && semver.gt(tags.latest, max.version))
-      dep.latestVersionAvailable = tags.latest
-  }
-  else {
+  if (err) {
     dep.targetVersion = dep.currentVersion
     dep.diff = 'error'
     dep.update = false
     dep.resolveError = err
+    return dep
   }
+
+  if (max?.prefixed) {
+    dep.targetVersion = max.prefixed
+    dep.targetVersionTime = time[max.version]
+  }
+  else {
+    dep.targetVersion = dep.currentVersion
+  }
+
+  const current = semver.minVersion(dep.currentVersion)!
+  const latest = semver.minVersion(dep.targetVersion)!
+  dep.currentVersionTime = time[current.toString()]
+  dep.diff = semver.diff(current, latest)
+  dep.update = dep.diff !== null && semver.lt(current, latest)
+
+  const targetVersion = semver.minVersion(max?.version || dep.targetVersion)
+  if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
+    dep.latestVersionAvailable = tags.latest
+
   return dep
 }
 

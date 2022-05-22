@@ -1,0 +1,125 @@
+/* eslint-disable no-console */
+import c from 'picocolors'
+import type { SingleBar } from 'cli-progress'
+import { parseNi, parseNu, run } from '@antfu/ni'
+import { createMultiProgresBar } from '../../log'
+import type {
+  CheckOptions,
+  PackageMeta,
+} from '../../types'
+import { CheckPackages } from '../../api/check'
+import { writePackage } from '../../io/packages'
+import { promptInteractive } from './interactive'
+import { renderPackages } from './render'
+
+export async function check(options: CheckOptions) {
+  if (options.interactive)
+    options.write = true
+
+  const bars = options.loglevel === 'silent' ? null : createMultiProgresBar()
+  let packagesBar: SingleBar | undefined
+  const depBar = bars?.create(1, 0)
+
+  let resolvePkgs: PackageMeta[] = []
+
+  await CheckPackages(options, {
+    afterPackagesLoaded(pkgs) {
+      packagesBar = options.recursive && pkgs.length
+        ? bars?.create(pkgs.length, 0, { type: c.cyan('pkg'), name: c.cyan(pkgs[0].name) })
+        : undefined
+    },
+    beforePackageStart(pkg) {
+      packagesBar?.increment(0, { name: c.cyan(pkg.name) })
+      depBar?.start(pkg.deps.length, 0, { type: c.green('dep') })
+    },
+    beforePackageWrite() {
+      // disbale auto write
+      return false
+    },
+    afterPackageEnd(pkg) {
+      packagesBar?.increment(1)
+      depBar?.stop()
+      resolvePkgs.push(pkg)
+    },
+    onDependencyResolved(pkgName, name, progress) {
+      depBar?.update(progress, { name })
+    },
+  })
+
+  bars?.stop()
+
+  const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
+
+  if (!options.all) {
+    const counter = resolvePkgs.reduce((counter, pkg) => {
+      for (let i = 0; i < pkg.resolved.length; i++) {
+        if (pkg.resolved[i].update)
+          return ++counter
+      }
+
+      return counter
+    }, 0)
+
+    const last = resolvePkgs.length - counter
+
+    if (last === 1)
+      return console.log(c.green('dependencies are already up-to-date in one package'))
+    else if (last > 0)
+      return console.log(c.green(`dependencies are already up-to-date in ${last} packages`))
+  }
+
+  if (options.interactive)
+    resolvePkgs = await promptInteractive(resolvePkgs, options)
+
+  const { lines, errLines } = renderPackages(resolvePkgs, options)
+
+  console.log(lines.join('\n'))
+  if (errLines.length) {
+    console.error(c.inverse(c.red(c.bold(' ERROR '))))
+    console.error()
+    console.error(errLines.join('\n'))
+    console.error()
+  }
+
+  if (options.write) {
+    for (const pkg of resolvePkgs)
+      await writePackage(pkg, options)
+  }
+
+  // tips
+  if (!options.write) {
+    console.log()
+
+    if (options.mode === 'default')
+      console.log(`Run ${c.cyan('taze major')} to check major updates`)
+
+    if (hasChanges)
+      console.log(`Run ${c.green('taze -w')} to write package.json`)
+
+    console.log()
+  }
+  else if (hasChanges) {
+    if (!options.install && !options.update) {
+      console.log(
+        c.yellow(`changes wrote to package.json, run ${c.cyan('npm i')} to install updates.`),
+      )
+    }
+
+    if (options.install || options.update)
+      console.log(c.yellow('changes wrote to package.json'))
+
+    if (options.install) {
+      console.log(c.magenta('installing...'))
+      console.log()
+
+      await run(parseNi, [])
+    }
+
+    if (options.update) {
+      console.log(c.magenta('updating...'))
+      console.log()
+
+      await run(parseNu, options.recursive ? ['-r'] : [])
+    }
+  }
+}

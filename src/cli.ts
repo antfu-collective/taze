@@ -98,6 +98,11 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           describe: 'write to package.json',
         })
+        .option('interactive', {
+          default: !process.env.CI && process.stdout.isTTY,
+          type: 'boolean',
+          describe: 'interactive mode',
+        })
         .option('install', {
           alias: 'i',
           default: false,
@@ -110,25 +115,6 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           describe: 'update directly after bumpping',
         })
-        // TODO：
-        .option('prompt', {
-          alias: 'p',
-          default: false,
-          type: 'boolean',
-          describe: 'prompt whether write to files after update checking',
-        })
-        // TODO：
-        .option('outputRange', {
-          default: 'preseve',
-          type: 'string',
-          describe: 'output version range, can be "fixed", "major", "minor" or "patch"',
-        })
-        // TODO:
-        .option('guard', {
-          default: false,
-          type: 'boolean',
-          describe: 'exit with non-zero code if there are existing upgrades',
-        })
         .option('all', {
           alias: 'a',
           default: false,
@@ -137,7 +123,10 @@ yargs(hideBin(process.argv))
         })
         .help()
     },
-    async args => check(await resolveConfig(args)),
+    async (args) => {
+      await check(await resolveConfig(args))
+      process.exit()
+    },
   )
   .showHelpOnFail(false)
   .alias('h', 'help')

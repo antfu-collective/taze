@@ -25,6 +25,7 @@ export interface ResolvedDepChange extends RawDep {
   currentVersionTime?: string
   diff: DiffType
   resolveError?: Error | string | null
+  interactiveChecked?: boolean
 }
 
 export interface CommonOptions {
@@ -48,6 +49,7 @@ export interface CheckOptions extends CommonOptions {
   mode: string
   write: boolean
   all: boolean
+  interactive?: boolean
   install?: boolean
   update?: boolean
 }
@@ -81,7 +83,12 @@ export interface PackageMeta {
    * Resolved dependencies
    */
   resolved: ResolvedDepChange[]
+  interactiveChecked?: boolean
 }
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void
+
+export interface InteractiveContext {
+  isSelected(dep: RawDep): boolean
+}

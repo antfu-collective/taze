@@ -10,7 +10,7 @@ const debug = _debug('taze:config')
 export const CONFIG_FILES = ['.tazerc.json', '.tazerc']
 export const LOGLEVELS = ['debug', 'info', 'warn', 'error', 'silent']
 
-function normalizeConfig<T extends CommonOptions >(options: T) {
+function normalizeConfig<T extends CommonOptions>(options: T) {
   options.exclude = toArray(options.exclude)
   options.include = toArray(options.include)
 

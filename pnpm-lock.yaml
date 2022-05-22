@@ -6,6 +6,7 @@ importers:
     specifiers:
       '@antfu/eslint-config': ^0.23.1
       '@antfu/ni': ^0.16.2
+      '@antfu/utils': ^0.5.2
       '@types/cli-progress': ^3.11.0
       '@types/debug': ^4.1.7
       '@types/node': ^17.0.35
@@ -18,7 +19,7 @@ importers:
       debug: ^4.3.4
       deepmerge: ^4.2.2
       eslint: ^8.16.0
-      esmo: ^0.16.3
+      esno: ^0.16.3
       fast-glob: ^3.2.11
       find-up: ^6.3.0
       libnpmconfig: ^1.2.1
@@ -31,13 +32,14 @@ importers:
       vitest: ^0.12.9
       yargs: ^17.5.1
     dependencies:
-      '@antfu/ni': 0.16.2
       libnpmconfig: 1.2.1
       pacote: 13.1.1
       semver: 7.3.7
       yargs: 17.5.1
     devDependencies:
       '@antfu/eslint-config': 0.23.1_utdtartgf6fqqgkivzeynh76la
+      '@antfu/ni': 0.16.2
+      '@antfu/utils': 0.5.2
       '@types/cli-progress': 3.11.0
       '@types/debug': 4.1.7
       '@types/node': 17.0.35
@@ -50,7 +52,7 @@ importers:
       debug: 4.3.4
       deepmerge: 4.2.2
       eslint: 8.16.0
-      esmo: 0.16.3
+      esno: 0.16.3
       fast-glob: 3.2.11
       find-up: 6.3.0
       picocolors: 1.0.0
@@ -162,7 +164,11 @@ packages:
   /@antfu/ni/0.16.2:
     resolution: {integrity: sha512-HZH4I07EYKU4KZLtUYm/zEmaDIhaq51H/qu45uH1AcUPWqMGbB7evE/TnSr0SGInEA+oQs4Is5Vn/PmQhfuU5w==}
     hasBin: true
-    dev: false
+    dev: true
+
+  /@antfu/utils/0.5.2:
+    resolution: {integrity: sha512-CQkeV+oJxUazwjlHD0/3ZD08QWKuGQkhnrKo3e6ly5pd48VUpXbb77q0xMU4+vc2CkJnDS02Eq/M9ugyX20XZA==}
+    dev: true
 
   /@babel/code-frame/7.16.7:
     resolution: {integrity: sha512-iAXqUn8IIeBTNd72xsFlgaXHkMBMt6y4HJp1tIaK465CWLT/fG1aqB7ykr95gHHmlBdGbFeWWfyB4NJJ0nmeIg==}
@@ -2167,8 +2173,8 @@ packages:
       - supports-color
     dev: true
 
-  /esmo/0.16.3:
-    resolution: {integrity: sha512-u+4CR+q54/br7AACbv3iETBbe4Bm3n4T9qJ+Q1NZgnPexQKTKYS18uDFJTaH9laEc5sQvX9T7dwQWbgYADmkuQ==}
+  /esno/0.16.3:
+    resolution: {integrity: sha512-6slSBEV1lMKcX13DBifvnDFpNno5WXhw4j/ff7RI0y51BZiDqEe5dNhhjhIQ3iCOQuzsm2MbVzmwqbN78BBhPg==}
     hasBin: true
     dependencies:
       tsx: 3.4.0

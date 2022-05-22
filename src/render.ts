@@ -14,6 +14,7 @@ export function visualLength(str: string) {
   if (str === '')
     return 0
 
+  str = str.replaceAll(/☐|☑️/g, ' ')
   str = stripAnsi(str)
 
   let width = 0
