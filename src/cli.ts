@@ -16,7 +16,7 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       describe: 'specify the current working directory',
     })
     .option('loglevel', {
-      default: 'error',
+      default: 'info',
       type: 'string',
       describe: 'log level',
       choices: LOGLEVELS,

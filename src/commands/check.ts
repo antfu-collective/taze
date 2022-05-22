@@ -17,7 +17,6 @@ import { colorizeVersionDiff, formatTable } from '../render'
 
 export async function check(options: CheckOptions) {
   const bars = options.loglevel === 'silent' ? null : createMultiProgresBar()
-  console.log()
   let packagesBar: SingleBar | undefined
   const depBar = bars?.create(1, 0)
 
@@ -36,27 +35,7 @@ export async function check(options: CheckOptions) {
     afterPackageEnd(pkg) {
       packagesBar?.increment(1)
       depBar?.stop()
-
       resolvePkgs.push(pkg)
-    },
-    afterPackagesEnd(packages) {
-      if (!options.all) {
-        const counter = packages.reduce((counter, pkg) => {
-          for (let i = 0; i < pkg.resolved.length; i++) {
-            if (pkg.resolved[i].update)
-              return ++counter
-          }
-
-          return counter
-        }, 0)
-
-        const last = packages.length - counter
-
-        if (last === 1)
-          console.log(c.green('dependencies are already up-to-date in one package'))
-        else if (last > 0)
-          console.log(c.green(`dependencies are already up-to-date in ${last} packages`))
-      }
     },
     onDependencyResolved(pkgName, name, progress) {
       depBar?.update(progress, { name })
@@ -67,7 +46,7 @@ export async function check(options: CheckOptions) {
 
   const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
 
-  const lines: string[] = []
+  const lines: string[] = ['']
   const errLines: string[] = []
 
   resolvePkgs.forEach((pkg) => {
@@ -76,9 +55,25 @@ export async function check(options: CheckOptions) {
     errLines.push(...result.errLines)
   })
 
-  if (!options.silent)
-    console.log(lines.join('\n'))
+  if (!options.all) {
+    const counter = resolvePkgs.reduce((counter, pkg) => {
+      for (let i = 0; i < pkg.resolved.length; i++) {
+        if (pkg.resolved[i].update)
+          return ++counter
+      }
 
+      return counter
+    }, 0)
+
+    const last = resolvePkgs.length - counter
+
+    if (last === 1)
+      console.log(c.green('dependencies are already up-to-date in one package'))
+    else if (last > 0)
+      console.log(c.green(`dependencies are already up-to-date in ${last} packages`))
+  }
+
+  console.log(lines.join('\n'))
   if (errLines.length) {
     console.error(c.inverse(c.red(c.bold(' ERROR '))))
     console.error()
