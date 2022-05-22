@@ -116,7 +116,7 @@ export async function check(options: CheckOptions) {
         {
           name: 'install',
           type: 'confirm',
-          message: c.blue('install now?'),
+          message: c.green('install now'),
         },
       ]).then(r => r.install)
     }

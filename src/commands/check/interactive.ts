@@ -5,6 +5,8 @@ import { createControlledPromise, notNullish } from '@antfu/utils'
 import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
 import { getVersionOfRange, updateTargetVersion } from '../../io/resolves'
 import { getPrefixedVersion } from '../../utils/versions'
+import { FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, colorizeVersionDiff, formatTable } from '../../render'
+import { timeDifference } from '../../utils/time'
 import { renderChanges } from './render'
 
 export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptions) {
@@ -52,9 +54,10 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
     return {
       render() {
+        const Y = (v: string) => c.bold(c.green(v))
         console.clear()
-        console.log(`${c.green(c.bold('taze interactive'))} ${c.yellow('[experimental]')}`)
-        console.log(c.blue(`${c.bold('⬆️⬇️')} to select, ${c.bold('space')} to toggle, ${c.bold('enter')} to confirm, ${c.bold('esc')} to cancel`))
+        console.log(`${FIG_BLOCK} ${c.gray(`${Y('⬆️⬇️')} to select, ${Y('space')} to toggle, ${Y('➡️')} to change version`)}`)
+        console.log(`${FIG_BLOCK} ${c.gray(`${Y('enter')} to confirm, ${Y('esc')} to cancel`)}`)
         console.log()
 
         const lines: string[] = []
@@ -90,11 +93,10 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           deps[index].interactiveChecked = !deps[index].interactiveChecked
           return true
         }
-        // TODO: make it ready
-        // else if (key.name === 'right') {
-        //   renderer = createVersionSelectRender(deps[index])
-        //   return true
-        // }
+        else if (key.name === 'right') {
+          renderer = createVersionSelectRender(deps[index])
+          return true
+        }
       },
     }
   }
@@ -104,19 +106,21 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     dep: ResolvedDepChange,
   ): InteractiveRenderer {
     const versions = Object.entries({
-      major: getVersionOfRange(dep, 'major'),
       minor: getVersionOfRange(dep, 'minor'),
-      path: getVersionOfRange(dep, 'patch'),
+      patch: getVersionOfRange(dep, 'patch'),
       ...dep.pkgData.tags,
     })
       .map(([name, version]) => {
         if (!version)
           return undefined
+        const targetVersion = getPrefixedVersion(dep.currentVersion, version)
+        if (!targetVersion || targetVersion === dep.currentVersion)
+          return undefined
         return {
           name,
           version,
           time: dep.pkgData.time?.[version],
-          targetVersion: getPrefixedVersion(dep.currentVersion, version),
+          targetVersion: getPrefixedVersion(dep.currentVersion, version)!,
         }
       })
       .filter(notNullish)
@@ -125,9 +129,20 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     return {
       render() {
         console.clear()
-        console.log(versions)
-        console.log(`Select version for ${c.cyan(c.bold(dep.name))} (current ${dep.currentVersion})`)
+        console.log(`${FIG_BLOCK} ${c.gray(`Select a version for ${c.green(c.bold(dep.name))}${c.gray(` (current ${dep.currentVersion})`)}`)}`)
         console.log()
+        console.log(
+          formatTable(versions.map((v, idx) => {
+            return [
+              (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.gray(v.name)),
+              timeDifference(dep.currentVersionTime),
+              c.gray(dep.currentVersion),
+              c.dim(c.gray('→')),
+              colorizeVersionDiff(dep.currentVersion, v.targetVersion),
+              timeDifference(v.time),
+            ]
+          }), 'LLLL').join('\n'),
+        )
       },
       onKey(key) {
         if (key.name === 'escape') {
@@ -140,6 +155,12 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         }
         else if (key.name === 'down') {
           index = (index + 1) % versions.length
+          return true
+        }
+        // confirm
+        else if (key.name === 'enter' || key.name === 'return' || key.name === 'left' || key.name === 'right') {
+          updateTargetVersion(dep, versions[index].version)
+          renderer = listRenderer
           return true
         }
       },

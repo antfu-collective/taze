@@ -1,5 +1,11 @@
 import c from 'picocolors'
 
+export const FIG_CHECK = c.green('☑️')
+export const FIG_UNCHECK = c.gray('☐')
+export const FIG_POINTER = c.cyan('❯ ')
+export const FIG_NO_POINTER = '  '
+export const FIG_BLOCK = c.bold(c.dim(c.gray('┃')))
+
 const ansiRegex = ({ onlyFirst = false } = {}) => {
   const pattern = [
     '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',

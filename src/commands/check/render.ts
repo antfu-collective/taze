@@ -8,15 +8,15 @@ import type {
 } from '../../types'
 import { DependenciesTypeShortMap } from '../../types'
 import { timeDifference } from '../../utils/time'
-import { colorizeVersionDiff, formatTable } from '../../render'
+import { FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, colorizeVersionDiff, formatTable } from '../../render'
 
 export function renderChange(change: ResolvedDepChange, interactive?: InteractiveContext) {
   const update = change.update && (!interactive || change.interactiveChecked)
   const isSelected = interactive && interactive.isSelected(change)
   const pre = interactive
     ? [
-        isSelected ? c.cyan('❯ ') : '  ',
-        change.interactiveChecked ? c.green('☑️') : c.gray('☐'),
+        isSelected ? FIG_POINTER : FIG_NO_POINTER,
+        change.interactiveChecked ? FIG_CHECK : FIG_UNCHECK,
       ].join('')
     : ' '
 
