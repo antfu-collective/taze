@@ -2,6 +2,7 @@
 import c from 'picocolors'
 import type { SingleBar } from 'cli-progress'
 import { parseNi, parseNu, run } from '@antfu/ni'
+import prompts from 'prompts'
 import { createMultiProgresBar } from '../../log'
 import type {
   CheckOptions,
@@ -50,23 +51,8 @@ export async function check(options: CheckOptions) {
 
   const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
 
-  if (!options.all) {
-    const counter = resolvePkgs.reduce((counter, pkg) => {
-      for (let i = 0; i < pkg.resolved.length; i++) {
-        if (pkg.resolved[i].update)
-          return ++counter
-      }
-
-      return counter
-    }, 0)
-
-    const last = resolvePkgs.length - counter
-
-    if (last === 1)
-      return console.log(c.green('dependencies are already up-to-date in one package'))
-    else if (last > 0)
-      return console.log(c.green(`dependencies are already up-to-date in ${last} packages`))
-  }
+  if (!hasChanges)
+    return console.log(c.green('dependencies are already up-to-date'))
 
   if (options.interactive)
     resolvePkgs = await promptInteractive(resolvePkgs, options)
@@ -74,6 +60,24 @@ export async function check(options: CheckOptions) {
   const { lines, errLines } = renderPackages(resolvePkgs, options)
 
   console.log(lines.join('\n'))
+
+  if (!options.all) {
+    const counter = resolvePkgs.reduce((counter, pkg) => {
+      for (let i = 0; i < pkg.resolved.length; i++) {
+        if (pkg.resolved[i].update)
+          return ++counter
+      }
+      return counter
+    }, 0)
+
+    const last = resolvePkgs.length - counter
+
+    if (last === 1)
+      console.log(c.green('dependencies are already up-to-date in one package\n'))
+    else if (last > 0)
+      console.log(c.green(`dependencies are already up-to-date in ${last} packages\n`))
+  }
+
   if (errLines.length) {
     console.error(c.inverse(c.red(c.bold(' ERROR '))))
     console.error()
@@ -99,14 +103,24 @@ export async function check(options: CheckOptions) {
     console.log()
   }
   else if (hasChanges) {
-    if (!options.install && !options.update) {
+    if (!options.install && !options.update && !options.interactive) {
       console.log(
         c.yellow(`changes wrote to package.json, run ${c.cyan('npm i')} to install updates.`),
       )
     }
 
-    if (options.install || options.update)
+    if (options.install || options.update || options.interactive)
       console.log(c.yellow('changes wrote to package.json'))
+
+    if (options.interactive && !options.install) {
+      options.install = await prompts([
+        {
+          name: 'install',
+          type: 'confirm',
+          message: c.blue('install now?'),
+        },
+      ]).then(r => r.install)
+    }
 
     if (options.install) {
       console.log(c.magenta('installing...'))

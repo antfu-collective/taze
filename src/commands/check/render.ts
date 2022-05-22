@@ -45,31 +45,34 @@ export function renderChanges(
     : resolved.filter(i => i.update)
 
   if (changes.length) {
-    lines.push(`${c.cyan(pkg.name ?? '›')} ${c.dim(filepath)}`, '')
+    const diffCounts: Record<string, number> = {}
+    changes
+      .filter(i => !interactive || i.interactiveChecked)
+      .forEach(({ diff }) => {
+        if (!diff)
+          return
+        if (!diffCounts[diff])
+          diffCounts[diff] = 0
+        diffCounts[diff] += 1
+      })
+    const diffEntries = Object.keys(diffCounts).length
+      ? Object.entries(diffCounts)
+        .map(([key, value]) => `${c.yellow(value)} ${key}`)
+        .join(', ')
+      : c.dim('no change')
+
+    lines.push(
+      // c.dim(c.gray(filepath)),
+      `${c.cyan(pkg.name ?? '›')} ${c.dim('-')} ${diffEntries}`,
+      '',
+    )
 
     lines.push(...formatTable(
       changes.map(c => renderChange(c, interactive)),
       'LLRRRRRL',
     ))
 
-    const counters: Record<string, number> = {}
-
-    changes.forEach(({ diff }) => {
-      if (!diff)
-        return
-      if (!counters[diff])
-        counters[diff] = 0
-
-      counters[diff] += 1
-    })
-
-    if (Object.keys(counters).length) {
-      const versionEntries = Object.entries(counters)
-        .map(([key, value]) => `${c.yellow(value)} ${key}`)
-        .join(', ')
-
-      lines.push('', c.gray(`  ${versionEntries} updates`), '')
-    }
+    lines.push('')
   }
   else if (options.all) {
     lines.push(`${c.cyan(pkg.name)} ${c.dim(filepath)}`)

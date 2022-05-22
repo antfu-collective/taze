@@ -99,7 +99,8 @@ yargs(hideBin(process.argv))
           describe: 'write to package.json',
         })
         .option('interactive', {
-          default: !process.env.CI && process.stdout.isTTY,
+          alias: 'I',
+          default: false, // TODO: enable by default: !process.env.CI && process.stdout.isTTY,
           type: 'boolean',
           describe: 'interactive mode',
         })

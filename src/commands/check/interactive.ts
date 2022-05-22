@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import readline from 'readline'
 import c from 'picocolors'
+import type { ControlledPromise } from '@antfu/utils'
 import { createControlledPromise } from '@antfu/utils'
 import type { CheckOptions, InteractiveContext, PackageMeta } from '../../types'
 import { renderChanges } from './render'
@@ -9,18 +10,13 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
   pkgs.forEach((i) => {
     i.interactiveChecked = true
     i.resolved.forEach((i) => {
-      if (i.latestVersionAvailable && !i.update) {
-        i.update = true
-        i.interactiveChecked = false
-        i.targetVersion = i.latestVersionAvailable
-      }
-      else {
-        i.interactiveChecked = i.update
-      }
+      i.interactiveChecked = i.update
     })
   })
 
-  const listRenderer = createListRenderer(pkgs, options)
+  const promise = createControlledPromise<PackageMeta[]>()
+
+  const listRenderer = createListRenderer(pkgs, options, promise)
   let renderer: InteractiveRenderer = listRenderer
 
   process.stdin.resume()
@@ -29,7 +25,6 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
   if (process.stdin.isTTY)
     process.stdin.setRawMode(true)
 
-  const promise = createControlledPromise<PackageMeta[]>()
   process.stdin.on('keypress', (str: string, key: TerminalKey) => {
     if ((key.ctrl && key.name === 'c') || key.name === 'escape') {
       process.exit()
@@ -68,7 +63,11 @@ interface InteractiveRenderer {
   onKey(key: TerminalKey): boolean | void
 }
 
-export function createListRenderer(pkgs: PackageMeta[], options: CheckOptions): InteractiveRenderer {
+export function createListRenderer(
+  pkgs: PackageMeta[],
+  options: CheckOptions,
+  promise: ControlledPromise<PackageMeta[]>,
+): InteractiveRenderer {
   const deps = pkgs.flatMap(i => i.resolved.filter(i => i.update))
   let index = 0
   const ctx: InteractiveContext = {
@@ -80,7 +79,8 @@ export function createListRenderer(pkgs: PackageMeta[], options: CheckOptions): 
   return {
     render() {
       console.clear()
-      console.log(`${c.inverse(c.green(c.bold(' taze ')))} ${c.yellow(`${c.bold('⬆️⬇️')} to select, ${c.bold('space')} to toggle, ${c.bold('enter')} to confirm, ${c.bold('esc')} to cancel`)}`)
+      console.log(`${c.green(c.bold('taze interactive'))} ${c.yellow('[experimental]')}`)
+      console.log(c.blue(`${c.bold('⬆️⬇️')} to select, ${c.bold('space')} to toggle, ${c.bold('enter')} to confirm, ${c.bold('esc')} to cancel`))
       console.log()
 
       const lines: string[] = []
@@ -92,7 +92,19 @@ export function createListRenderer(pkgs: PackageMeta[], options: CheckOptions): 
       console.log(lines.join('\n'))
     },
     onKey(key) {
-      if (key.name === 'up') {
+      if (key.name === 'escape') {
+        process.exit()
+      }
+      else if (key.name === 'enter' || key.name === 'return') {
+        console.clear()
+        pkgs.forEach((i) => {
+          i.resolved.forEach((i) => {
+            i.update = !!i.interactiveChecked
+          })
+        })
+        promise.resolve(pkgs)
+      }
+      else if (key.name === 'up') {
         index = (index - 1 + deps.length) % deps.length
         return true
       }
@@ -104,6 +116,7 @@ export function createListRenderer(pkgs: PackageMeta[], options: CheckOptions): 
         deps[index].interactiveChecked = !deps[index].interactiveChecked
         return true
       }
+      // TODO: press right to select version for package
     },
   }
 }
