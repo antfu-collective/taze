@@ -49,13 +49,12 @@ export async function check(options: CheckOptions) {
 
   bars?.stop()
 
-  const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
-
-  if (!hasChanges)
-    return console.log(c.green('dependencies are already up-to-date'))
-
   if (options.interactive)
     resolvePkgs = await promptInteractive(resolvePkgs, options)
+
+  const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
+  if (!hasChanges)
+    return console.log(c.green('dependencies are already up-to-date'))
 
   const { lines, errLines } = renderPackages(resolvePkgs, options)
 

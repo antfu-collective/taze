@@ -1,26 +1,17 @@
 import fs from 'fs'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
-import type { Packument } from 'pacote'
 import pacote from 'pacote'
 import semver from 'semver'
 import _debug from 'debug'
 import { npmConfig } from '../utils/npm'
-import type { DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import type { DependencyFilter, DependencyResolvedCallback, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
-import { getMaxSatisfying } from '../utils/versions'
+import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
 const debug = {
   cache: _debug('taze:cache'),
   resolve: _debug('taze:resolve'),
-}
-
-interface PackageData {
-  tags: Record<string, string>
-  versions: string[]
-  time?: Record<string, string>
-  raw?: Packument
-  error?: Error | string
 }
 
 let cache: Record<string, { cacheTime: number; data: PackageData }> = {}
@@ -95,6 +86,23 @@ export async function getPackageData(name: string): Promise<PackageData> {
   }
 }
 
+export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
+  const { versions, tags } = dep.pkgData
+  return getMaxSatisfying(versions, dep.currentVersion, range, tags)
+}
+
+export function updateTargetVersion(dep: ResolvedDepChange, version: string) {
+  dep.targetVersion = getPrefixedVersion(dep.currentVersion, version) || dep.currentVersion
+  dep.targetVersionTime = dep.pkgData.time?.[version]
+
+  const current = semver.minVersion(dep.currentVersion)!
+  const target = semver.minVersion(dep.targetVersion)!
+
+  dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
+  dep.diff = semver.diff(current, target)
+  dep.update = dep.diff !== null && semver.lt(current, target)
+}
+
 export async function resolveDependency(
   raw: RawDep,
   mode: RangeMode,
@@ -110,13 +118,15 @@ export async function resolveDependency(
   }
 
   const dep = { ...raw } as ResolvedDepChange
-  const { versions, tags, error, time = {} } = await getPackageData(dep.name)
+  const pkgData = await getPackageData(dep.name)
+  const { tags, error } = pkgData
+  dep.pkgData = pkgData
   let err: Error | string | null = null
-  let max: { version: string; prefix: string | null; prefixed: string | null } | null = null
+  let target: string | undefined
 
   if (error == null) {
     try {
-      max = getMaxSatisfying(versions, dep.currentVersion, mode, tags)
+      target = getVersionOfRange(dep, mode)
     }
     catch (e: any) {
       err = e.message || e
@@ -126,31 +136,21 @@ export async function resolveDependency(
     err = error
   }
 
-  if (err) {
+  if (target)
+    updateTargetVersion(dep, target)
+  else
     dep.targetVersion = dep.currentVersion
+
+  const targetVersion = semver.minVersion(target || dep.targetVersion)
+  if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
+    dep.latestVersionAvailable = tags.latest
+
+  if (err) {
     dep.diff = 'error'
     dep.update = false
     dep.resolveError = err
     return dep
   }
-
-  if (max?.prefixed) {
-    dep.targetVersion = max.prefixed
-    dep.targetVersionTime = time[max.version]
-  }
-  else {
-    dep.targetVersion = dep.currentVersion
-  }
-
-  const current = semver.minVersion(dep.currentVersion)!
-  const latest = semver.minVersion(dep.targetVersion)!
-  dep.currentVersionTime = time[current.toString()]
-  dep.diff = semver.diff(current, latest)
-  dep.update = dep.diff !== null && semver.lt(current, latest)
-
-  const targetVersion = semver.minVersion(max?.version || dep.targetVersion)
-  if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
-    dep.latestVersionAvailable = tags.latest
 
   return dep
 }

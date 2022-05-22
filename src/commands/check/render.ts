@@ -1,4 +1,5 @@
 import c from 'picocolors'
+import semver from 'semver'
 import type {
   CheckOptions,
   InteractiveContext,
@@ -22,12 +23,14 @@ export function renderChange(change: ResolvedDepChange, interactive?: Interactiv
   return [
     `${pre} ${update ? change.name : c.gray(change.name)}`,
     c.gray(DependenciesTypeShortMap[change.source]),
-    update ? timeDifference(change.currentVersionTime) : '',
-    update ? c.gray(change.currentVersion) : '',
+    timeDifference(change.currentVersionTime),
+    c.gray(change.currentVersion),
     update ? c.dim(c.gray('→')) : '',
-    update ? colorizeVersionDiff(change.currentVersion, change.targetVersion) : c.gray(change.currentVersion),
-    timeDifference(change.targetVersionTime),
-    change.latestVersionAvailable ? c.dim(c.magenta(`(${change.latestVersionAvailable} available)`)) : '',
+    update ? colorizeVersionDiff(change.currentVersion, change.targetVersion) : c.gray(c.strikethrough(change.targetVersion)),
+    update ? timeDifference(change.targetVersionTime) : '',
+    change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable
+      ? c.dim(c.magenta(`(${change.latestVersionAvailable} available)`))
+      : '',
   ]
 }
 

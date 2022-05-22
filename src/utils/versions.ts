@@ -55,8 +55,15 @@ export function applyVersionRangePrefix(version: string | null, prefix: string |
   return prefix + version
 }
 
-export function getMaxSatisfying(versions: string[], current: string, mode: RangeMode, tags: Record<string, string>) {
+export function getPrefixedVersion(current: string, target: string) {
   const prefix = getVersionRangePrefix(current)
+  return applyVersionRangePrefix(
+    target,
+    prefix,
+  )
+}
+
+export function getMaxSatisfying(versions: string[], current: string, mode: RangeMode, tags: Record<string, string>): string | undefined {
   let version = null
 
   if (mode === 'latest') {
@@ -66,7 +73,7 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
     version = tags.next
   }
   else if (mode === 'default' && (current === '*' || current.trim() === '')) {
-    return null
+    return
   }
   else {
     const range = changeVersionRange(current, mode)
@@ -77,14 +84,7 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
   }
 
   if (!version)
-    return null
+    return
 
-  return {
-    version,
-    prefix,
-    prefixed: applyVersionRangePrefix(
-      version,
-      prefix,
-    ),
-  }
+  return version
 }

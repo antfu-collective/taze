@@ -1,3 +1,4 @@
+import type { Packument } from 'pacote'
 import type semver from 'semver'
 
 export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'latest' | 'newest'
@@ -18,12 +19,21 @@ export interface RawDep {
 
 export type DiffType = ReturnType<typeof semver['diff']> | 'error'
 
+export interface PackageData {
+  tags: Record<string, string>
+  versions: string[]
+  time?: Record<string, string>
+  raw?: Packument
+  error?: Error | string
+}
+
 export interface ResolvedDepChange extends RawDep {
   latestVersionAvailable?: string
   targetVersion: string
   targetVersionTime?: string
   currentVersionTime?: string
   diff: DiffType
+  pkgData: PackageData
   resolveError?: Error | string | null
   interactiveChecked?: boolean
 }
