@@ -27,7 +27,7 @@ let cache: Record<string, { cacheTime: number; data: PackageData }> = {}
 let cacheChanged = false
 
 const cachePath = resolve(fileURLToPath(import.meta.url), '../cache.json')
-const cacheTTL = 5 * 60_000 // 5min
+const cacheTTL = 30 * 60_000 // 30min
 
 function now() {
   return +new Date()
