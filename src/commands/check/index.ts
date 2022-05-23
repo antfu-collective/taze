@@ -14,9 +14,6 @@ import { promptInteractive } from './interactive'
 import { renderPackages } from './render'
 
 export async function check(options: CheckOptions) {
-  if (options.interactive)
-    options.write = true
-
   const bars = options.loglevel === 'silent' ? null : createMultiProgresBar()
   let packagesBar: SingleBar | undefined
   const depBar = bars?.create(1, 0)
@@ -84,6 +81,17 @@ export async function check(options: CheckOptions) {
     console.error()
   }
 
+  if (options.interactive && !options.write) {
+    options.write = await prompts([
+      {
+        name: 'write',
+        type: 'confirm',
+        initial: true,
+        message: c.green('write to package.json'),
+      },
+    ]).then(r => r.write)
+  }
+
   if (options.write) {
     for (const pkg of resolvePkgs)
       await writePackage(pkg, options)
@@ -104,18 +112,19 @@ export async function check(options: CheckOptions) {
   else if (hasChanges) {
     if (!options.install && !options.update && !options.interactive) {
       console.log(
-        c.yellow(`changes wrote to package.json, run ${c.cyan('npm i')} to install updates.`),
+        c.yellow(`ℹ changes wrote to package.json, run ${c.cyan('npm i')} to install updates.`),
       )
     }
 
     if (options.install || options.update || options.interactive)
-      console.log(c.yellow('changes wrote to package.json'))
+      console.log(c.yellow('ℹ changes wrote to package.json'))
 
     if (options.interactive && !options.install) {
       options.install = await prompts([
         {
           name: 'install',
           type: 'confirm',
+          initial: true,
           message: c.green('install now'),
         },
       ]).then(r => r.install)
