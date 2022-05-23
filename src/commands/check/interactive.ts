@@ -56,7 +56,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
       render() {
         const Y = (v: string) => c.bold(c.green(v))
         console.clear()
-        console.log(`${FIG_BLOCK} ${c.gray(`${Y('⬆️⬇️')} to select, ${Y('space')} to toggle, ${Y('➡️')} to change version`)}`)
+        console.log(`${FIG_BLOCK} ${c.gray(`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`)}`)
         console.log(`${FIG_BLOCK} ${c.gray(`${Y('enter')} to confirm, ${Y('esc')} to cancel`)}`)
         console.log()
 
