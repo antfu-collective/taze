@@ -106,6 +106,7 @@ export function updateTargetVersion(dep: ResolvedDepChange, version: string, for
   catch (e) {
     if (!forgiving)
       throw e
+    dep.targetVersion = dep.currentVersion
     dep.diff = 'error'
     dep.update = false
   }
@@ -148,6 +149,11 @@ export async function resolveDependency(
     updateTargetVersion(dep, target)
   else
     dep.targetVersion = dep.currentVersion
+
+  if (dep.targetVersion === dep.currentVersion) {
+    dep.diff = null
+    dep.update = false
+  }
 
   try {
     const targetVersion = semver.minVersion(target || dep.targetVersion)

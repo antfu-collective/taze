@@ -107,9 +107,7 @@ function renderResolveError(dep: ResolvedDepChange) {
     lines.push(c.red(`> ${c.underline(dep.name)} not found`))
   }
   else if (dep.resolveError === 'invalid_range') {
-    lines.push(
-      c.yellow(`> ${c.underline(dep.name)} has an unresolvable version range: ${c.underline(dep.currentVersion)}`),
-    )
+    // lines.push(c.yellow(`> ${c.underline(dep.name)} has an unresolvable version range: ${c.underline(dep.currentVersion)}`))
   }
   else {
     lines.push(c.red(`> ${c.underline(dep.name)} unknown error`))
