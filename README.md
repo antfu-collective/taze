@@ -72,6 +72,20 @@ taze --include lodash,webpack
 taze --include /react/ --exclude react-dom # regex is also supported
 ```
 
+### Config file
+
+With `.tazerc.json` file you can configure the same options the commands have.
+
+```json
+{
+  "exclude": [
+    "typescript"
+  ],
+  "force": true,
+  "install": true
+}
+```
+
 ## Programmatic APIs
 
 > TODO:
