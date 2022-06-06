@@ -4,13 +4,17 @@ import fg from 'fast-glob'
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { dumpDependencies, parseDependencies } from './dependencies'
+import detectIndent from 'detect-indent'
 
 export async function readJSON(filepath: string) {
   return JSON.parse(await fs.readFile(filepath, 'utf-8'))
 }
 
 export async function writeJSON(filepath: string, data: any) {
-  return await fs.writeFile(filepath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8')
+  let actualContent = await fs.readFile(filepath, 'utf-8');
+  let fileIndent = detectIndent(actualContent).indent || '  ';
+
+  return await fs.writeFile(filepath, `${JSON.stringify(data, null, fileIndent)}\n`, 'utf-8')
 }
 
 export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
