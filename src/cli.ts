@@ -6,6 +6,7 @@ import { check } from './commands/check'
 import { usage } from './commands/usage'
 import type { CommonOptions } from './types'
 import { LOGLEVELS, resolveConfig } from './config'
+import packageJson from "../package.json"
 
 function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
   return args
@@ -131,6 +132,6 @@ yargs(hideBin(process.argv))
   )
   .showHelpOnFail(false)
   .alias('h', 'help')
-  .alias('v', 'version')
+  .version('version', packageJson.version).alias('v', 'version')
   .help()
   .argv
