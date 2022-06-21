@@ -132,6 +132,7 @@ yargs(hideBin(process.argv))
   )
   .showHelpOnFail(false)
   .alias('h', 'help')
-  .version('version', version).alias('v', 'version')
+  .version('version', version)
+  .alias('v', 'version')
   .help()
   .argv
