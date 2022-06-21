@@ -2,6 +2,7 @@ import type { Argv } from 'yargs'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import c from 'picocolors'
+import { version } from '../package.json'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
 import type { CommonOptions } from './types'
@@ -131,6 +132,7 @@ yargs(hideBin(process.argv))
   )
   .showHelpOnFail(false)
   .alias('h', 'help')
+  .version('version', version)
   .alias('v', 'version')
   .help()
   .argv
