@@ -2,11 +2,11 @@ import type { Argv } from 'yargs'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import c from 'picocolors'
+import packageJson from '../package.json'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
 import type { CommonOptions } from './types'
 import { LOGLEVELS, resolveConfig } from './config'
-import packageJson from "../package.json"
 
 function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
   return args
