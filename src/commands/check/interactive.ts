@@ -101,7 +101,6 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function createVersionSelectRender(
     dep: ResolvedDepChange,
   ): InteractiveRenderer {

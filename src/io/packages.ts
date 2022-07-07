@@ -1,18 +1,18 @@
 import path from 'path'
 import { promises as fs } from 'fs'
 import fg from 'fast-glob'
+import detectIndent from 'detect-indent'
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { dumpDependencies, parseDependencies } from './dependencies'
-import detectIndent from 'detect-indent'
 
 export async function readJSON(filepath: string) {
   return JSON.parse(await fs.readFile(filepath, 'utf-8'))
 }
 
 export async function writeJSON(filepath: string, data: any) {
-  let actualContent = await fs.readFile(filepath, 'utf-8');
-  let fileIndent = detectIndent(actualContent).indent || '  ';
+  const actualContent = await fs.readFile(filepath, 'utf-8')
+  const fileIndent = detectIndent(actualContent).indent || '  '
 
   return await fs.writeFile(filepath, `${JSON.stringify(data, null, fileIndent)}\n`, 'utf-8')
 }
