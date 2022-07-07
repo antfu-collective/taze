@@ -88,4 +88,16 @@ test('getMaxSatisfying', async () => {
     latest: '1.0.0-alpha.4',
     next: '1.0.0-draft.4',
   }))
+
+  // should return the last version on newest mode
+  // a good test case for this is @sveltejs/vite-plugin-svelte
+  expect('1.0.0-next.4').toBe(getMaxSatisfying([
+    '1.0.0-next.1',
+    '1.0.0-next.2',
+    '1.0.0-next.3',
+    '1.0.0-next.4',
+  ], '^1.0.0-next.1', 'newest', {
+    latest: '1.0.0-next.4',
+    next: '1.0.0-next.2',
+  }))
 })
