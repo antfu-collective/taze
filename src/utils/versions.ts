@@ -80,7 +80,16 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
     if (!range)
       throw new Error('invalid_range')
 
-    version = semver.maxSatisfying(versions, range)
+    let maxVersion: string | null = tags.latest
+    if (!semver.satisfies(maxVersion, range))
+      maxVersion = null
+
+    versions.forEach((ver) => {
+      if (semver.satisfies(ver, range)) {
+        if (!maxVersion || semver.lte(ver, maxVersion))
+          version = ver
+      }
+    })
   }
 
   if (!version)

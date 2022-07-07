@@ -73,4 +73,19 @@ test('getMaxSatisfying', async () => {
   expect(newest).toBe(getMaxSatisfying(versions, '4.0.0', 'newest', tags))
   expect(newest).toBe(getMaxSatisfying(versions, '^4.0.0', 'newest', tags))
   expect(newest).toBe(getMaxSatisfying(versions, '>4.0.0', 'newest', tags))
+
+  // should not exceed latest version if it is in specified range, see #31
+  expect('1.0.0-alpha.4').toBe(getMaxSatisfying([
+    '1.0.0-alpha.1',
+    '1.0.0-alpha.2',
+    '1.0.0-alpha.3',
+    '1.0.0-alpha.4',
+    '1.0.0-draft.1',
+    '1.0.0-draft.2',
+    '1.0.0-draft.3',
+    '1.0.0-draft.4',
+  ], '^1.0.0-alpha.1', 'default', {
+    latest: '1.0.0-alpha.4',
+    next: '1.0.0-draft.4',
+  }))
 })
