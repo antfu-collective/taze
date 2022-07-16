@@ -105,7 +105,7 @@ export async function check(options: CheckOptions) {
       console.log(`Run ${c.cyan('taze major')} to check major updates`)
 
     if (hasChanges)
-      console.log(`Run ${c.green('taze -w')} to write package.json`)
+      console.log(`Add ${c.green('-w')} to write package.json`)
 
     console.log()
   }
