@@ -5,9 +5,10 @@ import pacote from 'pacote'
 import semver from 'semver'
 import _debug from 'debug'
 import { npmConfig } from '../utils/npm'
-import type { DependencyFilter, DependencyResolvedCallback, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
+import { getPackageMode } from '../utils/config'
 
 const debug = {
   cache: _debug('taze:cache'),
@@ -114,10 +115,19 @@ export function updateTargetVersion(dep: ResolvedDepChange, version: string, for
 
 export async function resolveDependency(
   raw: RawDep,
-  mode: RangeMode,
+  options: CheckOptions,
   filter: DependencyFilter = () => true,
 ) {
-  if (!raw.update || !await Promise.resolve(filter(raw))) {
+  const dep = { ...raw } as ResolvedDepChange
+
+  const configMode = getPackageMode(dep.name, options)
+  const optionMode = options.mode
+  const mergeMode = configMode
+    ? (configMode === optionMode)
+        ? optionMode
+        : optionMode === 'default' ? configMode : 'ignore'
+    : optionMode
+  if (!raw.update || !await Promise.resolve(filter(raw)) || mergeMode === 'ignore') {
     return {
       ...raw,
       diff: null,
@@ -126,7 +136,6 @@ export async function resolveDependency(
     } as ResolvedDepChange
   }
 
-  const dep = { ...raw } as ResolvedDepChange
   const pkgData = await getPackageData(dep.name)
   const { tags, error } = pkgData
   dep.pkgData = pkgData
@@ -135,7 +144,7 @@ export async function resolveDependency(
 
   if (error == null) {
     try {
-      target = getVersionOfRange(dep, mode)
+      target = getVersionOfRange(dep, mergeMode as RangeMode)
     }
     catch (e: any) {
       err = e.message || e
@@ -174,7 +183,7 @@ export async function resolveDependency(
 
 export async function resolveDependencies(
   deps: RawDep[],
-  mode: RangeMode,
+  options: CheckOptions,
   filter: DependencyFilter = () => true,
   progressCallback: (name: string, counter: number, total: number) => void = () => {},
 ) {
@@ -184,7 +193,7 @@ export async function resolveDependencies(
   return Promise.all(
     deps
       .map(async (raw) => {
-        const dep = await resolveDependency(raw, mode, filter)
+        const dep = await resolveDependency(raw, options, filter)
         counter += 1
         progressCallback(raw.name, counter, total)
         return dep
@@ -192,8 +201,8 @@ export async function resolveDependencies(
   )
 }
 
-export async function resolvePackage(pkg: PackageMeta, mode: RangeMode, filter?: DependencyFilter, progress?: DependencyResolvedCallback) {
-  const resolved = await resolveDependencies(pkg.deps, mode, filter, (name, counter, total) => progress?.(pkg.name, name, counter, total))
+export async function resolvePackage(pkg: PackageMeta, options: CheckOptions, filter?: DependencyFilter, progress?: DependencyResolvedCallback) {
+  const resolved = await resolveDependencies(pkg.deps, options, filter, (name, counter, total) => progress?.(pkg.name, name, counter, total))
   diffSorter(resolved)
   pkg.resolved = resolved
   return pkg

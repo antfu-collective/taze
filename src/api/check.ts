@@ -1,4 +1,4 @@
-import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RangeMode, RawDep } from '../types'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RawDep } from '../types'
 import { loadPackages, writePackage } from '../io/packages'
 import { dumpCache, loadCache, resolvePackage } from '../io/resolves'
 
@@ -45,7 +45,7 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
 }
 
 async function CheckSingleProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter = () => true, callbacks: CheckEventCallbacks = {}) {
-  await resolvePackage(pkg, options.mode as RangeMode, filter, callbacks.onDependencyResolved)
+  await resolvePackage(pkg, options, filter, callbacks.onDependencyResolved)
 
   const { resolved } = pkg
   const changes = resolved.filter(i => i.update)
