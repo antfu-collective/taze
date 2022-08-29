@@ -1,6 +1,6 @@
-import fs from 'fs'
+import { existsSync, promises as fs, lstatSync } from 'fs'
 import { resolve } from 'path'
-import { fileURLToPath } from 'url'
+import os from 'os'
 import pacote from 'pacote'
 import semver from 'semver'
 import _debug from 'debug'
@@ -18,7 +18,8 @@ const debug = {
 let cache: Record<string, { cacheTime: number; data: PackageData }> = {}
 let cacheChanged = false
 
-const cachePath = resolve(fileURLToPath(import.meta.url), '../cache.json')
+const cacheDir = resolve(os.tmpdir(), 'taze')
+const cachePath = resolve(cacheDir, 'cache.json')
 const cacheTTL = 30 * 60_000 // 30min
 
 function now() {
@@ -29,21 +30,28 @@ function ttl(n: number) {
   return now() - n
 }
 
-export function loadCache() {
-  if (fs.existsSync(cachePath) && ttl(fs.lstatSync(cachePath).mtimeMs) < cacheTTL) {
+export async function loadCache() {
+  if (existsSync(cachePath) && ttl(lstatSync(cachePath).mtimeMs) < cacheTTL) {
     debug.cache(`cache loaded from ${cachePath}`)
-    cache = JSON.parse(fs.readFileSync(cachePath, 'utf-8'))
+    cache = JSON.parse(await fs.readFile(cachePath, 'utf-8'))
   }
   else {
     debug.cache('no cache found')
   }
 }
 
-export function dumpCache() {
+export async function dumpCache() {
   if (!cacheChanged)
     return
-  fs.writeFileSync(cachePath, JSON.stringify(cache), 'utf-8')
-  debug.cache(`cache saved to ${cachePath}`)
+  try {
+    await fs.mkdir(cacheDir, { recursive: true })
+    await fs.writeFile(cachePath, JSON.stringify(cache), 'utf-8')
+    debug.cache(`cache saved to ${cachePath}`)
+  }
+  catch (err) {
+    console.warn('Failed to save cache')
+    console.warn(err)
+  }
 }
 
 export async function getPackageData(name: string): Promise<PackageData> {
