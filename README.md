@@ -74,26 +74,31 @@ taze --include /react/ --exclude react-dom # regex is also supported
 
 ### Config file
 
-With `.tazerc.json` file you can configure the same options the commands have.
+With `taze.config.js` file you can configure the same options the commands have.
 
-```json
-{
-  "exclude": [
-    "typescript"
+```js
+import { defineConfig } from 'taze'
+
+export default defineConfig({
+  // ignore packages from bumpping
+  exclude: [
+    'webpack'
   ],
-  "force": true,
-  "install": true,
-  "packageMode": {
-    "typescript": "major",
-    "unocss": "ignore",
-    "/vue/": "latest"
+  // fetch latest package info from registry without cache
+  force: true,
+  // write to package.json
+  write: true,
+  // run `npm install` or `yarn install` right after bumpping
+  install: true,
+  // override with different dumpping mode for each package
+  packageMode: {
+    'typescript': 'major',
+    'unocss': 'ignore',
+    // regex starts and ends with '/'
+    '/vue/': 'latest'
   }
-}
+})
 ```
-
-## Programmatic APIs
-
-> TODO:
 
 ## Alternatives
 
