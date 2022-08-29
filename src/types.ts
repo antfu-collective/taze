@@ -2,6 +2,7 @@ import type { Packument } from 'pacote'
 import type semver from 'semver'
 
 export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'latest' | 'newest'
+export type PackageMode = Omit<RangeMode, 'default'> | 'ignore'
 export type DepType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies'
 export const DependenciesTypeShortMap = {
   dependencies: '',
@@ -48,6 +49,7 @@ export interface CommonOptions {
   loglevel: string
   silent?: boolean
   force?: boolean
+  packageMode?: { [name: string]: PackageMode }
 }
 
 export interface UsageOptions extends CommonOptions {

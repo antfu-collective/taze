@@ -1,0 +1,10 @@
+{
+  "exclude": [
+    "lodash"
+  ],
+  "packageMode": {
+    "typescript":"major",
+    "unocss": "ignore",
+    "/vue/": "latest"
+  }
+}

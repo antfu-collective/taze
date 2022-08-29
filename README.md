@@ -82,7 +82,12 @@ With `.tazerc.json` file you can configure the same options the commands have.
     "typescript"
   ],
   "force": true,
-  "install": true
+  "install": true,
+  "packageMode": {
+    "typescript": "major",
+    "unocss": "ignore",
+    "/vue/": "latest"
+  }
 }
 ```
 

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import type { DependencyFilter, RawDep } from '../src'
+import type { CheckOptions, DependencyFilter, RawDep } from '../src'
 import { resolveDependency } from '../src'
 
 const filter: DependencyFilter = () => true
@@ -15,56 +15,68 @@ const makePkg = (ver: string): RawDep => {
 }
 
 test('resolveDependency', async () => {
+  const options: CheckOptions = {
+    cwd: process.cwd(),
+    loglevel: 'silent',
+    mode: 'default',
+    write: false,
+    all: false,
+  }
   // default
-  expect(false).toBe((await resolveDependency(makePkg(''), 'default', filter)).update)
-  expect(false).toBe((await resolveDependency(makePkg('*'), 'default', filter)).update)
-  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), 'default', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), 'default', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), 'default', filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
+  options.mode = 'major'
   // major
-  expect(false).toBe((await resolveDependency(makePkg(''), 'major', filter)).update)
-  expect(false).toBe((await resolveDependency(makePkg('*'), 'major', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'major', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), 'major', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), 'major', filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
+  options.mode = 'minor'
   // minor
-  expect(false).toBe((await resolveDependency(makePkg(''), 'minor', filter)).update)
-  expect(false).toBe((await resolveDependency(makePkg('*'), 'minor', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'minor', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), 'minor', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), 'minor', filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
+  options.mode = 'patch'
   // patch
-  expect(false).toBe((await resolveDependency(makePkg(''), 'patch', filter)).update)
-  expect(false).toBe((await resolveDependency(makePkg('*'), 'patch', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'patch', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), 'patch', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), 'patch', filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
+  options.mode = 'latest'
   // latest
-  expect(false).toBe((await resolveDependency(makePkg(''), 'latest', filter)).update)
-  expect(false).toBe((await resolveDependency(makePkg('*'), 'latest', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'latest', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), 'latest', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), 'latest', filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
+  options.mode = 'newest'
   // newest
-  expect(false).toBe((await resolveDependency(makePkg(''), 'newest', filter)).update)
-  expect(false).toBe((await resolveDependency(makePkg('*'), 'newest', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), 'newest', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), 'newest', filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), 'newest', filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
-  expect((await resolveDependency(makePkg(''), 'newest', filter)).targetVersion)
+  expect((await resolveDependency(makePkg(''), options, filter)).targetVersion)
     .toMatch('')
-  expect((await resolveDependency(makePkg('workspace:*'), 'newest', filter)).targetVersion)
+  expect((await resolveDependency(makePkg('workspace:*'), options, filter)).targetVersion)
     .toMatch('workspace:*')
-  expect((await resolveDependency(makePkg('workspace:*'), 'newest', filter)).resolveError)
+  expect((await resolveDependency(makePkg('workspace:*'), options, filter)).resolveError)
     .toBeUndefined()
-  expect((await resolveDependency(makePkg('random'), 'newest', filter)).targetVersion)
+  expect((await resolveDependency(makePkg('random'), options, filter)).targetVersion)
     .toMatch('random')
-  expect((await resolveDependency(makePkg('random'), 'newest', filter)).resolveError)
+  expect((await resolveDependency(makePkg('random'), options, filter)).resolveError)
     .toBeUndefined()
 })

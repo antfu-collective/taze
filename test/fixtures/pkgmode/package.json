@@ -1,0 +1,12 @@
+{
+  "name": "@taze/pkgmode",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "^3.21.0",
+    "typescript": "^0.22.6",
+    "vite": "^2.1.0",
+    "vue": "^2.5.0",
+    "vue-router": "^4.0.2"
+  }
+}
