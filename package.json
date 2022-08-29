@@ -26,7 +26,7 @@
   "scripts": {
     "lint": "eslint .",
     "dev": "cross-env DEBUG=taze:* esmo ./src/cli.ts",
-    "start": "esmo ./src/cli.ts",
+    "start": "esno ./src/cli.ts",
     "build": "unbuild",
     "prepublishOnly": "nr build",
     "release": "bumpp --commit --tag --push && pnpm publish --no-git-checks",
@@ -39,6 +39,7 @@
     "pacote": "^13",
     "prompts": "^2.4.2",
     "semver": "^7.3.7",
+    "unconfig": "^0.3.5",
     "yargs": "^17.5.1"
   },
   "devDependencies": {
@@ -61,6 +62,7 @@
     "fast-glob": "^3.2.11",
     "find-up": "^6.3.0",
     "picocolors": "^1.0.0",
+    "taze": "workspace:*",
     "rimraf": "^3.0.2",
     "typescript": "^4.7.4",
     "unbuild": "^0.7.4",

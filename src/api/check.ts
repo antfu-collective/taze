@@ -14,7 +14,7 @@ export interface CheckEventCallbacks {
 
 export async function CheckPackages(options: CheckOptions, callbacks: CheckEventCallbacks = {}) {
   if (!options.force)
-    loadCache()
+    await loadCache()
 
   // packages loading
   const packages = await loadPackages(options)
@@ -37,7 +37,7 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
 
   callbacks.afterPackagesEnd?.(packages)
 
-  dumpCache()
+  await dumpCache()
 
   return {
     packages,

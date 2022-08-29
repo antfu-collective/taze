@@ -1,13 +1,11 @@
-import { promises as fs } from 'fs'
-import { findUp } from 'find-up'
 import deepmerge from 'deepmerge'
 import _debug from 'debug'
+import { createConfigLoader } from 'unconfig'
 import type { CommonOptions } from './types'
 import { toArray } from './utils/toArray'
 
 const debug = _debug('taze:config')
 
-export const CONFIG_FILES = ['.tazerc.json', '.tazerc']
 export const LOGLEVELS = ['debug', 'info', 'warn', 'error', 'silent']
 
 function normalizeConfig<T extends CommonOptions>(options: T) {
@@ -22,13 +20,32 @@ function normalizeConfig<T extends CommonOptions>(options: T) {
 
 export async function resolveConfig<T extends CommonOptions>(options: T): Promise<T> {
   options = normalizeConfig(options)
-  const match = await findUp(CONFIG_FILES, { cwd: options.cwd || process.cwd() })
 
-  if (!match)
+  const loader = createConfigLoader<CommonOptions>({
+    sources: [
+      {
+        files: [
+          'taze.config',
+        ],
+      },
+      {
+        files: [
+          '.tazerc',
+        ],
+        extensions: ['json', ''],
+      },
+    ],
+    cwd: options.cwd || process.cwd(),
+    merge: false,
+  })
+
+  const config = await loader.load()
+
+  if (!config.sources.length)
     return options
 
-  debug(`config file found ${match}`)
-  const configOptions = normalizeConfig(JSON.parse(await fs.readFile(match, 'utf-8')))
+  debug(`config file found ${config.sources[0]}`)
+  const configOptions = normalizeConfig(config.config)
 
   return deepmerge(configOptions, options) as T
 }
