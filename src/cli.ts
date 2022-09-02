@@ -38,6 +38,16 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       type: 'boolean',
       describe: 'force fetching from server, bypass cache',
     })
+    .option('sort', {
+      alias: 's',
+      type: 'boolean',
+      describe: 'sort by most outdated',
+    })
+    .option('sortReversed', {
+      alias: 'S',
+      type: 'boolean',
+      describe: 'sort by least outdated',
+    })
     .option('include', {
       alias: 'n',
       type: 'string',

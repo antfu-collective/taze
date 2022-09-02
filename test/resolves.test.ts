@@ -21,6 +21,8 @@ test('resolveDependency', async () => {
     mode: 'default',
     write: false,
     all: false,
+    sortReversed: false,
+    sort: false,
   }
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
