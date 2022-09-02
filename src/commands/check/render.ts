@@ -7,8 +7,8 @@ import type {
   ResolvedDepChange,
 } from '../../types'
 import { DependenciesTypeShortMap } from '../../types'
-import { sortDepChanges } from '../../utils/sort';
-import { timeDifference, toDate } from '../../utils/time'
+import { sortDepChanges } from '../../utils/sort'
+import { timeDifference } from '../../utils/time'
 import { FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, colorizeVersionDiff, formatTable } from '../../render'
 
 export function renderChange(change: ResolvedDepChange, interactive?: InteractiveContext) {
@@ -71,9 +71,8 @@ export function renderChanges(
       '',
     )
 
-    if (options.sort || options.sortReversed) {
+    if (options.sort || options.sortReversed)
       changes = sortDepChanges(changes, options.sortReversed)
-    }
 
     lines.push(...formatTable(
       changes.map(c => renderChange(c, interactive)),
