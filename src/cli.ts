@@ -38,6 +38,10 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       type: 'boolean',
       describe: 'force fetching from server, bypass cache',
     })
+    .option('ignore', {
+      type: 'string',
+      describe: 'ignore package.json in subdirectories',
+    })
     .option('include', {
       alias: 'n',
       type: 'string',

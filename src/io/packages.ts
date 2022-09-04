@@ -69,7 +69,7 @@ export async function loadPackages(options: CommonOptions) {
         '**/node_modules/**',
         '**/dist/**',
         '**/public/**',
-      ],
+      ].concat(options.ignore || []),
       cwd: options.cwd,
       onlyFiles: true,
     })
