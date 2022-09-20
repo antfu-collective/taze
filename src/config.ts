@@ -9,7 +9,7 @@ const debug = _debug('taze:config')
 export const LOGLEVELS = ['debug', 'info', 'warn', 'error', 'silent']
 
 function normalizeConfig<T extends CommonOptions>(options: T) {
-  options.ignore = toArray(options.ignore)
+  options.ignorePaths = toArray(options.ignorePaths)
   options.exclude = toArray(options.exclude)
   options.include = toArray(options.include)
 

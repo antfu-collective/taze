@@ -42,7 +42,7 @@ export interface ResolvedDepChange extends RawDep {
 export interface CommonOptions {
   cwd: string
   recursive?: boolean
-  ignore?: string | string[]
+  ignorePaths?: string | string[]
   include?: string | string[]
   exclude?: string | string[]
   prod?: boolean

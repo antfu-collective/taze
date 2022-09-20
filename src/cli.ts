@@ -38,9 +38,9 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       type: 'boolean',
       describe: 'force fetching from server, bypass cache',
     })
-    .option('ignore', {
+    .option('ignore-paths', {
       type: 'string',
-      describe: 'ignore package.json in subdirectories',
+      describe: 'ignore paths for search package.json',
     })
     .option('include', {
       alias: 'n',
