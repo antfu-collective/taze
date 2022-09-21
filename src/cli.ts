@@ -44,6 +44,10 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       choices: ['time-asc', 'time-desc', 'diff-asc', 'diff-desc'],
       describe: 'sort by most outdated absolute or relative to dependency',
     })
+    .option('ignore-paths', {
+      type: 'string',
+      describe: 'ignore paths for search package.json',
+    })
     .option('include', {
       alias: 'n',
       type: 'string',
