@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import type { PackageData, ResolvedDepChange } from '../src'
-import { sortDepChanges } from '../src/utils/sort'
+import type { SortKey } from '../src/utils/sort'
+import { parseSortOption, sortDepChanges } from '../src/utils/sort'
 
 describe('sort resolvedDepChanges', () => {
   const pkgData: PackageData = {
@@ -54,29 +55,72 @@ describe('sort resolvedDepChanges', () => {
     latestVersionAvailable: '0.8.10',
   }
 
-  test('sorts ascending', () => {
-    const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
+  describe('sorts by time', () => {
+    const sortKey: SortKey = 'time'
 
-    expect(sortDepChanges(changes, false)).toEqual(
-      [
-        pkgUnbuild,
-        pkgSemver,
-        pkgTypescript,
-        pkgYargs,
-      ],
-    )
+    test('sorts ascending', () => {
+      const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
+
+      expect(sortDepChanges(changes, sortKey, false)).toEqual(
+        [
+          pkgUnbuild,
+          pkgSemver,
+          pkgTypescript,
+          pkgYargs,
+        ],
+      )
+    })
+
+    test('sorts descending', () => {
+      const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
+
+      expect(sortDepChanges(changes, sortKey, true)).toEqual(
+        [
+          pkgYargs,
+          pkgTypescript,
+          pkgSemver,
+          pkgUnbuild,
+        ],
+      )
+    })
   })
 
-  test('sorts descending', () => {
-    const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
+  describe('sorts by time difference', () => {
+    const sortKey: SortKey = 'diff'
+    test('sorts ascending', () => {
+      const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
 
-    expect(sortDepChanges(changes, true)).toEqual(
-      [
-        pkgYargs,
-        pkgTypescript,
-        pkgSemver,
-        pkgUnbuild,
-      ],
-    )
+      expect(sortDepChanges(changes, sortKey, false)).toEqual(
+        [
+          pkgSemver,
+          pkgTypescript,
+          pkgUnbuild,
+          pkgYargs,
+        ],
+      )
+    })
+
+    test('sorts descending', () => {
+      const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
+
+      expect(sortDepChanges(changes, sortKey, true)).toEqual(
+        [
+          pkgYargs,
+          pkgUnbuild,
+          pkgTypescript,
+          pkgSemver,
+        ],
+      )
+    })
+  })
+
+  describe('parseSortOption', () => {
+    test('parses key and order', () => {
+      expect(parseSortOption('time-asc')).toEqual(['time', 'asc'])
+      expect(parseSortOption('diff-asc')).toEqual(['diff', 'asc'])
+
+      expect(parseSortOption('time-desc')).toEqual(['time', 'desc'])
+      expect(parseSortOption('diff-desc')).toEqual(['diff', 'desc'])
+    })
   })
 })

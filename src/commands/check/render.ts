@@ -7,7 +7,7 @@ import type {
   ResolvedDepChange,
 } from '../../types'
 import { DependenciesTypeShortMap } from '../../types'
-import { sortDepChanges } from '../../utils/sort'
+import { parseSortOption, sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, colorizeVersionDiff, formatTable } from '../../render'
 
@@ -71,8 +71,11 @@ export function renderChanges(
       '',
     )
 
-    if (options.sort || options.sortReversed)
-      changes = sortDepChanges(changes, options.sortReversed)
+    if (options.sort) {
+      const [key, order] = parseSortOption(options.sort)
+
+      changes = sortDepChanges(changes, key, order === 'desc')
+    }
 
     lines.push(...formatTable(
       changes.map(c => renderChange(c, interactive)),

@@ -62,8 +62,8 @@
     "fast-glob": "^3.2.11",
     "find-up": "^6.3.0",
     "picocolors": "^1.0.0",
-    "taze": "workspace:*",
     "rimraf": "^3.0.2",
+    "taze": "workspace:*",
     "typescript": "^4.7.4",
     "unbuild": "^0.7.4",
     "vitest": "^0.17.1"

@@ -39,14 +39,10 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       describe: 'force fetching from server, bypass cache',
     })
     .option('sort', {
-      alias: 's',
-      type: 'boolean',
-      describe: 'sort by most outdated',
-    })
-    .option('sortReversed', {
       alias: 'S',
-      type: 'boolean',
-      describe: 'sort by least outdated',
+      type: 'string',
+      choices: ['time-asc', 'time-desc', 'diff-asc', 'diff-desc'],
+      describe: 'sort by most outdated absolute or relative to dependency',
     })
     .option('include', {
       alias: 'n',
