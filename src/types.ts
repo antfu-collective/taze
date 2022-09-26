@@ -1,5 +1,6 @@
 import type { Packument } from 'pacote'
 import type semver from 'semver'
+import type { SortOption } from './utils/sort'
 
 export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'latest' | 'newest'
 export type PackageMode = Omit<RangeMode, 'default'> | 'ignore'
@@ -62,6 +63,7 @@ export interface CheckOptions extends CommonOptions {
   mode: string
   write: boolean
   all: boolean
+  sort?: SortOption
   interactive?: boolean
   install?: boolean
   update?: boolean

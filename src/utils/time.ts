@@ -6,12 +6,16 @@ const msPerDay = msPerHour * 24
 const msPerMonth = msPerDay * 30
 const msPerYear = msPerDay * 365
 
+export function toDate(date: string): number {
+  return +new Date(date)
+}
+
 export function timeDifference(from?: number | string, to = +new Date()) {
   if (!from)
     return ''
 
   if (typeof from === 'string')
-    from = +new Date(from)
+    from = toDate(from)
 
   const elapsed = to - from
 

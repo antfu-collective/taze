@@ -100,4 +100,4 @@ test('getMaxSatisfying', async () => {
     latest: '1.0.0-next.4',
     next: '1.0.0-next.2',
   }))
-})
+}, 10_000)

@@ -7,6 +7,7 @@ import type {
   ResolvedDepChange,
 } from '../../types'
 import { DependenciesTypeShortMap } from '../../types'
+import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, colorizeVersionDiff, formatTable } from '../../render'
 
@@ -43,9 +44,13 @@ export function renderChanges(
   const lines: string[] = []
   const errLines: string[] = []
 
-  const changes = options.all
+  let changes = options.all
     ? resolved
     : resolved.filter(i => i.update)
+
+  const {
+    sort = 'diff-asc',
+  } = options
 
   if (changes.length) {
     const diffCounts: Record<string, number> = {}
@@ -69,6 +74,8 @@ export function renderChanges(
       `${c.cyan(pkg.name ?? '›')} ${c.dim('-')} ${diffEntries}`,
       '',
     )
+
+    changes = sortDepChanges(changes, sort)
 
     lines.push(...formatTable(
       changes.map(c => renderChange(c, interactive)),
