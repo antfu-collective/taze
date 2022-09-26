@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest'
 import type { PackageData, ResolvedDepChange } from '../src'
-import type { SortKey } from '../src/utils/sort'
 import { parseSortOption, sortDepChanges } from '../src/utils/sort'
 
 describe('sort resolvedDepChanges', () => {
@@ -55,62 +54,54 @@ describe('sort resolvedDepChanges', () => {
     latestVersionAvailable: '0.8.10',
   }
 
+  const input = Object.freeze([pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild])
+  const getOrderChange = (sorted: ResolvedDepChange[]) => input.map(i => sorted.indexOf(i))
+
   describe('sorts by time', () => {
-    const sortKey: SortKey = 'time'
-
     test('sorts ascending', () => {
-      const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
-
-      expect(sortDepChanges(changes, sortKey, false)).toEqual(
+      expect(getOrderChange(sortDepChanges(input, 'time-asc'))).toMatchInlineSnapshot(`
         [
-          pkgUnbuild,
-          pkgSemver,
-          pkgTypescript,
-          pkgYargs,
-        ],
-      )
+          1,
+          2,
+          0,
+          3,
+        ]
+      `)
     })
 
     test('sorts descending', () => {
-      const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
-
-      expect(sortDepChanges(changes, sortKey, true)).toEqual(
+      expect(getOrderChange(sortDepChanges(input, 'time-desc'))).toMatchInlineSnapshot(`
         [
-          pkgYargs,
-          pkgTypescript,
-          pkgSemver,
-          pkgUnbuild,
-        ],
-      )
+          2,
+          1,
+          3,
+          0,
+        ]
+      `)
     })
   })
 
   describe('sorts by time difference', () => {
-    const sortKey: SortKey = 'diff'
     test('sorts ascending', () => {
-      const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
-
-      expect(sortDepChanges(changes, sortKey, false)).toEqual(
+      expect(getOrderChange(sortDepChanges(input, 'diff-asc'))).toMatchInlineSnapshot(`
         [
-          pkgSemver,
-          pkgTypescript,
-          pkgUnbuild,
-          pkgYargs,
-        ],
-      )
+          0,
+          1,
+          2,
+          3,
+        ]
+      `)
     })
 
     test('sorts descending', () => {
-      const changes: ResolvedDepChange[] = [pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild]
-
-      expect(sortDepChanges(changes, sortKey, true)).toEqual(
+      expect(getOrderChange(sortDepChanges(input, 'diff-desc'))).toMatchInlineSnapshot(`
         [
-          pkgYargs,
-          pkgUnbuild,
-          pkgTypescript,
-          pkgSemver,
-        ],
-      )
+          3,
+          2,
+          1,
+          0,
+        ]
+      `)
     })
   })
 

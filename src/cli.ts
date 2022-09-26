@@ -7,6 +7,7 @@ import { check } from './commands/check'
 import { usage } from './commands/usage'
 import type { CommonOptions } from './types'
 import { LOGLEVELS, resolveConfig } from './config'
+import type { SortOption } from './utils/sort'
 
 function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
   return args
@@ -39,9 +40,9 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       describe: 'force fetching from server, bypass cache',
     })
     .option('sort', {
-      alias: 'S',
       type: 'string',
-      choices: ['time-asc', 'time-desc', 'diff-asc', 'diff-desc'],
+      default: 'diff-asc' as SortOption,
+      choices: ['time-asc', 'time-desc', 'diff-asc', 'diff-desc', 'name-asc', 'name-desc', 'time', 'diff', 'name'],
       describe: 'sort by most outdated absolute or relative to dependency',
     })
     .option('ignore-paths', {

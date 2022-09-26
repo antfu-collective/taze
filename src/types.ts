@@ -63,7 +63,7 @@ export interface CheckOptions extends CommonOptions {
   mode: string
   write: boolean
   all: boolean
-  sort: SortOption
+  sort?: SortOption
   interactive?: boolean
   install?: boolean
   update?: boolean
