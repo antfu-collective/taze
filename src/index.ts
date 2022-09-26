@@ -6,6 +6,6 @@ export { dumpDependencies, parseDependencies } from './io/dependencies'
 export { CheckPackages } from './api/check'
 export * from './types'
 
-export function defineConfig(config: CommonOptions) {
+export function defineConfig(config: Partial<CommonOptions>) {
   return config
 }
