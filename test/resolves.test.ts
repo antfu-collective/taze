@@ -14,14 +14,25 @@ const makePkg = (ver: string): RawDep => {
   return pkg
 }
 
-test('resolveDependency', async () => {
-  const options: CheckOptions = {
-    cwd: process.cwd(),
-    loglevel: 'silent',
-    mode: 'default',
-    write: false,
-    all: false,
+const makeLocalPkg = (ver: string): RawDep => {
+  const pkg: RawDep = {
+    name: 'xyg-mdb',
+    currentVersion: ver,
+    source: 'dependencies',
+    update: true,
   }
+  return pkg
+}
+
+const options: CheckOptions = {
+  cwd: process.cwd(),
+  loglevel: 'silent',
+  mode: 'default',
+  write: false,
+  all: false,
+}
+
+test('resolveDependency', async () => {
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
@@ -79,4 +90,12 @@ test('resolveDependency', async () => {
     .toMatch('random')
   expect((await resolveDependency(makePkg('random'), options, filter)).resolveError)
     .toBeUndefined()
+
+  // local pkg
+  expect(false).toBe((await resolveDependency(makeLocalPkg('file:../aaa'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makeLocalPkg('link:../aaa'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makeLocalPkg('workspace:*'), options, filter)).update)
+  const target = await resolveDependency(makeLocalPkg('1.0.0'), options, filter)
+  expect(target.resolveError).not.toBeNull()
 })
+

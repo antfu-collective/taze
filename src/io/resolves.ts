@@ -135,7 +135,7 @@ export async function resolveDependency(
         ? optionMode
         : optionMode === 'default' ? configMode : 'ignore'
     : optionMode
-  if (!raw.update || !await Promise.resolve(filter(raw)) || mergeMode === 'ignore') {
+  if (isLocalPackage(raw.currentVersion) || !raw.update || !await Promise.resolve(filter(raw)) || mergeMode === 'ignore') {
     return {
       ...raw,
       diff: null,
@@ -214,4 +214,13 @@ export async function resolvePackage(pkg: PackageMeta, options: CheckOptions, fi
   diffSorter(resolved)
   pkg.resolved = resolved
   return pkg
+}
+
+function isLocalPackage(currentVersion: string) {
+  const localPackagePrefix = [
+    'link:',
+    'file:',
+    'workspace:',
+  ]
+  return localPackagePrefix.some(prefix => currentVersion.startsWith(prefix))
 }
