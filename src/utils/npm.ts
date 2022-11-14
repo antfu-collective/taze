@@ -24,32 +24,31 @@ declare class NpmcliConfig {
   get flat(): Recordable
 }
 
-const npmcliConfig = new NpmcliConfig({
-  definitions: {},
-  npmPath: path.dirname(process.cwd()),
-  flatten: (current, total) => {
-    Object.assign(total, current)
-  },
-})
+const getNpmConfig = async () => {
+  const npmcliConfig = new NpmcliConfig({
+    definitions: {},
+    npmPath: path.dirname(process.cwd()),
+    flatten: (current, total) => {
+      Object.assign(total, current)
+    },
+  })
 
-// patch loadDefaults to set defaults of userconfig and globalconfig
-const oldLoadDefaults = npmcliConfig.loadDefaults.bind(npmcliConfig)
-npmcliConfig.loadDefaults = () => {
-  oldLoadDefaults()
+  // patch loadDefaults to set defaults of userconfig and globalconfig
+  const oldLoadDefaults = npmcliConfig.loadDefaults.bind(npmcliConfig)
+  npmcliConfig.loadDefaults = () => {
+    oldLoadDefaults()
 
-  const setCliOption = (key: string, value: any) => {
-    const cli = npmcliConfig.data.get('cli')
-    if (cli)
-      cli.data[key] = value
+    const setCliOption = (key: string, value: any) => {
+      const cli = npmcliConfig.data.get('cli')
+      if (cli)
+        cli.data[key] = value
+    }
+    setCliOption('userconfig', path.join(npmcliConfig.home, '.npmrc'))
+    setCliOption('globalconfig', path.join(npmcliConfig.globalPrefix, 'etc', 'npmrc'))
   }
-  setCliOption('userconfig', path.join(npmcliConfig.home, '.npmrc'))
-  setCliOption('globalconfig', path.join(npmcliConfig.globalPrefix, 'etc', 'npmrc'))
+
+  await npmcliConfig.load()
+  return npmcliConfig.flat
 }
 
-const npmConfig = {} as Recordable
-
-npmcliConfig.load().then(() => {
-  Object.assign(npmConfig, npmcliConfig.flat)
-})
-
-export { npmConfig }
+export { getNpmConfig }
