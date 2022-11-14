@@ -97,5 +97,5 @@ test('resolveDependency', async () => {
   expect(false).toBe((await resolveDependency(makeLocalPkg('workspace:*'), options, filter)).update)
   const target = await resolveDependency(makeLocalPkg('1.0.0'), options, filter)
   expect(target.resolveError).not.toBeNull()
-})
+}, 10000)
 
