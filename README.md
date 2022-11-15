@@ -80,7 +80,7 @@ With `taze.config.js` file, you can configure the same options the command has.
 import { defineConfig } from 'taze'
 
 export default defineConfig({
-  // ignore packages from bumpping
+  // ignore packages from bumping
   exclude: [
     'webpack'
   ],
@@ -88,7 +88,7 @@ export default defineConfig({
   force: true,
   // write to package.json
   write: true,
-  // run `npm install` or `yarn install` right after bumpping
+  // run `npm install` or `yarn install` right after bumping
   install: true,
   // override with different bumping mode for each package
   packageMode: {
