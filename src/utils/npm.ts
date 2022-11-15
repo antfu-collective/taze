@@ -1,28 +1,7 @@
 // ported from: https://github.com/raineorshine/npm-check-updates/blob/master/lib/package-managers/npm.js
 
 import path from 'path'
-
-// @ts-expect-error missing types
 import NpmcliConfig from '@npmcli/config'
-
-type Recordable = Record<string, any>
-
-declare interface NpmcliConfigOptions {
-  definitions: Recordable
-  npmPath: string
-  flatten: (current: Recordable, total: Recordable) => void
-}
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-declare class NpmcliConfig {
-  constructor(options: NpmcliConfigOptions)
-  load(): Promise<void>
-  loadDefaults(): void
-  home: string
-  globalPrefix: string
-  data: Map<string, Recordable>
-  get flat(): Recordable
-}
 
 const getNpmConfig = async () => {
   const npmcliConfig = new NpmcliConfig({
