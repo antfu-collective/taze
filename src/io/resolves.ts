@@ -4,7 +4,7 @@ import os from 'os'
 import pacote from 'pacote'
 import semver from 'semver'
 import _debug from 'debug'
-import { npmConfig } from '../utils/npm'
+import { getNpmConfig } from '../utils/npm'
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
@@ -67,6 +67,7 @@ export async function getPackageData(name: string): Promise<PackageData> {
 
   try {
     debug.resolve(`resolving ${name}`)
+    const npmConfig = await getNpmConfig()
     const data = await pacote.packument(name, { ...npmConfig, fullMetadata: true })
 
     if (data) {
