@@ -120,13 +120,13 @@ yargs(hideBin(process.argv))
           alias: 'i',
           default: false,
           type: 'boolean',
-          describe: 'install directly after bumpping',
+          describe: 'install directly after bumping',
         })
         .option('update', {
           alias: 'u',
           default: false,
           type: 'boolean',
-          describe: 'update directly after bumpping',
+          describe: 'update directly after bumping',
         })
         .option('all', {
           alias: 'a',
