@@ -49,6 +49,7 @@ export interface CommonOptions {
   prod?: boolean
   dev?: boolean
   loglevel: string
+  failOnOutdated?: boolean
   silent?: boolean
   force?: boolean
   packageMode?: { [name: string]: PackageMode }

@@ -14,6 +14,7 @@ import { promptInteractive } from './interactive'
 import { renderPackages } from './render'
 
 export async function check(options: CheckOptions) {
+  let exitCode = 0
   const bars = options.loglevel === 'silent' ? null : createMultiProgresBar()
   let packagesBar: SingleBar | undefined
   const depBar = bars?.create(1, 0)
@@ -50,8 +51,10 @@ export async function check(options: CheckOptions) {
     resolvePkgs = await promptInteractive(resolvePkgs, options)
 
   const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
-  if (!hasChanges)
-    return console.log(c.green('dependencies are already up-to-date'))
+  if (!hasChanges) {
+    console.log(c.green('dependencies are already up-to-date'))
+    return exitCode
+  }
 
   const { lines, errLines } = renderPackages(resolvePkgs, options)
 
@@ -104,8 +107,12 @@ export async function check(options: CheckOptions) {
     if (options.mode === 'default')
       console.log(`Run ${c.cyan('taze major')} to check major updates`)
 
-    if (hasChanges)
+    if (hasChanges) {
+      if (options.failOnOutdated)
+        exitCode = 1
+
       console.log(`Add ${c.green('-w')} to write package.json`)
+    }
 
     console.log()
   }
@@ -144,4 +151,6 @@ export async function check(options: CheckOptions) {
       await run(parseNu, options.recursive ? ['-r'] : [])
     }
   }
+
+  return exitCode
 }
