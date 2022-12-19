@@ -23,6 +23,10 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       describe: 'log level',
       choices: LOGLEVELS,
     })
+    .option('failOnOutdated', {
+      type: 'boolean',
+      describe: 'exit with code 1 if outdated dependencies are found',
+    })
     .option('silent', {
       alias: 's',
       default: false,
@@ -137,8 +141,8 @@ yargs(hideBin(process.argv))
         .help()
     },
     async (args) => {
-      await check(await resolveConfig(args))
-      process.exit()
+      const exitCode = await check(await resolveConfig(args))
+      process.exit(exitCode)
     },
   )
   .showHelpOnFail(false)
