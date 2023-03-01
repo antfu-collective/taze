@@ -95,14 +95,14 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
   // major = red (or any change before 1.0.0)
   // minor = cyan
   // patch = green
-  const color = i === 0 || partsToColor[0] === '0'
+  const color = (i === 0 || partsToColor[0] === '0')
     ? 'red'
     : i === 1
       ? 'cyan'
       : 'green'
 
   // if we are colorizing only part of the word, add a dot in the middle
-  const middot = i > 0 && i < partsToColor.length ? '.' : ''
+  const middot = (i > 0 && i < partsToColor.length) ? '.' : ''
 
   const leadingColor = (leadingWildcard === fromLeadingWildcard || !hightlightRange)
     ? 'gray'

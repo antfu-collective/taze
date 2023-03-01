@@ -23,7 +23,7 @@ export async function check(options: CheckOptions) {
 
   await CheckPackages(options, {
     afterPackagesLoaded(pkgs) {
-      packagesBar = options.recursive && pkgs.length
+      packagesBar = (options.recursive && pkgs.length)
         ? bars?.create(pkgs.length, 0, { type: c.cyan('pkg'), name: c.cyan(pkgs[0].name) })
         : undefined
     },

@@ -27,9 +27,13 @@ export function renderChange(change: ResolvedDepChange, interactive?: Interactiv
     timeDifference(change.currentVersionTime),
     c.gray(change.currentVersion),
     update ? c.dim(c.gray('→')) : '',
-    update ? colorizeVersionDiff(change.currentVersion, change.targetVersion) : c.gray(c.strikethrough(change.targetVersion)),
-    update ? timeDifference(change.targetVersionTime) : '',
-    change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable
+    update
+      ? colorizeVersionDiff(change.currentVersion, change.targetVersion)
+      : c.gray(c.strikethrough(change.targetVersion)),
+    update
+      ? timeDifference(change.targetVersionTime)
+      : '',
+    (change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
       ? c.dim(c.magenta(`(${change.latestVersionAvailable} available)`))
       : '',
   ]
@@ -135,4 +139,3 @@ export function renderPackages(resolvePkgs: PackageMeta[], options: CheckOptions
 
   return { lines, errLines }
 }
-

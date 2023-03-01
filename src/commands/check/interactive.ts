@@ -195,4 +195,3 @@ interface InteractiveRenderer {
   render(): void
   onKey(key: TerminalKey): boolean | InteractiveRenderer | void
 }
-

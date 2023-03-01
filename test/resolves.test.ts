@@ -98,4 +98,3 @@ test('resolveDependency', async () => {
   const target = await resolveDependency(makeLocalPkg('1.0.0'), options, filter)
   expect(target.resolveError).not.toBeNull()
 }, 10000)
-

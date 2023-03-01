@@ -113,4 +113,3 @@ describe('check package', async () => {
     expect(getPkgInfo('vite', result4).update).toBe(false)
   })
 })
-
