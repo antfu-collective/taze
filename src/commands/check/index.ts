@@ -111,7 +111,7 @@ export async function check(options: CheckOptions) {
       if (options.failOnOutdated)
         exitCode = 1
 
-      console.log(`Add ${c.green('-w')} to write package.json`)
+      console.log(`Add ${c.green('-w')} to write to package.json`)
     }
 
     console.log()
@@ -119,12 +119,12 @@ export async function check(options: CheckOptions) {
   else if (hasChanges) {
     if (!options.install && !options.update && !options.interactive) {
       console.log(
-        c.yellow(`ℹ changes wrote to package.json, run ${c.cyan('npm i')} to install updates.`),
+        c.yellow(`ℹ changes written to package.json, run ${c.cyan('npm i')} to install updates.`),
       )
     }
 
     if (options.install || options.update || options.interactive)
-      console.log(c.yellow('ℹ changes wrote to package.json'))
+      console.log(c.yellow('ℹ changes written to package.json'))
 
     if (options.interactive && !options.install) {
       options.install = await prompts([
