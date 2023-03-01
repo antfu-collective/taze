@@ -2,7 +2,7 @@
   "name": "taze",
   "type": "module",
   "version": "0.8.5",
-  "packageManager": "pnpm@7.12.0",
+  "packageManager": "pnpm@7.28.0",
   "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",

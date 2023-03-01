@@ -1,13 +1,17 @@
 import type { DepType, RawDep, ResolvedDepChange } from '../types'
 
 export function parseDependencies(pkg: any, type: DepType, shouldUpdate: (name: string) => boolean): RawDep[] {
-  return Object.entries(pkg[type] || {}).map(([name, version]) => ({
+  return Object.entries(pkg[type] || {}).map(([name, version]) => parseDependency(name, version as string, type, shouldUpdate))
+}
+
+export function parseDependency(name: string, version: string, type: DepType, shouldUpdate: (name: string) => boolean): RawDep {
+  return {
     name,
-    currentVersion: version as string,
+    currentVersion: version,
     source: type,
     // when `updated` marked to `false`, it will be bypassed on resolving
     update: shouldUpdate(name),
-  }))
+  }
 }
 
 export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
