@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import readline from 'readline'
+import readline from 'node:readline'
 import c from 'picocolors'
 import { createControlledPromise, notNullish } from '@antfu/utils'
 import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'

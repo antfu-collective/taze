@@ -1,5 +1,5 @@
-import path from 'path'
-import { promises as fs } from 'fs'
+import path from 'node:path'
+import { promises as fs } from 'node:fs'
 import fg from 'fast-glob'
 import detectIndent from 'detect-indent'
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
