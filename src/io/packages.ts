@@ -90,11 +90,9 @@ export async function loadPackages(options: CommonOptions) {
     packagesNames = ['package.json']
   }
 
-  const packages = await Promise.all(
-    packagesNames.map(
-      relative => loadPackage(relative, options, filter),
-    ),
+  const promises = packagesNames.map(
+    relative => loadPackage(relative, options, filter),
   )
 
-  return packages
+  return Promise.all(promises)
 }

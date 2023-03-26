@@ -2,7 +2,7 @@ import c from 'picocolors'
 import type { SingleBar } from 'cli-progress'
 import type { UsageOptions } from '../types'
 import { TableLogger, createMultiProgresBar, wrapJoin } from '../log'
-import { CheckUsages } from '../api/usage'
+import { checkUsages } from '../api/usage'
 import { colorizeVersionDiff, visualPadStart } from '../render'
 
 export async function usage(options: UsageOptions) {
@@ -20,7 +20,7 @@ export async function usage(options: UsageOptions) {
 
   let depBar: SingleBar | undefined
 
-  const resolveUsages = await CheckUsages(options, {
+  const resolveUsages = await checkUsages(options, {
     onLoaded(usages) {
       depBar = bars.create(usages.length, 0, { type: c.green('deps') })
     },

@@ -1,7 +1,13 @@
 import type { DepType, RawDep, ResolvedDepChange } from '../types'
 
 export function parseDependencies(pkg: any, type: DepType, shouldUpdate: (name: string) => boolean): RawDep[] {
-  return Object.entries(pkg[type] || {}).map(([name, version]) => parseDependency(name, version as string, type, shouldUpdate))
+  const deps = pkg[type] || {}
+  const result: RawDep[] = []
+
+  for (const [name, version] of Object.entries(deps))
+    result.push(parseDependency(name, version as string, type, shouldUpdate))
+
+  return result
 }
 
 export function parseDependency(name: string, version: string, type: DepType, shouldUpdate: (name: string) => boolean): RawDep {
@@ -16,12 +22,11 @@ export function parseDependency(name: string, version: string, type: DepType, sh
 
 export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
   const data: Record<string, string> = {}
-  deps
-    .filter(i => i.source === type)
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach((i) => {
-      data[i.name] = i.update ? i.targetVersion : i.currentVersion
-    })
+
+  for (const dep of deps) {
+    if (dep.source === type)
+      data[dep.name] = dep.update ? dep.targetVersion : dep.currentVersion
+  }
 
   return data
 }
