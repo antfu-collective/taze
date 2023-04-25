@@ -3,7 +3,7 @@
 import path from 'node:path'
 import NpmcliConfig from '@npmcli/config'
 
-const getNpmConfig = async () => {
+async function getNpmConfig() {
   const npmcliConfig = new NpmcliConfig({
     definitions: {},
     npmPath: path.dirname(process.cwd()),

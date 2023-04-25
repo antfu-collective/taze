@@ -4,7 +4,7 @@ import { resolveDependency } from '../src'
 
 const filter: DependencyFilter = () => true
 
-const makePkg = (ver: string): RawDep => {
+function makePkg(ver: string): RawDep {
   const pkg: RawDep = {
     name: 'typescript',
     currentVersion: ver,
@@ -14,7 +14,7 @@ const makePkg = (ver: string): RawDep => {
   return pkg
 }
 
-const makeLocalPkg = (ver: string): RawDep => {
+function makeLocalPkg(ver: string): RawDep {
   const pkg: RawDep = {
     name: 'xyg-mdb',
     currentVersion: ver,
