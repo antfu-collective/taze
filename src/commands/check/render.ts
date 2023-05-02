@@ -21,8 +21,12 @@ export function renderChange(change: ResolvedDepChange, interactive?: Interactiv
       ].join('')
     : ' '
 
+  let name = change.name
+  if (change.aliasName)
+    name = c.dim(`${change.aliasName} ← `) + change.name
+
   return [
-    `${pre} ${update ? change.name : c.gray(change.name)}`,
+    `${pre} ${update ? name : c.gray(name)}`,
     c.gray(DependenciesTypeShortMap[change.source]),
     timeDifference(change.currentVersionTime),
     c.gray(change.currentVersion),

@@ -39,6 +39,7 @@ export interface ResolvedDepChange extends RawDep {
   pkgData: PackageData
   resolveError?: Error | string | null
   interactiveChecked?: boolean
+  aliasName?: string
 }
 
 export interface CommonOptions {
