@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "@taze/not-exists": "^4.13.19",
-    "@typescript/lib-dom": "npm:@types/web@^0.0.90",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.80",
     "axios": "git:axios/axios",
     "express": "4.12.x",
     "lodash": "^4.13.19",
