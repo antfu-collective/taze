@@ -20,7 +20,11 @@ export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
     .filter(i => i.source === type)
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((i) => {
-      data[i.name] = i.update ? i.targetVersion : i.currentVersion
+      const version = i.update ? i.targetVersion : i.currentVersion
+      if (i.aliasName === undefined)
+        data[i.name] = version
+      else
+        data[i.aliasName] = `npm:${i.name}${version ? `@${version}` : ''}`
     })
 
   return data

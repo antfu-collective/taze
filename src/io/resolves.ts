@@ -144,6 +144,18 @@ export async function resolveDependency(
       update: false,
     } as ResolvedDepChange
   }
+  if (isAliasedPackage(raw.currentVersion)) {
+    const { name, version } = parseAliasedPackage(raw.currentVersion)
+    dep.name = name
+    dep.currentVersion = version
+    dep.aliasName = raw.name
+    if (!version) {
+      dep.diff = null
+      dep.targetVersion = version
+      dep.update = false
+      return dep
+    }
+  }
 
   const pkgData = await getPackageData(dep.name)
   const { tags, error } = pkgData
@@ -224,4 +236,16 @@ function isLocalPackage(currentVersion: string) {
     'workspace:',
   ]
   return localPackagePrefix.some(prefix => currentVersion.startsWith(prefix))
+}
+
+function isAliasedPackage(currentVersion: string) {
+  return currentVersion.startsWith('npm:')
+}
+
+function parseAliasedPackage(currentVersion: string) {
+  const m = currentVersion.match(/^npm:(@?[^@]+)(?:@(.+))?$/)
+  if (!m)
+    return { name: '', version: '' }
+
+  return { name: m[1], version: m[2] ?? '' }
 }

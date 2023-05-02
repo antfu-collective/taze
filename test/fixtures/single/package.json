@@ -3,11 +3,13 @@
   "private": true,
   "dependencies": {
     "@taze/not-exists": "^4.13.19",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.90",
     "axios": "git:axios/axios",
     "express": "4.12.x",
     "lodash": "^4.13.19",
     "multer": "^0.1.8",
     "react-bootstrap": "^0.22.6",
+    "sass": "npm:node-sass",
     "webpack": "~1.9.10"
   },
   "devDependencies": {
