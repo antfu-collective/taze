@@ -131,6 +131,13 @@ function renderResolveError(dep: ResolvedDepChange) {
   return lines
 }
 
+export function outputErr(errLines: string[]) {
+  console.error(c.inverse(c.red(c.bold(' ERROR '))))
+  console.error()
+  console.error(errLines.join('\n'))
+  console.error()
+}
+
 export function renderPackages(resolvePkgs: PackageMeta[], options: CheckOptions) {
   const lines: string[] = ['']
   const errLines: string[] = []
