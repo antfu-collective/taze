@@ -70,6 +70,7 @@ export interface CheckOptions extends CommonOptions {
   interactive?: boolean
   install?: boolean
   update?: boolean
+  global?: boolean
 }
 
 export interface PackageMeta {

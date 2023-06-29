@@ -37,6 +37,7 @@
     "@antfu/ni": "^0.21.4",
     "@npmcli/config": "^6.2.1",
     "detect-indent": "^7.0.1",
+    "execa": "^7.1.1",
     "pacote": "^15.2.0",
     "prompts": "^2.4.2",
     "semver": "^7.5.3",

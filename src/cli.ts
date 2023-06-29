@@ -8,6 +8,7 @@ import { usage } from './commands/usage'
 import type { CommonOptions } from './types'
 import { LOGLEVELS, resolveConfig } from './config'
 import type { SortOption } from './utils/sort'
+import { checkGlobal } from './commands/check/checkGlobal'
 
 function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
   return args
@@ -114,6 +115,12 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           describe: 'write to package.json',
         })
+        .option('global', {
+          alias: 'g',
+          default: false,
+          type: 'boolean',
+          describe: 'update global packages',
+        })
         .option('interactive', {
           alias: 'I',
           default: false, // TODO: enable by default: !process.env.CI && process.stdout.isTTY,
@@ -141,7 +148,12 @@ yargs(hideBin(process.argv))
         .help()
     },
     async (args) => {
-      const exitCode = await check(await resolveConfig(args))
+      let exitCode
+      if (args.global)
+        exitCode = await checkGlobal(await resolveConfig(args))
+      else
+        exitCode = await check(await resolveConfig(args))
+
       process.exit(exitCode)
     },
   )
