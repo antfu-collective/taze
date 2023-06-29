@@ -71,7 +71,7 @@ export async function checkGlobal(options: CheckOptions) {
     console.log()
 
     if (options.mode === 'default')
-      console.log(`Run ${c.cyan('taze major -g')} to check major updates`)
+      console.log(`Add ${c.green('major')} to check major updates`)
 
     if (hasChanges) {
       if (options.failOnOutdated)
