@@ -94,7 +94,7 @@ export async function checkGlobal(options: CheckOptions) {
 }
 
 async function loadGlobalPackage(options: CheckOptions): Promise<PackageMeta> {
-  const { stdout } = await execa('npm ls --global --depth=0 --json')
+  const { stdout } = await execa('npm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })
   const npmOut = JSON.parse(stdout) as NpmOut
   const filter = createDependenciesFilter(options.include, options.exclude)
 
@@ -116,7 +116,7 @@ async function loadGlobalPackage(options: CheckOptions): Promise<PackageMeta> {
     filepath: '',
     relative: '',
     deps,
-    name: c.red('npm'),
+    name: c.red('npm') + c.gray(c.dim(' (global)')),
   }
 }
 
