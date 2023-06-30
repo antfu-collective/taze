@@ -124,5 +124,5 @@ async function installPkg(pkg: PackageMeta) {
   const changes = pkg.resolved.filter(i => i.update)
   const dependencies = dumpDependencies(changes, 'dependencies')
   const updateArgs = Object.entries(dependencies).map(([name, version]) => `${name}@${version}`)
-  await execa('npm', ['install', '-g', ...updateArgs])
+  await execa('npm', ['install', '-g', ...updateArgs], { stdio: 'inherit' })
 }
