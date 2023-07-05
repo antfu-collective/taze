@@ -23,10 +23,10 @@ export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
     raw.dependencies = dumpDependencies(resolved, 'dependencies')
   if (raw.devDependencies && !options.prod)
     raw.devDependencies = dumpDependencies(resolved, 'devDependencies')
-  if (raw.optionalDependencies && !options.prod && !options.dev) {
+  if (raw.optionalDependencies && !options.prod && !options.dev)
     raw.optionalDependencies = dumpDependencies(resolved, 'optionalDependencies')
+  if (raw.peerDependencies && !options.prod && !options.dev)
     raw.peerDependencies = dumpDependencies(resolved, 'peerDependencies')
-  }
 
   if (raw.packageManager) {
     const value = Object.entries(dumpDependencies(resolved, 'packageManager'))[0]
