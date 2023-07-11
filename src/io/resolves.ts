@@ -108,10 +108,11 @@ export function updateTargetVersion(dep: ResolvedDepChange, version: string, for
   try {
     const current = semver.minVersion(dep.currentVersion)!
     const target = semver.minVersion(dep.targetVersion)!
+    const versionLocked = /^[0-9]+/.test(dep.currentVersion)
 
     dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
     dep.diff = semver.diff(current, target)
-    dep.update = dep.diff !== null && semver.lt(current, target)
+    dep.update = dep.diff !== null && semver.lt(current, target) && !(dep.skipLockPkg && versionLocked)
   }
   catch (e) {
     if (!forgiving)
@@ -127,7 +128,7 @@ export async function resolveDependency(
   options: CheckOptions,
   filter: DependencyFilter = () => true,
 ) {
-  const dep = { ...raw } as ResolvedDepChange
+  const dep = { ...raw, skipLockPkg: !!options.skipLock } as ResolvedDepChange
 
   const configMode = getPackageMode(dep.name, options)
   const optionMode = options.mode

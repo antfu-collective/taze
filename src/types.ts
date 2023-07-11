@@ -18,6 +18,7 @@ export interface RawDep {
   currentVersion: string
   source: DepType
   update: boolean
+  skipLockPkg?: boolean
 }
 
 export type DiffType = ReturnType<typeof semver['diff']> | 'error'
@@ -50,6 +51,7 @@ export interface CommonOptions {
   exclude?: string | string[]
   prod?: boolean
   dev?: boolean
+  skipLock?: boolean
   loglevel: string
   failOnOutdated?: boolean
   silent?: boolean
