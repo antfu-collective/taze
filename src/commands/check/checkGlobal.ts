@@ -2,7 +2,7 @@
 import { execa } from 'execa'
 import c from 'picocolors'
 import prompts from 'prompts'
-import { createMultiProgresBar } from '../../log'
+import { createMultiProgressBar } from '../../log'
 import type { CheckOptions, PackageMeta, RawDep } from '../../types'
 import { dumpDependencies } from '../../io/dependencies'
 import { resolvePackage } from '../../io/resolves'
@@ -23,7 +23,7 @@ export async function checkGlobal(options: CheckOptions) {
   let resolvePkgs: PackageMeta[] = []
 
   const pkg = await loadGlobalPackage(options)
-  const bars = options.loglevel === 'silent' ? null : createMultiProgresBar()
+  const bars = options.loglevel === 'silent' ? null : createMultiProgressBar()
   const depBar = bars?.create(pkg.deps.length, 0, { type: c.green('dep') })
 
   await resolvePackage(
