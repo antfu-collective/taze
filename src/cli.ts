@@ -76,10 +76,10 @@ function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
       describe: 'update only for dependencies',
       conflicts: ['dev'],
     })
-    .option('skip-lock', {
-      alias: 'sl',
+    .option('include-lock', {
+      alias: 'l',
       type: 'boolean',
-      describe: 'skip locked dependencies or devDependencies',
+      describe: 'include locked dependencies & devDependencies',
     })
 }
 

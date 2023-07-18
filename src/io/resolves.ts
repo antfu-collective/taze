@@ -105,14 +105,28 @@ export function updateTargetVersion(dep: ResolvedDepChange, version: string, for
   dep.targetVersion = getPrefixedVersion(dep.currentVersion, version) || dep.currentVersion
   dep.targetVersionTime = dep.pkgData.time?.[version]
 
+  const versionLocked = /^[0-9]+/.test(dep.currentVersion)
+  const updateDirectlyWhenLocked = dep.includeLock === true && versionLocked
+
+  if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion)) {
+    // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
+    // - but this mode will always ignore the locked pkgs
+    // - so we need to reset the target
+    const { versions, time = {}, tags } = dep.pkgData
+    const targetVersion = getMaxSatisfying(versions, dep.currentVersion, 'minor', tags)
+    if (targetVersion) {
+      dep.targetVersion = targetVersion
+      dep.targetVersionTime = time[dep.targetVersion]
+    }
+  }
+
   try {
     const current = semver.minVersion(dep.currentVersion)!
     const target = semver.minVersion(dep.targetVersion)!
-    const versionLocked = /^[0-9]+/.test(dep.currentVersion)
 
     dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
     dep.diff = semver.diff(current, target)
-    dep.update = dep.diff !== null && semver.lt(current, target) && !(dep.skipLockPkg && versionLocked)
+    dep.update = updateDirectlyWhenLocked || (!versionLocked && dep.diff !== null && semver.lt(current, target))
   }
   catch (e) {
     if (!forgiving)
@@ -128,7 +142,7 @@ export async function resolveDependency(
   options: CheckOptions,
   filter: DependencyFilter = () => true,
 ) {
-  const dep = { ...raw, skipLockPkg: !!options.skipLock } as ResolvedDepChange
+  const dep = { ...raw, includeLock: !!options.includeLock } as ResolvedDepChange
 
   const configMode = getPackageMode(dep.name, options)
   const optionMode = options.mode

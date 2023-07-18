@@ -18,7 +18,12 @@ export interface RawDep {
   currentVersion: string
   source: DepType
   update: boolean
-  skipLockPkg?: boolean
+  /**
+   * include locked dependencies & devDependencies
+   * @default false
+   * @description exclude the locked deps/devDeps by default
+  */
+  includeLock?: boolean
 }
 
 export type DiffType = ReturnType<typeof semver['diff']> | 'error'
@@ -51,7 +56,12 @@ export interface CommonOptions {
   exclude?: string | string[]
   prod?: boolean
   dev?: boolean
-  skipLock?: boolean
+  /**
+   * include locked dependencies & devDependencies
+   * @default false
+   * @description exclude the locked deps/devDeps by default
+  */
+  includeLock?: boolean
   loglevel: string
   failOnOutdated?: boolean
   silent?: boolean
