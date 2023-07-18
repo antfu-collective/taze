@@ -91,7 +91,7 @@ export class TableLogger {
   }
 }
 
-export function createMultiProgresBar() {
+export function createMultiProgressBar() {
   return new MultiBar({
     clearOnComplete: true,
     hideCursor: true,

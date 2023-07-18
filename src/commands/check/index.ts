@@ -3,7 +3,7 @@ import c from 'picocolors'
 import type { SingleBar } from 'cli-progress'
 import { parseNi, parseNu, run } from '@antfu/ni'
 import prompts from 'prompts'
-import { createMultiProgresBar } from '../../log'
+import { createMultiProgressBar } from '../../log'
 import type {
   CheckOptions,
   PackageMeta,
@@ -15,7 +15,7 @@ import { outputErr, renderPackages } from './render'
 
 export async function check(options: CheckOptions) {
   let exitCode = 0
-  const bars = options.loglevel === 'silent' ? null : createMultiProgresBar()
+  const bars = options.loglevel === 'silent' ? null : createMultiProgressBar()
   let packagesBar: SingleBar | undefined
   const depBar = bars?.create(1, 0)
 
