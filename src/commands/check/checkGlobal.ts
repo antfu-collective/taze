@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
-import { execa } from 'execa'
+import { execa, execaCommand } from 'execa'
 import c from 'picocolors'
 import prompts from 'prompts'
+import { type Agent, getCommand } from '@antfu/ni'
 import { createMultiProgressBar } from '../../log'
 import type { CheckOptions, PackageMeta, RawDep } from '../../types'
 import { dumpDependencies } from '../../io/dependencies'
@@ -18,26 +19,45 @@ interface NpmOut {
   }
 }
 
+interface PnpmOut {
+  path: string
+  dependencies: {
+    [name: string]: {
+      version: string
+    }
+  }
+}
+
+interface GlobalPackageMeta extends PackageMeta {
+  agent: Agent
+}
+
 export async function checkGlobal(options: CheckOptions) {
   let exitCode = 0
-  let resolvePkgs: PackageMeta[] = []
+  let resolvePkgs: GlobalPackageMeta[] = []
 
-  const pkg = await loadGlobalPackage(options)
+  const globalPkgs = await Promise.all([
+    loadGlobalNpmPackage(options),
+    loadGlobalPnpmPackage(options),
+  ])
+  const pkgs = globalPkgs.flat(1)
+
   const bars = options.loglevel === 'silent' ? null : createMultiProgressBar()
-  const depBar = bars?.create(pkg.deps.length, 0, { type: c.green('dep') })
-
-  await resolvePackage(
-    pkg,
-    options,
-    () => true,
-    (_pkgName, name, progress) => depBar?.update(progress, { name }),
-  )
+  await Promise.all(pkgs.map(async (pkg) => {
+    const depBar = bars?.create(pkg.deps.length, 0, { type: c.green(pkg.agent) })
+    await resolvePackage(
+      pkg,
+      options,
+      () => true,
+      (_pkgName, name, progress) => depBar?.update(progress, { name }),
+    )
+  }))
   bars?.stop()
 
-  resolvePkgs = [pkg]
+  resolvePkgs = pkgs
 
   if (options.interactive)
-    resolvePkgs = await promptInteractive(resolvePkgs, options)
+    resolvePkgs = await promptInteractive(resolvePkgs, options) as GlobalPackageMeta[]
 
   const { lines, errLines } = renderPackages(resolvePkgs, options)
 
@@ -87,13 +107,45 @@ export async function checkGlobal(options: CheckOptions) {
     console.log(c.magenta('installing...'))
     console.log()
 
-    await installPkg(resolvePkgs[0])
+    for (const pkg of resolvePkgs)
+      await installPkg(pkg)
   }
 
   return exitCode
 }
 
-async function loadGlobalPackage(options: CheckOptions): Promise<PackageMeta> {
+async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPackageMeta[]> {
+  const { stdout } = await execa('pnpm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })
+  const pnpmOuts = JSON.parse(stdout) as PnpmOut[]
+  const filter = createDependenciesFilter(options.include, options.exclude)
+
+  const pkgMetas: GlobalPackageMeta[] = pnpmOuts.map(
+    pnpmOut =>
+      Object.entries(pnpmOut.dependencies)
+        .filter(([_name, i]) => i?.version)
+        .map(([name, i]) =>
+          ({
+            name,
+            currentVersion: `^${i.version}`,
+            update: filter(name),
+            source: 'dependencies',
+          } satisfies RawDep),
+        ))
+    .map((deps, i) => ({
+      agent: 'pnpm',
+      resolved: [],
+      raw: null,
+      version: '',
+      filepath: '',
+      relative: '',
+      deps,
+      name: c.red('pnpm') + c.gray(c.dim(' (global)')) + c.gray(c.dim(` ${pnpmOuts[i].path}`)),
+    }))
+
+  return pkgMetas
+}
+
+async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackageMeta> {
   const { stdout } = await execa('npm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })
   const npmOut = JSON.parse(stdout) as NpmOut
   const filter = createDependenciesFilter(options.include, options.exclude)
@@ -110,6 +162,7 @@ async function loadGlobalPackage(options: CheckOptions): Promise<PackageMeta> {
     )
 
   return {
+    agent: 'npm',
     resolved: [],
     raw: null,
     version: '',
@@ -120,9 +173,10 @@ async function loadGlobalPackage(options: CheckOptions): Promise<PackageMeta> {
   }
 }
 
-async function installPkg(pkg: PackageMeta) {
+async function installPkg(pkg: GlobalPackageMeta) {
   const changes = pkg.resolved.filter(i => i.update)
   const dependencies = dumpDependencies(changes, 'dependencies')
   const updateArgs = Object.entries(dependencies).map(([name, version]) => `${name}@${version}`)
-  await execa('npm', ['install', '-g', ...updateArgs], { stdio: 'inherit' })
+  const installCommand = getCommand(pkg.agent, 'global', [...updateArgs])
+  await execaCommand(installCommand, { stdio: 'inherit' })
 }
