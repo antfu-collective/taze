@@ -115,8 +115,16 @@ export async function checkGlobal(options: CheckOptions) {
 }
 
 async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPackageMeta[]> {
-  const { stdout } = await execa('pnpm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })
-  const pnpmOuts = JSON.parse(stdout) as PnpmOut[]
+  let pnpmStdout
+
+  try {
+    pnpmStdout = (await execa('pnpm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })).stdout
+  }
+  catch (error) {
+    return []
+  }
+
+  const pnpmOuts = JSON.parse(pnpmStdout) as PnpmOut[]
   const filter = createDependenciesFilter(options.include, options.exclude)
 
   const pkgMetas: GlobalPackageMeta[] = pnpmOuts.map(
