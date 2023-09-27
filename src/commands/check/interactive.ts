@@ -69,33 +69,34 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         console.log(lines.join('\n'))
       },
       onKey(key) {
-        if (key.name === 'escape') {
-          process.exit()
-        }
-        else if (key.name === 'enter' || key.name === 'return') {
-          console.clear()
-          pkgs.forEach((i) => {
-            i.resolved.forEach((i) => {
-              i.update = !!i.interactiveChecked
+        switch (key.name) {
+          case 'escape':
+            process.exit()
+          case 'enter':
+          case 'return':
+            console.clear()
+            pkgs.forEach((i) => {
+              i.resolved.forEach((i) => {
+                i.update = !!i.interactiveChecked
+              })
             })
-          })
-          promise.resolve(pkgs)
-        }
-        else if (key.name === 'up') {
-          index = (index - 1 + deps.length) % deps.length
-          return true
-        }
-        else if (key.name === 'down') {
-          index = (index + 1) % deps.length
-          return true
-        }
-        else if (key.name === 'space') {
-          deps[index].interactiveChecked = !deps[index].interactiveChecked
-          return true
-        }
-        else if (key.name === 'right') {
-          renderer = createVersionSelectRender(deps[index])
-          return true
+            promise.resolve(pkgs)
+            break
+          case 'up':
+          case 'k':
+            index = (index - 1 + deps.length) % deps.length
+            return true
+          case 'down':
+          case 'j':
+            index = (index + 1) % deps.length
+            return true
+          case 'space':
+            deps[index].interactiveChecked = !deps[index].interactiveChecked
+            return true
+          case 'right':
+          case 'l':
+            renderer = createVersionSelectRender(deps[index])
+            return true
         }
       },
     }
@@ -144,23 +145,28 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         )
       },
       onKey(key) {
-        if (key.name === 'escape') {
-          renderer = listRenderer
-          return true
-        }
-        else if (key.name === 'up') {
-          index = (index - 1 + versions.length) % versions.length
-          return true
-        }
-        else if (key.name === 'down') {
-          index = (index + 1) % versions.length
-          return true
-        }
-        // confirm
-        else if (key.name === 'enter' || key.name === 'return' || key.name === 'left' || key.name === 'right') {
-          updateTargetVersion(dep, versions[index].version)
-          renderer = listRenderer
-          return true
+        switch (key.name) {   
+          case 'escape':
+            renderer = listRenderer
+            return true
+          case 'up':
+          case 'k':
+            index = (index - 1 + versions.length) % versions.length
+            return true
+          case 'down':
+          case 'j':
+            index = (index + 1) % versions.length
+            return true
+          // confirm
+          case 'enter':
+          case 'return':
+          case 'left':
+          case 'right':
+          case 'h':
+          case 'l':
+            updateTargetVersion(dep, versions[index].version)
+            renderer = listRenderer
+            return true
         }
       },
     }
