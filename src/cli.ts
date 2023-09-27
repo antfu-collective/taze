@@ -1,3 +1,4 @@
+import process from 'node:process'
 import type { Argv } from 'yargs'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -10,7 +11,7 @@ import { LOGLEVELS, resolveConfig } from './config'
 import type { SortOption } from './utils/sort'
 import { checkGlobal } from './commands/check/checkGlobal'
 
-function commonOptions(args: Argv<{}>): Argv<CommonOptions> {
+function commonOptions(args: Argv<object>): Argv<CommonOptions> {
   return args
     .option('cwd', {
       alias: 'C',

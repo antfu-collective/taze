@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { expect, test } from 'vitest'
 import type { CheckOptions, DependencyFilter, RawDep } from '../src'
 import { resolveDependency } from '../src'

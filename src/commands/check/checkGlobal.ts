@@ -128,17 +128,15 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
   const filter = createDependenciesFilter(options.include, options.exclude)
 
   const pkgMetas: GlobalPackageMeta[] = pnpmOuts.map(
-    pnpmOut =>
-      Object.entries(pnpmOut.dependencies)
-        .filter(([_name, i]) => i?.version)
-        .map(([name, i]) =>
-          ({
-            name,
-            currentVersion: `^${i.version}`,
-            update: filter(name),
-            source: 'dependencies',
-          } satisfies RawDep),
-        ))
+    pnpmOut => Object.entries(pnpmOut.dependencies)
+      .filter(([_name, i]) => i?.version)
+      .map(([name, i]) => ({
+        name,
+        currentVersion: `^${i.version}`,
+        update: filter(name),
+        source: 'dependencies',
+      } satisfies RawDep)),
+  )
     .map((deps, i) => ({
       agent: 'pnpm',
       resolved: [],
@@ -160,14 +158,12 @@ async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackag
 
   const deps: RawDep[] = Object.entries(npmOut.dependencies)
     .filter(([_name, i]) => i?.version)
-    .map(([name, i]) =>
-      ({
-        name,
-        currentVersion: `^${i.version}`,
-        update: filter(name),
-        source: 'dependencies',
-      }),
-    )
+    .map(([name, i]) => ({
+      name,
+      currentVersion: `^${i.version}`,
+      update: filter(name),
+      source: 'dependencies',
+    }))
 
   return {
     agent: 'npm',

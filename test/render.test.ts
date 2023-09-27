@@ -6,9 +6,7 @@ test('formatTable', () => {
     formatTable([
       ['hi', 'hello', 'foo'],
       ['hello', 'hi', 'foobar'],
-    ],
-    'LRL',
-    ),
+    ], 'LRL'),
   ).toMatchInlineSnapshot(`
     [
       "hi     hello  foo   ",

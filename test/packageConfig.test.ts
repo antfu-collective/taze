@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { describe, expect, test } from 'vitest'
 import type { CheckOptions, CommonOptions, ResolvedDepChange } from '../src'
 import { CheckPackages } from '../src'

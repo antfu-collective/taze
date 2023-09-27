@@ -1,6 +1,7 @@
 // ported from: https://github.com/raineorshine/npm-check-updates/blob/master/lib/package-managers/npm.js
 
 import path from 'node:path'
+import process from 'node:process'
 import NpmcliConfig from '@npmcli/config'
 
 async function getNpmConfig() {

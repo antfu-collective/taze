@@ -1,5 +1,7 @@
+/* eslint-disable no-fallthrough */
 /* eslint-disable no-console */
 import readline from 'node:readline'
+import process from 'node:process'
 import c from 'picocolors'
 import { createControlledPromise, notNullish } from '@antfu/utils'
 import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
@@ -145,7 +147,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         )
       },
       onKey(key) {
-        switch (key.name) {   
+        switch (key.name) {
           case 'escape':
             renderer = listRenderer
             return true
