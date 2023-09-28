@@ -124,7 +124,7 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
     return []
   }
 
-  const pnpmOuts = JSON.parse(pnpmStdout) as PnpmOut[]
+  const pnpmOuts = (JSON.parse(pnpmStdout) as PnpmOut[]).filter(it => it.dependencies != null)
   const filter = createDependenciesFilter(options.include, options.exclude)
 
   const pkgMetas: GlobalPackageMeta[] = pnpmOuts.map(
