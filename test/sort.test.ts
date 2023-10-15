@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { PackageData, ResolvedDepChange } from '../src'
 import { parseSortOption, sortDepChanges } from '../src/utils/sort'
 
@@ -58,7 +58,7 @@ describe('sort resolvedDepChanges', () => {
   const getOrderChange = (sorted: ResolvedDepChange[]) => input.map(i => sorted.indexOf(i))
 
   describe('sorts by time', () => {
-    test('sorts ascending', () => {
+    it('sorts ascending', () => {
       expect(getOrderChange(sortDepChanges(input, 'time-asc'))).toMatchInlineSnapshot(`
         [
           1,
@@ -69,7 +69,7 @@ describe('sort resolvedDepChanges', () => {
       `)
     })
 
-    test('sorts descending', () => {
+    it('sorts descending', () => {
       expect(getOrderChange(sortDepChanges(input, 'time-desc'))).toMatchInlineSnapshot(`
         [
           2,
@@ -82,7 +82,7 @@ describe('sort resolvedDepChanges', () => {
   })
 
   describe('sorts by time difference', () => {
-    test('sorts ascending', () => {
+    it('sorts ascending', () => {
       expect(getOrderChange(sortDepChanges(input, 'diff-asc'))).toMatchInlineSnapshot(`
         [
           0,
@@ -93,7 +93,7 @@ describe('sort resolvedDepChanges', () => {
       `)
     })
 
-    test('sorts descending', () => {
+    it('sorts descending', () => {
       expect(getOrderChange(sortDepChanges(input, 'diff-desc'))).toMatchInlineSnapshot(`
         [
           3,
@@ -106,7 +106,7 @@ describe('sort resolvedDepChanges', () => {
   })
 
   describe('parseSortOption', () => {
-    test('parses key and order', () => {
+    it('parses key and order', () => {
       expect(parseSortOption('time-asc')).toEqual(['time', 'asc'])
       expect(parseSortOption('diff-asc')).toEqual(['diff', 'asc'])
 

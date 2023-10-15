@@ -2,16 +2,16 @@
   "compilerOptions": {
     "target": "es2018",
     "lib": ["esnext"],
-    "module": "esnext",
     "rootDir": ".",
+    "module": "esnext",
     "moduleResolution": "node",
     "paths": {
       "taze": ["./src/index.ts"]
     },
     "resolveJsonModule": true,
-    "esModuleInterop": true,
     "strict": true,
     "strictNullChecks": true,
+    "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   }
