@@ -1,14 +1,12 @@
-import { expect, test } from 'vitest'
+import { expect, it } from 'vitest'
 import { formatTable } from '../src/render'
 
-test('formatTable', () => {
+it('formatTable', () => {
   expect(
     formatTable([
       ['hi', 'hello', 'foo'],
       ['hello', 'hi', 'foobar'],
-    ],
-    'LRL',
-    ),
+    ], 'LRL'),
   ).toMatchInlineSnapshot(`
     [
       "hi     hello  foo   ",

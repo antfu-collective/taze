@@ -1,3 +1,4 @@
+import process from 'node:process'
 import c from 'picocolors'
 import { MultiBar, Presets } from 'cli-progress'
 import { LOGLEVELS } from './config'
@@ -61,7 +62,7 @@ export class TableLogger {
       return
 
     const { columns, align, pending } = this.options
-    const columnsWidth = new Array(columns).fill(0)
+    const columnsWidth = Array.from({ length: columns }, () => 0)
 
     // calc the max width of columns
     this.rows.forEach((line) => {

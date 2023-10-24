@@ -1,4 +1,5 @@
-import { expect, test } from 'vitest'
+import process from 'node:process'
+import { expect, it } from 'vitest'
 import type { CheckOptions, DependencyFilter, RawDep } from '../src'
 import { resolveDependency } from '../src'
 
@@ -32,7 +33,7 @@ const options: CheckOptions = {
   all: false,
 }
 
-test('resolveDependency', async () => {
+it('resolveDependency', async () => {
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)

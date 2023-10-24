@@ -1,8 +1,8 @@
-import { expect, test } from 'vitest'
+import { expect, it } from 'vitest'
 import { getPackageData } from '../src/io/resolves'
 import { getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
 
-test('getVersionRange', () => {
+it('getVersionRange', () => {
   expect('~').toBe(getVersionRangePrefix('~1.2.3'))
   expect('~').toBe(getVersionRangePrefix('~1.2.x'))
   expect('^').toBe(getVersionRangePrefix('^1.2.x'))
@@ -27,7 +27,7 @@ test('getVersionRange', () => {
   expect('*').toBe(getVersionRangePrefix('x'))
 })
 
-test('getMaxSatisfying', async () => {
+it('getMaxSatisfying', async () => {
   const { versions, tags } = await getPackageData('typescript')
   const latest = tags.latest
   const newest = tags.next

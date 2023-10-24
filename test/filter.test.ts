@@ -1,7 +1,7 @@
-import { expect, test } from 'vitest'
+import { expect, it } from 'vitest'
 import { createDependenciesFilter, filterToRegex } from '../src/utils/dependenciesFilter'
 
-test('filterToRegex', () => {
+it('filterToRegex', () => {
   // exact match
   expect(filterToRegex('hello').source).toBe('^hello$')
 
@@ -19,7 +19,7 @@ test('filterToRegex', () => {
   expect(filterToRegex('/react/gi').flags).toBe('gi')
 })
 
-test('filterToRegex match', () => {
+it('filterToRegex match', () => {
   expect(filterToRegex('hello').test('hello')).toBe(true)
   expect(filterToRegex('hello').test('hell')).toBe(false)
 
@@ -29,7 +29,7 @@ test('filterToRegex match', () => {
   expect(filterToRegex('/@p?react\\/.*/').test('@preact/hello')).toBe(true)
 })
 
-test('createDependenciesFilter', () => {
+it('createDependenciesFilter', () => {
   const filter = createDependenciesFilter(
     'react-*',
     'react-hello,react-hey,/react-\\d[a-z]/',

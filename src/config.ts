@@ -1,3 +1,4 @@
+import process from 'node:process'
 import deepmerge from 'deepmerge'
 import _debug from 'debug'
 import { createConfigLoader } from 'unconfig'

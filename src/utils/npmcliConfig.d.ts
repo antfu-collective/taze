@@ -7,8 +7,8 @@ declare module '@npmcli/config' {
     flatten: (current: Recordable, total: Recordable) => void
   }
 
-  export default class NpmcliConfig{
-    constructor (options: NpmcliConfigOptions)
+  export default class NpmcliConfig {
+    constructor(options: NpmcliConfigOptions)
     load(): Promise<void>
     loadDefaults(): void
     home: string
