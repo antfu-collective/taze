@@ -19,20 +19,32 @@ export async function writeJSON(filepath: string, data: any) {
 
 export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
   const { raw, filepath, resolved } = pkg
-  if (raw.dependencies && !options.dev)
-    raw.dependencies = dumpDependencies(resolved, 'dependencies')
-  if (raw.devDependencies && !options.prod)
-    raw.devDependencies = dumpDependencies(resolved, 'devDependencies')
-  if (raw.optionalDependencies && !options.prod && !options.dev)
-    raw.optionalDependencies = dumpDependencies(resolved, 'optionalDependencies')
+
+  let changed = false
+
+  const depKeys = [
+    ['dependencies', !options.dev],
+    ['devDependencies', !options.prod],
+    ['optionalDependencies', !options.prod && !options.dev],
+  ] as const
+
+  depKeys.forEach(([key, shouldWrite]) => {
+    if (raw[key] && shouldWrite) {
+      raw[key] = dumpDependencies(resolved, key)
+      changed = true
+    }
+  })
 
   if (raw.packageManager) {
     const value = Object.entries(dumpDependencies(resolved, 'packageManager'))[0]
-    if (value)
+    if (value) {
       raw.packageManager = `${value[0]}@${value[1].replace('^', '')}`
+      changed = true
+    }
   }
 
-  await writeJSON(filepath, raw)
+  if (changed)
+    await writeJSON(filepath, raw)
 }
 
 export async function loadPackage(relative: string, options: CommonOptions, shouldUpdate: (name: string) => boolean): Promise<PackageMeta> {
