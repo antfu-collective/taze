@@ -45,7 +45,7 @@ it('resolveDependency', async () => {
   // major
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
@@ -53,7 +53,7 @@ it('resolveDependency', async () => {
   // minor
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
@@ -61,7 +61,7 @@ it('resolveDependency', async () => {
   // patch
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
@@ -69,7 +69,7 @@ it('resolveDependency', async () => {
   // latest
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
@@ -77,9 +77,13 @@ it('resolveDependency', async () => {
   // newest
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
+
+  // include locked
+  options.includeLocked = true
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
 
   expect((await resolveDependency(makePkg(''), options, filter)).targetVersion)
     .toMatch('')

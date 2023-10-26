@@ -72,6 +72,10 @@ taze --include lodash,webpack
 taze --include /react/ --exclude react-dom # regex is also supported
 ```
 
+### Lockedversion
+
+Locked (fixed version without `^` or `~`) packages are skipped by default, use `taze --include-locked` or `taze -l` to show them.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.

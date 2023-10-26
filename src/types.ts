@@ -50,7 +50,7 @@ export interface CommonOptions {
   exclude?: string | string[]
   prod?: boolean
   dev?: boolean
-  loglevel: string
+  loglevel?: string
   failOnOutdated?: boolean
   silent?: boolean
   force?: boolean
@@ -71,6 +71,12 @@ export interface CheckOptions extends CommonOptions {
   install?: boolean
   update?: boolean
   global?: boolean
+  /**
+   * include locked dependencies & devDependencies
+   * @default false
+   * @description exclude the locked deps/devDeps by default
+   */
+  includeLocked?: boolean
 }
 
 export interface PackageMeta {

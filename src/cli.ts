@@ -77,6 +77,11 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       describe: 'update only for dependencies',
       conflicts: ['dev'],
     })
+    .option('include-locked', {
+      alias: 'l',
+      type: 'boolean',
+      describe: 'include locked dependencies & devDependencies',
+    })
 }
 
 // eslint-disable-next-line no-unused-expressions

@@ -101,9 +101,35 @@ export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
   return getMaxSatisfying(versions, dep.currentVersion, range, tags)
 }
 
-export function updateTargetVersion(dep: ResolvedDepChange, version: string, forgiving = true) {
+export function updateTargetVersion(
+  dep: ResolvedDepChange,
+  version: string,
+  forgiving = true,
+  includeLocked = false,
+) {
+  const versionLocked = /^[0-9]+/.test(dep.currentVersion)
+  if (versionLocked && !includeLocked) {
+    dep.targetVersion = dep.currentVersion
+    dep.targetVersionTime = dep.currentVersionTime
+    dep.diff = null
+    dep.update = false
+    return
+  }
+
   dep.targetVersion = getPrefixedVersion(dep.currentVersion, version) || dep.currentVersion
   dep.targetVersionTime = dep.pkgData.time?.[version]
+
+  if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion)) {
+    // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
+    // - but this mode will always ignore the locked pkgs
+    // - so we need to reset the target
+    const { versions, time = {}, tags } = dep.pkgData
+    const targetVersion = getMaxSatisfying(versions, dep.currentVersion, 'minor', tags)
+    if (targetVersion) {
+      dep.targetVersion = targetVersion
+      dep.targetVersionTime = time[dep.targetVersion]
+    }
+  }
 
   try {
     const current = semver.minVersion(dep.currentVersion)!
@@ -176,7 +202,7 @@ export async function resolveDependency(
   }
 
   if (target)
-    updateTargetVersion(dep, target)
+    updateTargetVersion(dep, target, undefined, options.includeLocked)
   else
     dep.targetVersion = dep.currentVersion
 
