@@ -19,7 +19,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
       if (i.latestVersionAvailable && !i.update) {
         i.interactiveChecked = false
         i.update = true
-        updateTargetVersion(i, i.latestVersionAvailable)
+        updateTargetVersion(i, i.latestVersionAvailable, undefined, options.includeLocked)
       }
     })
   })
@@ -166,7 +166,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           case 'right':
           case 'h':
           case 'l':
-            updateTargetVersion(dep, versions[index].version)
+            updateTargetVersion(dep, versions[index].version, undefined, options.includeLocked)
             renderer = listRenderer
             return true
         }

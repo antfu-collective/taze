@@ -101,12 +101,23 @@ export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
   return getMaxSatisfying(versions, dep.currentVersion, range, tags)
 }
 
-export function updateTargetVersion(dep: ResolvedDepChange, version: string, forgiving = true) {
+export function updateTargetVersion(
+  dep: ResolvedDepChange,
+  version: string,
+  forgiving = true,
+  includeLocked = false,
+) {
+  const versionLocked = /^[0-9]+/.test(dep.currentVersion)
+  if (versionLocked && !includeLocked) {
+    dep.targetVersion = dep.currentVersion
+    dep.targetVersionTime = dep.currentVersionTime
+    dep.diff = null
+    dep.update = false
+    return
+  }
+
   dep.targetVersion = getPrefixedVersion(dep.currentVersion, version) || dep.currentVersion
   dep.targetVersionTime = dep.pkgData.time?.[version]
-
-  const versionLocked = /^[0-9]+/.test(dep.currentVersion)
-  const updateDirectlyWhenLocked = dep.includeLock === true && versionLocked
 
   if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion)) {
     // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
@@ -126,7 +137,7 @@ export function updateTargetVersion(dep: ResolvedDepChange, version: string, for
 
     dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
     dep.diff = semver.diff(current, target)
-    dep.update = updateDirectlyWhenLocked || (!versionLocked && dep.diff !== null && semver.lt(current, target))
+    dep.update = dep.diff !== null && semver.lt(current, target)
   }
   catch (e) {
     if (!forgiving)
@@ -142,7 +153,7 @@ export async function resolveDependency(
   options: CheckOptions,
   filter: DependencyFilter = () => true,
 ) {
-  const dep = { ...raw, includeLock: !!options.includeLock } as ResolvedDepChange
+  const dep = { ...raw } as ResolvedDepChange
 
   const configMode = getPackageMode(dep.name, options)
   const optionMode = options.mode
@@ -191,7 +202,7 @@ export async function resolveDependency(
   }
 
   if (target)
-    updateTargetVersion(dep, target)
+    updateTargetVersion(dep, target, undefined, options.includeLocked)
   else
     dep.targetVersion = dep.currentVersion
 

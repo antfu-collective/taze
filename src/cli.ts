@@ -77,7 +77,7 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       describe: 'update only for dependencies',
       conflicts: ['dev'],
     })
-    .option('include-lock', {
+    .option('include-locked', {
       alias: 'l',
       type: 'boolean',
       describe: 'include locked dependencies & devDependencies',
