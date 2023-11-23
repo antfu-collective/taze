@@ -10,6 +10,8 @@ import { DependenciesTypeShortMap } from '../../types'
 import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, colorizeVersionDiff, formatTable } from '../../render'
+import { DiffColorMap } from '../../utils/diff'
+import type { DiffType } from '../../../dist'
 
 export function renderChange(change: ResolvedDepChange, interactive?: InteractiveContext) {
   const update = change.update && (!interactive || change.interactiveChecked)
@@ -73,7 +75,7 @@ export function renderChanges(
       })
     const diffEntries = Object.keys(diffCounts).length
       ? Object.entries(diffCounts)
-        .map(([key, value]) => `${c.yellow(value)} ${key}`)
+        .map(([key, value]) => `${c[DiffColorMap[key as DiffType || 'patch']](value)} ${key}`)
         .join(', ')
       : c.dim('no change')
 

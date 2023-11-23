@@ -1,5 +1,4 @@
 import type { Packument } from 'pacote'
-import type semver from 'semver'
 import type { SortOption } from './utils/sort'
 
 export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'latest' | 'newest'
@@ -20,7 +19,7 @@ export interface RawDep {
   update: boolean
 }
 
-export type DiffType = ReturnType<typeof semver['diff']> | 'error'
+export type DiffType = 'major' | 'minor' | 'patch' | 'error' | null
 
 export interface PackageData {
   tags: Record<string, string>
