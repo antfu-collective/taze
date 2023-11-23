@@ -1,4 +1,7 @@
 import c from 'picocolors'
+import { SemVer } from 'semver'
+import { getDiff } from './io/resolves'
+import { DiffColorMap } from './utils/diff'
 
 export const FIG_CHECK = c.green('◉')
 export const FIG_UNCHECK = c.gray('◌')
@@ -92,14 +95,8 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
   let i = partsToColor.findIndex((part, i) => part !== partsToCompare[i])
   i = i >= 0 ? i : partsToColor.length
 
-  // major = red (or any change before 1.0.0)
-  // minor = cyan
-  // patch = green
-  const color = (i === 0 || partsToColor[0] === '0')
-    ? 'red'
-    : i === 1
-      ? 'cyan'
-      : 'green'
+  const diffType = getDiff(new SemVer(from), new SemVer(to))
+  const color = DiffColorMap[diffType || 'patch']
 
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = (i > 0 && i < partsToColor.length) ? '.' : ''

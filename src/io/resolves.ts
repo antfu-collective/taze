@@ -5,7 +5,7 @@ import pacote from 'pacote'
 import semver from 'semver'
 import _debug from 'debug'
 import { getNpmConfig } from '../utils/npm'
-import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 import { getPackageMode } from '../utils/config'
@@ -136,7 +136,7 @@ export function updateTargetVersion(
     const target = semver.minVersion(dep.targetVersion)!
 
     dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
-    dep.diff = semver.diff(current, target)
+    dep.diff = getDiff(current, target)
     dep.update = dep.diff !== null && semver.lt(current, target)
   }
   catch (e) {
@@ -146,6 +146,30 @@ export function updateTargetVersion(
     dep.diff = 'error'
     dep.update = false
   }
+}
+
+export function getDiff(current: semver.SemVer, target: semver.SemVer): DiffType {
+  if (semver.eq(current, target))
+    return null
+
+  const tilde = semver.satisfies(target, `~${current}`, { includePrerelease: true })
+  const caret = semver.satisfies(target, `^${current}`, { includePrerelease: true })
+  const gte = semver.satisfies(target, `>=${current}`, { includePrerelease: true })
+
+  if (tilde) {
+    if (caret)
+      return 'patch'
+    else
+      return 'major'
+  }
+  else if (caret) {
+    return 'minor'
+  }
+  else if (gte) {
+    return 'major'
+  }
+
+  return 'error'
 }
 
 export async function resolveDependency(

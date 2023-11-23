@@ -1,7 +1,9 @@
 import process from 'node:process'
 import { expect, it } from 'vitest'
+import { SemVer } from 'semver'
 import type { CheckOptions, DependencyFilter, RawDep } from '../src'
 import { resolveDependency } from '../src'
+import { getDiff } from '../src/io/resolves'
 
 const filter: DependencyFilter = () => true
 
@@ -103,3 +105,26 @@ it('resolveDependency', async () => {
   const target = await resolveDependency(makeLocalPkg('1.0.0'), options, filter)
   expect(target.resolveError).not.toBeNull()
 }, 10000)
+
+it('getDiff', () => {
+  // normal
+  expect(getDiff(new SemVer('1.2.3'), new SemVer('1.2.3'))).toBe(null)
+  expect(getDiff(new SemVer('1.2.3'), new SemVer('1.2.4'))).toBe('patch')
+  expect(getDiff(new SemVer('1.2.3'), new SemVer('1.3.3'))).toBe('minor')
+  expect(getDiff(new SemVer('1.2.3'), new SemVer('2.2.3'))).toBe('major')
+
+  // 0.x
+  expect(getDiff(new SemVer('0.1.2'), new SemVer('0.1.3'))).toBe('patch')
+  expect(getDiff(new SemVer('0.1.2'), new SemVer('0.2.2'))).toBe('major')
+  expect(getDiff(new SemVer('0.0.3'), new SemVer('0.0.4'))).toBe('major')
+
+  // pre
+  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.2.3'))).toBe('patch')
+  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.2.4'))).toBe('patch')
+  expect(getDiff(new SemVer('1.2.2'), new SemVer('1.2.3-a'))).toBe('patch')
+  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.2.3-b'))).toBe('patch')
+  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.2.4-b'))).toBe('patch')
+  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.3.3-a'))).toBe('minor')
+  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('2.2.3-a'))).toBe('major')
+  expect(getDiff(new SemVer('2.0.0-a'), new SemVer('2.0.0'))).toBe('patch')
+})
