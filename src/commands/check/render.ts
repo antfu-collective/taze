@@ -2,6 +2,7 @@ import c from 'picocolors'
 import semver from 'semver'
 import type {
   CheckOptions,
+  DiffType,
   InteractiveContext,
   PackageMeta,
   ResolvedDepChange,
@@ -11,7 +12,6 @@ import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, colorizeVersionDiff, formatTable } from '../../render'
 import { DiffColorMap } from '../../utils/diff'
-import type { DiffType } from '../../../dist'
 
 export function renderChange(change: ResolvedDepChange, interactive?: InteractiveContext) {
   const update = change.update && (!interactive || change.interactiveChecked)
