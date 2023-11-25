@@ -6,10 +6,21 @@ import c from 'picocolors'
 import { version } from '../package.json'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
-import type { CommonOptions } from './types'
-import { LOGLEVELS, resolveConfig } from './config'
+import type { CommonOptions, LogLevel, RangeMode } from './types'
+import { SORT_CHOICES } from './utils/sort'
+import { resolveConfig } from './config'
 import type { SortOption } from './utils/sort'
 import { checkGlobal } from './commands/check/checkGlobal'
+import { DEFAULT_CHECK_OPTIONS, DEFAULT_USAGE_OPTIONS, LOG_LEVELS, MODE_CHOICES } from './constants'
+
+function removeDefaultConfig<T extends CommonOptions>(options: T, defaults: T) {
+  return Object.fromEntries(
+    Object.entries(options)
+      .filter(([key, value]) =>
+        key in defaults && value !== defaults[key as keyof T],
+      ),
+  ) as T
+}
 
 function commonOptions(args: Argv<object>): Argv<CommonOptions> {
   return args
@@ -20,10 +31,10 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       describe: 'specify the current working directory',
     })
     .option('loglevel', {
-      default: 'info',
+      default: 'info' as LogLevel,
       type: 'string',
       describe: 'log level',
-      choices: LOGLEVELS,
+      choices: LOG_LEVELS,
     })
     .option('failOnOutdated', {
       type: 'boolean',
@@ -44,12 +55,6 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       alias: 'f',
       type: 'boolean',
       describe: 'force fetching from server, bypass cache',
-    })
-    .option('sort', {
-      type: 'string',
-      default: 'diff-asc' as SortOption,
-      choices: ['time-asc', 'time-desc', 'diff-asc', 'diff-desc', 'name-asc', 'name-desc', 'time', 'diff', 'name'],
-      describe: 'sort by most outdated absolute or relative to dependency',
     })
     .option('ignore-paths', {
       type: 'string',
@@ -77,11 +82,6 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       describe: 'update only for dependencies',
       conflicts: ['dev'],
     })
-    .option('include-locked', {
-      alias: 'l',
-      type: 'boolean',
-      describe: 'include locked dependencies & devDependencies',
-    })
 }
 
 // eslint-disable-next-line no-unused-expressions
@@ -102,7 +102,13 @@ yargs(hideBin(process.argv))
         .help()
         .demandOption('recursive', c.yellow('Please add -r to analysis usages'))
     },
-    async args => usage(await resolveConfig({ ...args, recursive: true })),
+    async args => usage(await resolveConfig(
+      removeDefaultConfig(
+        { ...args, recursive: true },
+        DEFAULT_USAGE_OPTIONS,
+      ),
+      'usage',
+    )),
   )
   .command(
     '* [mode]',
@@ -110,10 +116,10 @@ yargs(hideBin(process.argv))
     (args) => {
       return commonOptions(args)
         .positional('mode', {
-          default: 'default',
+          default: 'default' as RangeMode,
           type: 'string',
           describe: 'the mode how version range resolves, can be "default", "major", "minor", "latest" or "newest"',
-          choices: ['default', 'major', 'minor', 'patch', 'latest', 'newest'],
+          choices: MODE_CHOICES,
         })
         .option('write', {
           alias: 'w',
@@ -151,14 +157,29 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           describe: 'show all packages up to date info',
         })
+        .option('sort', {
+          type: 'string',
+          default: 'diff-asc' as SortOption,
+          choices: SORT_CHOICES,
+          describe: 'sort by most outdated absolute or relative to dependency',
+        })
+        .option('include-locked', {
+          alias: 'l',
+          type: 'boolean',
+          describe: 'include locked dependencies & devDependencies',
+        })
         .help()
     },
     async (args) => {
       let exitCode
+      const config = await resolveConfig(
+        removeDefaultConfig(args, DEFAULT_CHECK_OPTIONS),
+        'check',
+      )
       if (args.global)
-        exitCode = await checkGlobal(await resolveConfig(args))
+        exitCode = await checkGlobal(config)
       else
-        exitCode = await check(await resolveConfig(args))
+        exitCode = await check(config)
 
       process.exit(exitCode)
     },

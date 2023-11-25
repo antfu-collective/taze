@@ -1,18 +1,19 @@
 import process from 'node:process'
 import c from 'picocolors'
 import { MultiBar, Presets } from 'cli-progress'
-import { LOGLEVELS } from './config'
+import { LOG_LEVELS } from './constants'
 import { visualLength, visualPadEnd, visualPadStart } from './render'
+import type { LogLevel } from './types'
 
 interface Options {
   columns: number
   pending: number
   align: string
-  loglevel: string
+  loglevel: LogLevel
 }
 
-export function shouldLog(level: string, messageLevel: string) {
-  return LOGLEVELS.indexOf(level) <= LOGLEVELS.indexOf(messageLevel)
+export function shouldLog(level: LogLevel, messageLevel: LogLevel) {
+  return LOG_LEVELS.indexOf(level) <= LOG_LEVELS.indexOf(messageLevel)
 }
 
 export class TableLogger {

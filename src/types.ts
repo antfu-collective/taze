@@ -41,6 +41,8 @@ export interface ResolvedDepChange extends RawDep {
   aliasName?: string
 }
 
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent'
+
 export interface CommonOptions {
   cwd: string
   recursive?: boolean
@@ -49,7 +51,7 @@ export interface CommonOptions {
   exclude?: string | string[]
   prod?: boolean
   dev?: boolean
-  loglevel?: string
+  loglevel?: LogLevel
   failOnOutdated?: boolean
   silent?: boolean
   force?: boolean
@@ -62,7 +64,7 @@ export interface UsageOptions extends CommonOptions {
 }
 
 export interface CheckOptions extends CommonOptions {
-  mode: string
+  mode: RangeMode
   write: boolean
   all: boolean
   sort?: SortOption

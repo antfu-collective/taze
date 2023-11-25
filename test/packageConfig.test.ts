@@ -14,7 +14,7 @@ describe('load config', () => {
       cwd: `${process.cwd()}/test/fixtures/pkgmode`,
       loglevel: 'silent',
     }
-    const { packageMode } = await resolveConfig(options)
+    const { packageMode } = await resolveConfig(options, 'check')
     expect(packageMode).toMatchInlineSnapshot(`
       {
         "/vue/": "latest",
@@ -29,7 +29,7 @@ describe('load config', () => {
       cwd: process.cwd(),
       loglevel: 'silent',
     }
-    const { packageMode } = await resolveConfig(options)
+    const { packageMode } = await resolveConfig(options, 'check')
     expect(packageMode).toMatchInlineSnapshot('undefined')
   })
 })

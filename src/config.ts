@@ -4,10 +4,9 @@ import _debug from 'debug'
 import { createConfigLoader } from 'unconfig'
 import type { CommonOptions } from './types'
 import { toArray } from './utils/toArray'
+import { DEFAULT_CHECK_OPTIONS, DEFAULT_USAGE_OPTIONS } from './constants'
 
 const debug = _debug('taze:config')
-
-export const LOGLEVELS = ['debug', 'info', 'warn', 'error', 'silent']
 
 function normalizeConfig<T extends CommonOptions>(options: T) {
   options.ignorePaths = toArray(options.ignorePaths)
@@ -20,7 +19,14 @@ function normalizeConfig<T extends CommonOptions>(options: T) {
   return options
 }
 
-export async function resolveConfig<T extends CommonOptions>(options: T): Promise<T> {
+export async function resolveConfig<T extends CommonOptions>(
+  options: T,
+  command: 'check' | 'usage',
+): Promise<T> {
+  const defaultOptions = normalizeConfig(
+    command === 'check' ? DEFAULT_CHECK_OPTIONS : DEFAULT_USAGE_OPTIONS,
+  )
+
   options = normalizeConfig(options)
 
   const loader = createConfigLoader<CommonOptions>({
@@ -44,10 +50,10 @@ export async function resolveConfig<T extends CommonOptions>(options: T): Promis
   const config = await loader.load()
 
   if (!config.sources.length)
-    return options
+    return deepmerge(defaultOptions, options) as T
 
   debug(`config file found ${config.sources[0]}`)
   const configOptions = normalizeConfig(config.config)
 
-  return deepmerge(configOptions, options) as T
+  return deepmerge(defaultOptions, deepmerge(configOptions, options)) as T
 }
