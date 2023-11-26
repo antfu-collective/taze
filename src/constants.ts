@@ -29,6 +29,7 @@ export const DEFAULT_CHECK_OPTIONS: CheckOptions = {
   mode: 'default',
   write: false,
   global: false,
+  // TODO: enable by default: !process.env.CI && process.stdout.isTTY,
   interactive: false,
   install: false,
   update: false,

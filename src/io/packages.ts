@@ -48,7 +48,7 @@ export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
 }
 
 export async function loadPackage(relative: string, options: CommonOptions, shouldUpdate: (name: string) => boolean): Promise<PackageMeta> {
-  const filepath = path.resolve(options.cwd, relative)
+  const filepath = path.resolve(options.cwd ?? '', relative)
   const raw = await readJSON(filepath)
   let deps: RawDep[] = []
 

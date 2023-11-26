@@ -20,13 +20,9 @@ function normalizeConfig<T extends CommonOptions>(options: T) {
 }
 
 export async function resolveConfig<T extends CommonOptions>(
-  options: T,
-  command: 'check' | 'usage',
+  options: T & { _: (string | number)[] },
 ): Promise<T> {
-  const defaultOptions = normalizeConfig(
-    command === 'check' ? DEFAULT_CHECK_OPTIONS : DEFAULT_USAGE_OPTIONS,
-  )
-
+  const defaults = options._[0] === 'usage' ? DEFAULT_USAGE_OPTIONS : DEFAULT_CHECK_OPTIONS
   options = normalizeConfig(options)
 
   const loader = createConfigLoader<CommonOptions>({
@@ -50,10 +46,10 @@ export async function resolveConfig<T extends CommonOptions>(
   const config = await loader.load()
 
   if (!config.sources.length)
-    return deepmerge(defaultOptions, options) as T
+    return deepmerge(defaults, options as T) as T
 
   debug(`config file found ${config.sources[0]}`)
   const configOptions = normalizeConfig(config.config)
 
-  return deepmerge(defaultOptions, deepmerge(configOptions, options)) as T
+  return deepmerge(deepmerge(defaults, configOptions), options as T) as T
 }
