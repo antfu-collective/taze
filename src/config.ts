@@ -20,9 +20,9 @@ function normalizeConfig<T extends CommonOptions>(options: T) {
 }
 
 export async function resolveConfig<T extends CommonOptions>(
-  options: T & { _: (string | number)[] },
+  options: T & { _?: (string | number)[] },
 ): Promise<T> {
-  const defaults = options._[0] === 'usage' ? DEFAULT_USAGE_OPTIONS : DEFAULT_CHECK_OPTIONS
+  const defaults = options?._?.[0] === 'usage' ? DEFAULT_USAGE_OPTIONS : DEFAULT_CHECK_OPTIONS
   options = normalizeConfig(options)
 
   const loader = createConfigLoader<CommonOptions>({
