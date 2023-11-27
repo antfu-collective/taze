@@ -6,6 +6,14 @@ export type SortKey = 'time' | 'diff' | 'name'
 export type SortOrder = 'asc' | 'desc'
 
 export type SortOption = `${SortKey}-${SortOrder}`
+export const SORT_CHOICES = [
+  'time-asc',
+  'time-desc',
+  'diff-asc',
+  'diff-desc',
+  'name-asc',
+  'name-desc',
+] as const
 
 export function parseSortOption(option: SortOption) {
   return option.split('-') as [SortKey, SortOrder]

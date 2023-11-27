@@ -6,24 +6,23 @@ import c from 'picocolors'
 import { version } from '../package.json'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
+import { resolveConfig } from './config'
+import { LOG_LEVELS, MODE_CHOICES } from './constants'
 import type { CommonOptions } from './types'
-import { LOGLEVELS, resolveConfig } from './config'
-import type { SortOption } from './utils/sort'
+import { SORT_CHOICES } from './utils/sort'
 import { checkGlobal } from './commands/check/checkGlobal'
 
 function commonOptions(args: Argv<object>): Argv<CommonOptions> {
   return args
     .option('cwd', {
       alias: 'C',
-      default: '',
       type: 'string',
       describe: 'specify the current working directory',
     })
     .option('loglevel', {
-      default: 'info',
       type: 'string',
       describe: 'log level',
-      choices: LOGLEVELS,
+      choices: LOG_LEVELS,
     })
     .option('failOnOutdated', {
       type: 'boolean',
@@ -31,7 +30,6 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
     })
     .option('silent', {
       alias: 's',
-      default: false,
       type: 'boolean',
       describe: 'complete silent',
     })
@@ -44,12 +42,6 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       alias: 'f',
       type: 'boolean',
       describe: 'force fetching from server, bypass cache',
-    })
-    .option('sort', {
-      type: 'string',
-      default: 'diff-asc' as SortOption,
-      choices: ['time-asc', 'time-desc', 'diff-asc', 'diff-desc', 'name-asc', 'name-desc', 'time', 'diff', 'name'],
-      describe: 'sort by most outdated absolute or relative to dependency',
     })
     .option('ignore-paths', {
       type: 'string',
@@ -77,11 +69,6 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       describe: 'update only for dependencies',
       conflicts: ['dev'],
     })
-    .option('include-locked', {
-      alias: 'l',
-      type: 'boolean',
-      describe: 'include locked dependencies & devDependencies',
-    })
 }
 
 // eslint-disable-next-line no-unused-expressions
@@ -96,7 +83,6 @@ yargs(hideBin(process.argv))
         .option('detail', {
           alias: 'a',
           type: 'boolean',
-          default: false,
           describe: 'show more info',
         })
         .help()
@@ -110,46 +96,49 @@ yargs(hideBin(process.argv))
     (args) => {
       return commonOptions(args)
         .positional('mode', {
-          default: 'default',
           type: 'string',
           describe: 'the mode how version range resolves, can be "default", "major", "minor", "latest" or "newest"',
-          choices: ['default', 'major', 'minor', 'patch', 'latest', 'newest'],
+          choices: MODE_CHOICES,
         })
         .option('write', {
           alias: 'w',
-          default: false,
           type: 'boolean',
           describe: 'write to package.json',
         })
         .option('global', {
           alias: 'g',
-          default: false,
           type: 'boolean',
           describe: 'update global packages',
         })
         .option('interactive', {
           alias: 'I',
-          default: false, // TODO: enable by default: !process.env.CI && process.stdout.isTTY,
           type: 'boolean',
           describe: 'interactive mode',
         })
         .option('install', {
           alias: 'i',
-          default: false,
           type: 'boolean',
           describe: 'install directly after bumping',
         })
         .option('update', {
           alias: 'u',
-          default: false,
           type: 'boolean',
           describe: 'update directly after bumping',
         })
         .option('all', {
           alias: 'a',
-          default: false,
           type: 'boolean',
           describe: 'show all packages up to date info',
+        })
+        .option('sort', {
+          type: 'string',
+          choices: SORT_CHOICES,
+          describe: 'sort by most outdated absolute or relative to dependency',
+        })
+        .option('includeLocked', {
+          alias: 'l',
+          type: 'boolean',
+          describe: 'include locked dependencies & devDependencies',
         })
         .help()
     },
