@@ -1,3 +1,4 @@
+import process from 'node:process'
 import c from 'picocolors'
 import { SemVer } from 'semver'
 import { getDiff } from './io/resolves'
@@ -109,4 +110,72 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
         + partsToColor.slice(0, i).join('.')
         + middot
         + c[color](partsToColor.slice(i).join('.')).trim()
+}
+
+interface SliceRenderLine {
+  content: string
+  rows: number
+  fixed: boolean
+}
+
+export function createSliceRender() {
+  const { columns } = process.stdout
+  const all: SliceRenderLine[] = []
+  return {
+    push(...lines: { content: string; fixed?: boolean }[]) {
+      for (const line of lines) {
+        all.push({
+          ...line,
+          rows: Math.ceil(visualLength(line.content) / columns) || 1,
+          fixed: line.fixed ?? false,
+        })
+      }
+    },
+    render(selectedDepIndex: number) {
+      let { rows: remainHeight } = process.stdout
+      // spare space for cursor
+      remainHeight -= 1
+      let i = 0
+      while (i < all.length) {
+        const curr = all[i]
+        if (curr.fixed) {
+          /* eslint-disable-next-line no-console */
+          console.log(curr.content)
+          remainHeight -= curr.rows
+          i++
+        }
+        else {
+          break
+        }
+      }
+      const remainLines = all.slice(i)
+
+      // calculate focused line index from selected dep index
+      let focusedLineIndex = 0
+      let depIndex = 0
+      for (const line of remainLines) {
+        if (line.content.includes(FIG_CHECK))
+          depIndex++
+
+        if (depIndex === selectedDepIndex)
+          break
+        else
+          focusedLineIndex += line.rows
+      }
+
+      let slice: SliceRenderLine[]
+      if (remainHeight < 1 || remainLines.length === 0 || remainLines.length <= remainHeight) {
+        slice = remainLines
+      }
+      else {
+        const half = Math.floor((remainHeight - 1) / 2)
+        const f = focusedLineIndex - half
+        const b = focusedLineIndex + remainHeight - half - remainLines.length
+        const start = Math.max(0, b <= 0 ? f : f - b)
+        slice = remainLines.slice(start, start + remainHeight)
+      }
+      /* eslint-disable-next-line no-console */
+      console.log(slice.map(x => x.content).join('\n'))
+    },
+  }
 }

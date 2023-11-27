@@ -7,7 +7,7 @@ import { createControlledPromise, notNullish } from '@antfu/utils'
 import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
 import { getVersionOfRange, updateTargetVersion } from '../../io/resolves'
 import { getPrefixedVersion } from '../../utils/versions'
-import { FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, colorizeVersionDiff, formatTable } from '../../render'
+import { FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, colorizeVersionDiff, createSliceRender, formatTable } from '../../render'
 import { timeDifference } from '../../utils/time'
 import { renderChanges } from './render'
 
@@ -56,19 +56,18 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
     return {
       render() {
+        const sr = createSliceRender()
         const Y = (v: string) => c.bold(c.green(v))
         console.clear()
-        console.log(`${FIG_BLOCK} ${c.gray(`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`)}`)
-        console.log(`${FIG_BLOCK} ${c.gray(`${Y('enter')} to confirm, ${Y('esc')} to cancel`)}`)
-        console.log()
-
-        const lines: string[] = []
+        sr.push({ content: `${FIG_BLOCK} ${c.gray(`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`)}`, fixed: true })
+        sr.push({ content: `${FIG_BLOCK} ${c.gray(`${Y('enter')} to confirm, ${Y('esc')} to cancel`)}`, fixed: true })
+        sr.push({ content: '', fixed: true })
 
         pkgs.forEach((pkg) => {
-          lines.push(...renderChanges(pkg, options, ctx).lines)
+          sr.push(...renderChanges(pkg, options, ctx).lines.map(x => ({ content: x })))
         })
 
-        console.log(lines.join('\n'))
+        sr.render(index)
       },
       onKey(key) {
         switch (key.name) {
