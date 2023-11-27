@@ -114,25 +114,22 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
 
 interface SliceRenderLine {
   content: string
-  rows: number
   fixed: boolean
 }
 
 export function createSliceRender() {
-  const { columns } = process.stdout
   const all: SliceRenderLine[] = []
   return {
     push(...lines: { content: string; fixed?: boolean }[]) {
       for (const line of lines) {
         all.push({
           ...line,
-          rows: Math.ceil(visualLength(line.content) / columns) || 1,
           fixed: line.fixed ?? false,
         })
       }
     },
     render(selectedDepIndex: number) {
-      let { rows: remainHeight } = process.stdout
+      let { rows: remainHeight, columns: availableWidth } = process.stdout
       // spare space for cursor
       remainHeight -= 1
       let i = 0
@@ -141,7 +138,7 @@ export function createSliceRender() {
         if (curr.fixed) {
           /* eslint-disable-next-line no-console */
           console.log(curr.content)
-          remainHeight -= curr.rows
+          remainHeight -= 1
           i++
         }
         else {
@@ -155,16 +152,21 @@ export function createSliceRender() {
       let depIndex = 0
       for (const line of remainLines) {
         if (line.content.includes(FIG_CHECK))
-          depIndex++
+          depIndex += 1
 
         if (depIndex === selectedDepIndex)
           break
         else
-          focusedLineIndex += line.rows
+          focusedLineIndex += 1
       }
 
       let slice: SliceRenderLine[]
-      if (remainHeight < 1 || remainLines.length === 0 || remainLines.length <= remainHeight) {
+      if (
+        remainHeight < 1
+          || remainLines.length === 0
+          || remainLines.length <= remainHeight
+          || all.some(x => Math.ceil(visualLength(x.content) / availableWidth) > 1)
+      ) {
         slice = remainLines
       }
       else {
