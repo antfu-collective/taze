@@ -91,6 +91,8 @@ export function renderChanges(
       changes.map(c => renderChange(c, interactive)),
       'LLRRRRRL',
     ))
+
+    lines.push('')
   }
   else if (options.all) {
     lines.push(`${c.cyan(pkg.name)} ${c.dim(filepath)}`)
