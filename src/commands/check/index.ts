@@ -29,7 +29,7 @@ export async function check(options: CheckOptions) {
     },
     beforePackageStart(pkg) {
       packagesBar?.increment(0, { name: c.cyan(pkg.name) })
-      depBar?.start(pkg.deps.length, 0, { type: c.green('dep') })
+      depBar?.start(pkg.deps.length, 0, { type: c.green('dep'), name: '' })
     },
     beforePackageWrite() {
       // disbale auto write
