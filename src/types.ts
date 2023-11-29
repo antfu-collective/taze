@@ -10,6 +10,9 @@ export const DependenciesTypeShortMap = {
   peerDependencies: 'peer',
   optionalDependencies: 'optional',
   packageManager: 'package-manager',
+  'pnpm.overrides': 'pnpm-override',
+  resolutions: 'resolution',
+  overrides: 'override',
 }
 
 export interface RawDep {
