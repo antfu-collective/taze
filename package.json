@@ -28,7 +28,7 @@
     "dev": "cross-env DEBUG=taze:* esno ./src/cli.ts",
     "start": "esno ./src/cli.ts",
     "build": "unbuild",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc",
     "prepublishOnly": "nr build",
     "release": "bumpp && pnpm publish --no-git-checks",
     "test": "vitest"
