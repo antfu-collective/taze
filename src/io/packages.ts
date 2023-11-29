@@ -4,7 +4,7 @@ import fg from 'fast-glob'
 import detectIndent from 'detect-indent'
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
-import { dumpDependencies, parseDependencies, parseDependency } from './dependencies'
+import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
 
 export async function readJSON(filepath: string) {
   return JSON.parse(await fs.readFile(filepath, 'utf-8'))
@@ -26,11 +26,13 @@ export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
     ['dependencies', !options.dev],
     ['devDependencies', !options.prod],
     ['optionalDependencies', !options.prod && !options.dev],
+    ['pnpm.overrides', !options.prod && !options.dev],
+    ['resolutions', !options.prod && !options.dev],
   ] as const
 
   depKeys.forEach(([key, shouldWrite]) => {
-    if (raw[key] && shouldWrite) {
-      raw[key] = dumpDependencies(resolved, key)
+    if (getByPath(raw, key) && shouldWrite) {
+      setByPath(raw, key, dumpDependencies(resolved, key))
       changed = true
     }
   })
@@ -63,6 +65,8 @@ export async function loadPackage(relative: string, options: CommonOptions, shou
       ...parseDependencies(raw, 'dependencies', shouldUpdate),
       ...parseDependencies(raw, 'devDependencies', shouldUpdate),
       ...parseDependencies(raw, 'optionalDependencies', shouldUpdate),
+      ...parseDependencies(raw, 'pnpm.overrides', shouldUpdate),
+      ...parseDependencies(raw, 'resolutions', shouldUpdate),
     ]
   }
 

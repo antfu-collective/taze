@@ -1,7 +1,18 @@
 import type { DepType, RawDep, ResolvedDepChange } from '../types'
 
+export function getByPath(obj: any, path: string) {
+  return path.split('.').reduce((o, i) => o?.[i], obj)
+}
+
+export function setByPath(obj: any, path: string, value: any) {
+  const keys = path.split('.')
+  const lastKey = keys.pop() as string
+  const target = keys.reduce((o, i) => o[i] = o[i] || {}, obj)
+  target[lastKey] = value
+}
+
 export function parseDependencies(pkg: any, type: DepType, shouldUpdate: (name: string) => boolean): RawDep[] {
-  return Object.entries(pkg[type] || {}).map(([name, version]) => parseDependency(name, version as string, type, shouldUpdate))
+  return Object.entries(getByPath(pkg, type) || {}).map(([name, version]) => parseDependency(name, version as string, type, shouldUpdate))
 }
 
 export function parseDependency(name: string, version: string, type: DepType, shouldUpdate: (name: string) => boolean): RawDep {
