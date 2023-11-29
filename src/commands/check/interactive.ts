@@ -4,14 +4,20 @@ import readline from 'node:readline'
 import process from 'node:process'
 import c from 'picocolors'
 import { createControlledPromise, notNullish } from '@antfu/utils'
+import { sort } from 'semver'
 import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
 import { getVersionOfRange, updateTargetVersion } from '../../io/resolves'
 import { getPrefixedVersion } from '../../utils/versions'
 import { FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, colorizeVersionDiff, createSliceRender, formatTable } from '../../render'
 import { timeDifference } from '../../utils/time'
+import { sortDepChanges } from '../../utils/sort'
 import { renderChanges } from './render'
 
 export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptions) {
+  const {
+    sort = 'diff-asc',
+  } = options
+
   pkgs.forEach((i) => {
     i.interactiveChecked = true
     i.resolved.forEach((i) => {
@@ -22,6 +28,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         updateTargetVersion(i, i.latestVersionAvailable, undefined, options.includeLocked)
       }
     })
+    i.resolved = sortDepChanges(i.resolved, sort)
   })
 
   if (!pkgs.some(i => i.resolved.some(i => i.update)))

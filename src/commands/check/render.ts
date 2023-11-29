@@ -73,6 +73,9 @@ export function renderChanges(
           diffCounts[diff] = 0
         diffCounts[diff] += 1
       })
+
+    changes = sortDepChanges(changes, sort)
+
     const diffEntries = Object.keys(diffCounts).length
       ? Object.entries(diffCounts)
         .map(([key, value]) => `${c[DiffColorMap[key as DiffType || 'patch']](value)} ${key}`)
@@ -84,8 +87,6 @@ export function renderChanges(
       `${c.cyan(pkg.name ?? '›')} ${c.dim('-')} ${diffEntries}`,
       '',
     )
-
-    changes = sortDepChanges(changes, sort)
 
     lines.push(...formatTable(
       changes.map(c => renderChange(c, interactive)),
