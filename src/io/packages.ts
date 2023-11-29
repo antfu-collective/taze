@@ -26,8 +26,12 @@ export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
     ['dependencies', !options.dev],
     ['devDependencies', !options.prod],
     ['optionalDependencies', !options.prod && !options.dev],
+    // PNPM
     ['pnpm.overrides', !options.prod && !options.dev],
+    // YARN
     ['resolutions', !options.prod && !options.dev],
+    // NPM
+    ['overrides', !options.prod && !options.dev],
   ] as const
 
   depKeys.forEach(([key, shouldWrite]) => {
@@ -67,6 +71,7 @@ export async function loadPackage(relative: string, options: CommonOptions, shou
       ...parseDependencies(raw, 'optionalDependencies', shouldUpdate),
       ...parseDependencies(raw, 'pnpm.overrides', shouldUpdate),
       ...parseDependencies(raw, 'resolutions', shouldUpdate),
+      ...parseDependencies(raw, 'overrides', shouldUpdate),
     ]
   }
 

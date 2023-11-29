@@ -47,4 +47,13 @@ describe('dumpDependencies', () => {
       }
     `)
   })
+
+  it('dump `overrides` type', () => {
+    const dump = dumpDependencies([getPackageBySource('overrides')], 'overrides')
+    expect(dump).toMatchInlineSnapshot(`
+      {
+        "@types/semver": "^7.3.12",
+      }
+    `)
+  })
 })

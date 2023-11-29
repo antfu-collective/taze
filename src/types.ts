@@ -3,7 +3,7 @@ import type { SortOption } from './utils/sort'
 
 export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'latest' | 'newest'
 export type PackageMode = Omit<RangeMode, 'default'> | 'ignore'
-export type DepType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies' | 'packageManager' | 'pnpm.overrides' | 'resolutions'
+export type DepType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies' | 'packageManager' | 'pnpm.overrides' | 'resolutions' | 'overrides'
 export const DependenciesTypeShortMap = {
   dependencies: '',
   devDependencies: 'dev',
