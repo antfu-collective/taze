@@ -14,8 +14,7 @@ export const DEFAULT_COMMON_OPTIONS: CommonOptions = {
   ignorePaths: '',
   include: '',
   exclude: '',
-  dev: false,
-  prod: false,
+  depFields: {},
 }
 
 export const DEFAULT_USAGE_OPTIONS: UsageOptions = {

@@ -3,13 +3,17 @@ import type { SortOption } from './utils/sort'
 
 export type RangeMode = 'default' | 'major' | 'minor' | 'patch' | 'latest' | 'newest'
 export type PackageMode = Omit<RangeMode, 'default'> | 'ignore'
-export type DepType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies' | 'packageManager'
+export type DepType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies' | 'packageManager' | 'pnpm.overrides' | 'resolutions' | 'overrides'
+
 export const DependenciesTypeShortMap = {
-  dependencies: '',
-  devDependencies: 'dev',
-  peerDependencies: 'peer',
-  optionalDependencies: 'optional',
-  packageManager: 'package-manager',
+  'dependencies': '',
+  'devDependencies': 'dev',
+  'peerDependencies': 'peer',
+  'optionalDependencies': 'optional',
+  'packageManager': 'package-manager',
+  'pnpm.overrides': 'pnpm-overrides',
+  'resolutions': 'resolutions',
+  'overrides': 'overrides',
 }
 
 export interface RawDep {
@@ -49,12 +53,21 @@ export interface CommonOptions {
   ignorePaths?: string | string[]
   include?: string | string[]
   exclude?: string | string[]
-  prod?: boolean
-  dev?: boolean
   loglevel?: LogLevel
   failOnOutdated?: boolean
   silent?: boolean
+  /**
+   * Fields in package.json to be checked
+   * By default all fields will be checked
+   */
+  depFields?: DepFieldOptions
+  /**
+   * Bypass cache
+   */
   force?: boolean
+  /**
+   * Override bumping mode for specific dependencies
+   */
   packageMode?: { [name: string]: PackageMode }
 }
 
@@ -62,6 +75,8 @@ export interface UsageOptions extends CommonOptions {
   detail?: boolean
   recursive?: true
 }
+
+export type DepFieldOptions = Partial<Record<DepType, boolean>>
 
 export interface CheckOptions extends CommonOptions {
   mode?: RangeMode
