@@ -17,67 +17,64 @@ export async function writeJSON(filepath: string, data: any) {
   return await fs.writeFile(filepath, `${JSON.stringify(data, null, fileIndent)}\n`, 'utf-8')
 }
 
+const depsFields = [
+  'dependencies',
+  'devDependencies',
+  'optionalDependencies',
+  'packageManager',
+  'pnpm.overrides',
+  'resolutions',
+  'overrides',
+] as const
+
 export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
   const { raw, filepath, resolved } = pkg
 
   let changed = false
 
-  const depKeys = [
-    ['dependencies', !options.dev],
-    ['devDependencies', !options.prod],
-    ['optionalDependencies', !options.prod && !options.dev],
-    // PNPM
-    ['pnpm.overrides', !options.prod && !options.dev],
-    // YARN
-    ['resolutions', !options.prod && !options.dev],
-    // NPM
-    ['overrides', !options.prod && !options.dev],
-  ] as const
-
-  depKeys.forEach(([key, shouldWrite]) => {
-    if (getByPath(raw, key) && shouldWrite) {
-      setByPath(raw, key, dumpDependencies(resolved, key))
-      changed = true
+  depsFields.forEach((key) => {
+    if (options.depFields?.[key] === false)
+      return
+    if (key === 'packageManager') {
+      const value = Object.entries(dumpDependencies(resolved, 'packageManager'))[0]
+      if (value) {
+        raw.packageManager = `${value[0]}@${value[1].replace('^', '')}`
+        changed = true
+      }
+    }
+    else {
+      if (getByPath(raw, key)) {
+        setByPath(raw, key, dumpDependencies(resolved, key))
+        changed = true
+      }
     }
   })
-
-  if (raw.packageManager) {
-    const value = Object.entries(dumpDependencies(resolved, 'packageManager'))[0]
-    if (value) {
-      raw.packageManager = `${value[0]}@${value[1].replace('^', '')}`
-      changed = true
-    }
-  }
 
   if (changed)
     await writeJSON(filepath, raw)
 }
 
-export async function loadPackage(relative: string, options: CommonOptions, shouldUpdate: (name: string) => boolean): Promise<PackageMeta> {
+export async function loadPackage(
+  relative: string,
+  options: CommonOptions,
+  shouldUpdate: (name: string) => boolean,
+): Promise<PackageMeta> {
   const filepath = path.resolve(options.cwd ?? '', relative)
   const raw = await readJSON(filepath)
-  let deps: RawDep[] = []
+  const deps: RawDep[] = []
 
-  if (options.prod) {
-    deps = parseDependencies(raw, 'dependencies', shouldUpdate)
-  }
-  else if (options.dev) {
-    deps = parseDependencies(raw, 'devDependencies', shouldUpdate)
-  }
-  else {
-    deps = [
-      ...parseDependencies(raw, 'dependencies', shouldUpdate),
-      ...parseDependencies(raw, 'devDependencies', shouldUpdate),
-      ...parseDependencies(raw, 'optionalDependencies', shouldUpdate),
-      ...parseDependencies(raw, 'pnpm.overrides', shouldUpdate),
-      ...parseDependencies(raw, 'resolutions', shouldUpdate),
-      ...parseDependencies(raw, 'overrides', shouldUpdate),
-    ]
-  }
-
-  if (raw.packageManager) {
-    const [name, version] = raw.packageManager.split('@')
-    deps.push(parseDependency(name, `^${version}`, 'packageManager', shouldUpdate))
+  for (const key of depsFields) {
+    if (options.depFields?.[key] !== false) {
+      if (key === 'packageManager') {
+        if (raw.packageManager) {
+          const [name, version] = raw.packageManager.split('@')
+          deps.push(parseDependency(name, `^${version}`, 'packageManager', shouldUpdate))
+        }
+      }
+      else {
+        deps.push(...parseDependencies(raw, key, shouldUpdate))
+      }
+    }
   }
 
   return {

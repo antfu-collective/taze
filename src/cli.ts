@@ -57,18 +57,6 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       type: 'string',
       describe: 'exclude dependencies to be checked, will override --include options',
     })
-    .option('dev', {
-      alias: 'D',
-      type: 'boolean',
-      describe: 'update only for devDependencies',
-      conflicts: ['prod'],
-    })
-    .option('prod', {
-      alias: 'P',
-      type: 'boolean',
-      describe: 'update only for dependencies',
-      conflicts: ['dev'],
-    })
 }
 
 // eslint-disable-next-line no-unused-expressions
