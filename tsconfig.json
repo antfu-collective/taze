@@ -1,17 +1,21 @@
 {
   "compilerOptions": {
-    "target": "es2018",
-    "lib": ["esnext"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "moduleDetection": "force",
     "rootDir": ".",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "paths": {
       "taze": ["./src/index.ts"]
     },
     "resolveJsonModule": true,
     "strict": true,
     "strictNullChecks": true,
+    "noEmit": true,
     "esModuleInterop": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   }
