@@ -97,7 +97,12 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
   let i = partsToColor.findIndex((part, i) => part !== partsToCompare[i])
   i = i >= 0 ? i : partsToColor.length
 
-  const diffType = getDiff(new SemVer(from), new SemVer(to))
+  let diffType = null
+  try {
+    diffType = getDiff(new SemVer(from), new SemVer(to))
+  }
+  catch (error) {
+  }
   const color = DiffColorMap[diffType || 'patch']
 
   // if we are colorizing only part of the word, add a dot in the middle
@@ -108,9 +113,9 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
     : 'yellow'
 
   return c[leadingColor](leadingWildcard)
-        + partsToColor.slice(0, i).join('.')
-        + middot
-        + c[color](partsToColor.slice(i).join('.')).trim()
+    + partsToColor.slice(0, i).join('.')
+    + middot
+    + c[color](partsToColor.slice(i).join('.')).trim()
 }
 
 interface SliceRenderLine {
@@ -168,9 +173,9 @@ export function createSliceRender() {
       let slice: SliceRenderLine[]
       if (
         remainHeight < 1
-          || remainLines.length === 0
-          || remainLines.length <= remainHeight
-          || lines.some(x => Math.ceil(visualLength(x.content) / availableWidth) > 1)
+        || remainLines.length === 0
+        || remainLines.length <= remainHeight
+        || lines.some(x => Math.ceil(visualLength(x.content) / availableWidth) > 1)
       ) {
         slice = remainLines
       }
