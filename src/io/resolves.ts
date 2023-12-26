@@ -15,7 +15,7 @@ const debug = {
   resolve: _debug('taze:resolve'),
 }
 
-let cache: Record<string, { cacheTime: number; data: PackageData }> = {}
+let cache: Record<string, { cacheTime: number, data: PackageData }> = {}
 let cacheChanged = false
 
 const cacheDir = resolve(os.tmpdir(), 'taze')

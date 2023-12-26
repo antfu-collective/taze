@@ -37,7 +37,6 @@ Check for <b>major</b> updates
 <img src='./screenshots/major.png' width='600'/>
 </p>
 
-
 <p align='center'>
 Check up to <b>minor</b> updates
 <br>
@@ -49,7 +48,6 @@ Check up to <b>patch</b> updates
 <br>
 <img src='./screenshots/patch.png' width='600'/>
 </p>
-
 
 ### Monorepo
 
