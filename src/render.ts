@@ -161,7 +161,7 @@ export function createSliceRender() {
       let focusedLineIndex = 0
       let depIndex = 0
       for (const line of remainLines) {
-        if (line.content.includes(FIG_CHECK))
+        if (line.content.includes(FIG_CHECK) || line.content.includes(FIG_UNCHECK))
           depIndex += 1
 
         if (depIndex === selectedDepIndex)
