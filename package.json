@@ -2,7 +2,7 @@
   "name": "taze",
   "type": "module",
   "version": "0.13.1",
-  "packageManager": "pnpm@8.12.1",
+  "packageManager": "pnpm@8.15.1",
   "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
@@ -35,12 +35,12 @@
   },
   "dependencies": {
     "@antfu/ni": "^0.21.12",
-    "@npmcli/config": "^8.0.3",
+    "@npmcli/config": "^8.1.0",
     "cli-progress": "^3.12.0",
     "deepmerge": "^4.3.1",
     "detect-indent": "^7.0.1",
     "execa": "^8.0.1",
-    "pacote": "^17.0.5",
+    "pacote": "^17.0.6",
     "picocolors": "^1.0.0",
     "prompts": "^2.4.2",
     "semver": "^7.5.4",
@@ -48,16 +48,16 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^2.6.0",
+    "@antfu/eslint-config": "^2.6.3",
     "@antfu/utils": "^0.7.7",
     "@types/cli-progress": "^3.11.5",
     "@types/debug": "^4.1.12",
-    "@types/node": "^20.10.5",
+    "@types/node": "^20.11.13",
     "@types/pacote": "^11.1.8",
     "@types/prompts": "^2.4.9",
     "@types/semver": "^7.5.6",
     "@types/yargs": "^17.0.32",
-    "bumpp": "^9.2.1",
+    "bumpp": "^9.3.0",
     "cross-env": "^7.0.3",
     "debug": "^4.3.4",
     "eslint": "^8.56.0",
@@ -67,6 +67,6 @@
     "taze": "workspace:*",
     "typescript": "^5.3.3",
     "unbuild": "^2.0.0",
-    "vitest": "^1.1.0"
+    "vitest": "^1.2.2"
   }
 }
