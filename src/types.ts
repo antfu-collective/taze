@@ -21,6 +21,7 @@ export interface RawDep {
   currentVersion: string
   source: DepType
   update: boolean
+  parents?: string[]
 }
 
 export type DiffType = 'major' | 'minor' | 'patch' | 'error' | null

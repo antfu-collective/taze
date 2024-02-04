@@ -1,7 +1,23 @@
 import type { DepType, RawDep, ResolvedDepChange } from '../types'
 
+interface FlattenPkgData { [key: string]: { version: string, parents: string[] } }
+
+function flatten(obj: any, parents: string[] = []): FlattenPkgData {
+  if (!obj)
+    return obj
+
+  let flattenData: FlattenPkgData = {}
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'object')
+      flattenData = { ...flattenData, ...flatten(value, [...parents, key]) }
+    else if (typeof value === 'string')
+      flattenData[key] = { version: value, parents }
+  }
+  return flattenData
+}
+
 export function getByPath(obj: any, path: string) {
-  return path.split('.').reduce((o, i) => o?.[i], obj)
+  return flatten(path.split('.').reduce((o, i) => o?.[i], obj))
 }
 
 export function setByPath(obj: any, path: string, value: any) {
@@ -12,13 +28,14 @@ export function setByPath(obj: any, path: string, value: any) {
 }
 
 export function parseDependencies(pkg: any, type: DepType, shouldUpdate: (name: string) => boolean): RawDep[] {
-  return Object.entries(getByPath(pkg, type) || {}).map(([name, version]) => parseDependency(name, version as string, type, shouldUpdate))
+  return Object.entries(getByPath(pkg, type) || {}).map(([name, { version, parents }]) => parseDependency(name, version, type, shouldUpdate, parents))
 }
 
-export function parseDependency(name: string, version: string, type: DepType, shouldUpdate: (name: string) => boolean): RawDep {
+export function parseDependency(name: string, version: string, type: DepType, shouldUpdate: (name: string) => boolean, parents?: string[]): RawDep {
   return {
     name,
     currentVersion: version,
+    parents,
     source: type,
     // when `updated` marked to `false`, it will be bypassed on resolving
     update: shouldUpdate(name),
@@ -26,16 +43,24 @@ export function parseDependency(name: string, version: string, type: DepType, sh
 }
 
 export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
-  const data: Record<string, string> = {}
+  const data: Record<string, any> = {}
   deps
     .filter(i => i.source === type)
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((i) => {
       const version = i.update ? i.targetVersion : i.currentVersion
+      let targetLeaf = data
+
+      i.parents?.reduce((tree, parent) => {
+        tree[parent] ??= {}
+        targetLeaf = tree[parent]
+        return tree[parent]
+      }, data)
+
       if (i.aliasName === undefined)
-        data[i.name] = version
+        targetLeaf[i.name] = version
       else
-        data[i.aliasName] = `npm:${i.name}${version ? `@${version}` : ''}`
+        targetLeaf[i.aliasName] = `npm:${i.name}${version ? `@${version}` : ''}`
     })
 
   return data

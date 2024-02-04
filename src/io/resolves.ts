@@ -9,6 +9,7 @@ import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffTy
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 import { getPackageMode } from '../utils/config'
+import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 
 const debug = {
   cache: _debug('taze:cache'),
@@ -207,7 +208,20 @@ export async function resolveDependency(
     }
   }
 
-  const pkgData = await getPackageData(dep.name)
+  let resolvedName = dep.name
+
+  // manage Yarn resolutions (e.g. "foo@1/bar")
+  if (dep.source === 'resolutions') {
+    const packages = parseYarnPackagePath(dep.name)
+    resolvedName = packages.pop() ?? dep.name
+  }
+  // manage pnpm overrides (e.g. "foo@1>bar")
+  else if (dep.source === 'pnpm.overrides') {
+    const packages = parsePnpmPackagePath(dep.name)
+    resolvedName = packages.pop() ?? dep.name
+  }
+
+  const pkgData = await getPackageData(resolvedName)
   const { tags, error } = pkgData
   dep.pkgData = pkgData
   let err: Error | string | null = null

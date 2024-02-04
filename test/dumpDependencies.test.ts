@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { dumpDependencies } from '../src/io/dependencies'
-import type { DepType, ResolvedDepChange } from '../src/types'
+import type { ResolvedDepChange } from '../src/types'
 
 describe('dumpDependencies', () => {
-  function getPackageBySource(source: DepType) {
+  function makeDepChange(source: string, override: Partial<ResolvedDepChange> = {}) {
     return {
       name: '@types/semver',
       currentVersion: '^7.3.10',
@@ -11,11 +11,12 @@ describe('dumpDependencies', () => {
       update: true,
       targetVersion: '^7.3.12',
       diff: 'patch',
+      ...override,
     } as ResolvedDepChange
   }
 
   it('dump `dependencies` type', () => {
-    const dump = dumpDependencies([getPackageBySource('dependencies')], 'dependencies')
+    const dump = dumpDependencies([makeDepChange('dependencies')], 'dependencies')
     expect(dump).toMatchInlineSnapshot(`
       {
         "@types/semver": "^7.3.12",
@@ -23,7 +24,7 @@ describe('dumpDependencies', () => {
     `)
   })
   it('dump `devDependencies` type', () => {
-    const dump = dumpDependencies([getPackageBySource('devDependencies')], 'devDependencies')
+    const dump = dumpDependencies([makeDepChange('devDependencies')], 'devDependencies')
     expect(dump).toMatchInlineSnapshot(`
       {
         "@types/semver": "^7.3.12",
@@ -31,7 +32,7 @@ describe('dumpDependencies', () => {
     `)
   })
   it('dump `pnpm.overrides` type', () => {
-    const dump = dumpDependencies([getPackageBySource('pnpm.overrides')], 'pnpm.overrides')
+    const dump = dumpDependencies([makeDepChange('pnpm.overrides')], 'pnpm.overrides')
     expect(dump).toMatchInlineSnapshot(`
       {
         "@types/semver": "^7.3.12",
@@ -40,19 +41,51 @@ describe('dumpDependencies', () => {
   })
 
   it('dump `resolutions` type', () => {
-    const dump = dumpDependencies([getPackageBySource('resolutions')], 'resolutions')
+    const dump = dumpDependencies([
+      makeDepChange('resolutions'),
+      makeDepChange('resolutions', {
+        name: '@taze/pkg/@taze/nested-foo',
+        targetVersion: '^1.0.0',
+      }),
+      makeDepChange('resolutions', {
+        name: '@taze/pkg/@taze/nested-bar@2.0.0',
+        targetVersion: '^2.0.0',
+      }),
+    ], 'resolutions')
     expect(dump).toMatchInlineSnapshot(`
       {
+        "@taze/pkg/@taze/nested-bar@2.0.0": "^2.0.0",
+        "@taze/pkg/@taze/nested-foo": "^1.0.0",
         "@types/semver": "^7.3.12",
       }
     `)
   })
 
   it('dump `overrides` type', () => {
-    const dump = dumpDependencies([getPackageBySource('overrides')], 'overrides')
+    const dump = dumpDependencies([
+      makeDepChange('overrides', {
+        name: '@taze/nested-foo',
+        parents: ['@taze/pkg'],
+        targetVersion: '^1.0.0',
+      }),
+      makeDepChange('overrides', {
+        name: '@taze/nested-lvl2',
+        targetVersion: '^2.0.0',
+        parents: [
+          '@taze/pkg',
+          '@taze/nested-bar',
+        ],
+      }),
+    ], 'overrides')
+
     expect(dump).toMatchInlineSnapshot(`
       {
-        "@types/semver": "^7.3.12",
+        "@taze/pkg": {
+          "@taze/nested-bar": {
+            "@taze/nested-lvl2": "^2.0.0",
+          },
+          "@taze/nested-foo": "^1.0.0",
+        },
       }
     `)
   })
