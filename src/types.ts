@@ -132,5 +132,5 @@ export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void
 
 export interface InteractiveContext {
-  isSelected(dep: RawDep): boolean
+  isSelected: (dep: RawDep) => boolean
 }

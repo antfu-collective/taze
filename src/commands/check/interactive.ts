@@ -205,6 +205,6 @@ interface TerminalKey {
 }
 
 interface InteractiveRenderer {
-  render(): void
-  onKey(key: TerminalKey): boolean | InteractiveRenderer | void
+  render: () => void
+  onKey: (key: TerminalKey) => boolean | InteractiveRenderer | void
 }
