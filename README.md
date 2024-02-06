@@ -98,6 +98,10 @@ export default defineConfig({
     'unocss': 'ignore',
     // regex starts and ends with '/'
     '/vue/': 'latest'
+  },
+  // disable checking for "overrides" package.json field
+  depFields: {
+    overrides: false
   }
 })
 ```

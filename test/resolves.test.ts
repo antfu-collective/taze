@@ -27,6 +27,26 @@ function makeLocalPkg(ver: string): RawDep {
   return pkg
 }
 
+function makePkgForResolutions(name: string, ver: string): RawDep {
+  const pkg: RawDep = {
+    name,
+    currentVersion: ver,
+    source: 'resolutions',
+    update: true,
+  }
+  return pkg
+}
+
+function makePkgForPnpmOverrides(name: string, ver: string): RawDep {
+  const pkg: RawDep = {
+    name,
+    currentVersion: ver,
+    source: 'pnpm.overrides',
+    update: true,
+  }
+  return pkg
+}
+
 const options: CheckOptions = {
   cwd: process.cwd(),
   loglevel: 'silent',
@@ -104,6 +124,22 @@ it('resolveDependency', async () => {
   expect(false).toBe((await resolveDependency(makeLocalPkg('workspace:*'), options, filter)).update)
   const target = await resolveDependency(makeLocalPkg('1.0.0'), options, filter)
   expect(target.resolveError).not.toBeNull()
+
+  // yarn resolutions
+  expect(true).toBe((await resolveDependency(makePkgForResolutions('typescript', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForResolutions('typescript@5.0.0', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForResolutions('typescript', 'npm:typescript@^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForResolutions('foo/typescript', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForResolutions('foo/**/typescript', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForResolutions('**/typescript', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForResolutions('@foo/bar/typescript', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForResolutions('@foo/bar/typescript@5.1.0', '^4.0.0'), options, filter)).update)
+
+  // pnpm overrides
+  expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript', 'npm:typescript@^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@5.0.0', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('foo@1>typescript', '^4.0.0'), options, filter)).update)
 }, 10000)
 
 it('getDiff', () => {
