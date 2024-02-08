@@ -66,7 +66,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         const Y = (v: string) => c.bold(c.green(v))
         console.clear()
         sr.push({ content: `${FIG_BLOCK} ${c.gray(`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`)}`, fixed: true })
-        sr.push({ content: `${FIG_BLOCK} ${c.gray(`${Y('enter')} to confirm, ${Y('esc')} to cancel`)}`, fixed: true })
+        sr.push({ content: `${FIG_BLOCK} ${c.gray(`${Y('enter')} to confirm, ${Y('esc')} to cancel, ${Y('a')} to select/unselect all`)}`, fixed: true })
         sr.push({ content: '', fixed: true })
 
         pkgs.forEach((pkg) => {
@@ -76,6 +76,8 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         sr.render(index)
       },
       onKey(key) {
+        const allInteractiveChecked = deps.every(d => d.interactiveChecked)
+
         switch (key.name) {
           case 'escape':
             process.exit()
@@ -103,6 +105,9 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           case 'right':
           case 'l':
             renderer = createVersionSelectRender(deps[index])
+            return true
+          case 'a':
+            deps.forEach(d => d.interactiveChecked = !allInteractiveChecked)
             return true
         }
       },
