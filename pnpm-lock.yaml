@@ -26,6 +26,9 @@ importers:
       execa:
         specifier: ^8.0.1
         version: 8.0.1
+      npm-package-arg:
+        specifier: ^11.0.2
+        version: 11.0.2
       npm-registry-fetch:
         specifier: ^16.2.1
         version: 16.2.1
@@ -63,6 +66,9 @@ importers:
       '@types/node':
         specifier: ^20.11.16
         version: 20.11.16
+      '@types/npm-package-arg':
+        specifier: ^6.1.4
+        version: 6.1.4
       '@types/npm-registry-fetch':
         specifier: ^8.0.7
         version: 8.0.7
@@ -3863,12 +3869,12 @@ packages:
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
     dev: false
 
-  /npm-package-arg@11.0.1:
-    resolution: {integrity: sha512-M7s1BD4NxdAvBKUPqqRW957Xwcl/4Zvo8Aj+ANrzvIPzGJZElrH7Z//rSaec2ORcND6FHHLnZeY8qgTpXDMFQQ==}
+  /npm-package-arg@11.0.2:
+    resolution: {integrity: sha512-IGN0IAwmhDJwy13Wc8k+4PEbTPhpJnMtfR53ZbOyjkvmEcLS4nCwp6mvMWjS5sUjeiW3mpx6cHmuhKEu9XmcQw==}
     engines: {node: ^16.14.0 || >=18.0.0}
     dependencies:
       hosted-git-info: 7.0.1
-      proc-log: 3.0.0
+      proc-log: 4.0.0
       semver: 7.6.0
       validate-npm-package-name: 5.0.0
     dev: false
@@ -3883,7 +3889,7 @@ packages:
       minipass-fetch: 3.0.4
       minipass-json-stream: 1.0.1
       minizlib: 2.1.2
-      npm-package-arg: 11.0.1
+      npm-package-arg: 11.0.2
       proc-log: 4.0.0
     transitivePeerDependencies:
       - supports-color
