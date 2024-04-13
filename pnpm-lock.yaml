@@ -72,9 +72,6 @@ importers:
       '@types/npm-registry-fetch':
         specifier: ^8.0.7
         version: 8.0.7
-      '@types/pacote':
-        specifier: ^11.1.8
-        version: 11.1.8
       '@types/prompts':
         specifier: ^2.4.9
         version: 2.4.9
@@ -1373,15 +1370,6 @@ packages:
     resolution: {integrity: sha512-hJWbrKFvxKyWwSUXjZMYTINsSOY6IclhvGOZ97M8ac2tmR9hMwmTnYaMdpGhvju9ctWLTPhCS+eLfQNluiEjQQ==}
     dependencies:
       '@types/node': 20.11.16
-    dev: true
-
-  /@types/pacote@11.1.8:
-    resolution: {integrity: sha512-/XLR0VoTh2JEO0jJg1q/e6Rh9bxjBq9vorJuQmtT7rRrXSiWz7e7NsvXVYJQ0i8JxMlBMPPYDTnrRe7MZRFA8Q==}
-    dependencies:
-      '@types/node': 20.11.16
-      '@types/npm-registry-fetch': 8.0.7
-      '@types/npmlog': 7.0.0
-      '@types/ssri': 7.1.5
     dev: true
 
   /@types/prompts@2.4.9:

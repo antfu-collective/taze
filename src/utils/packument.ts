@@ -1,11 +1,11 @@
 import process from 'node:process'
-import npmRegistryFetch from 'npm-registry-fetch'
+import npmRegistryFetch, { type Options } from 'npm-registry-fetch'
 import { joinURL } from 'ufo'
 import npa from 'npm-package-arg'
 
-import type { Packument, Options as PacoteOptions } from 'pacote'
+import type { Packument } from '../types'
 
-export async function fetchPackumentWithFullMetaData(spec: string, opts: PacoteOptions): Promise<Packument> {
+export async function fetchPackumentWithFullMetaData(spec: string, opts: Options): Promise<Packument> {
   const { name } = npa(spec)
 
   if (!name)
