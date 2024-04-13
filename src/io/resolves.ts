@@ -1,7 +1,6 @@
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import { resolve } from 'node:path'
 import os from 'node:os'
-import pacote from 'pacote'
 import semver from 'semver'
 import _debug from 'debug'
 import { getNpmConfig } from '../utils/npm'
@@ -10,6 +9,7 @@ import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 import { getPackageMode } from '../utils/config'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
+import { fetchPackumentWithFullMetaData } from '../utils/packument'
 
 const debug = {
   cache: _debug('taze:cache'),
@@ -69,7 +69,7 @@ export async function getPackageData(name: string): Promise<PackageData> {
   try {
     debug.resolve(`resolving ${name}`)
     const npmConfig = await getNpmConfig()
-    const data = await pacote.packument(name, { ...npmConfig, fullMetadata: true })
+    const data = await fetchPackumentWithFullMetaData(name, npmConfig)
 
     if (data) {
       const result = {
