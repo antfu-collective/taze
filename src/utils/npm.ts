@@ -3,9 +3,9 @@
 import path from 'node:path'
 import process from 'node:process'
 import type { Recordable } from '@npmcli/config'
-import NpmCliConfig from '@npmcli/config'
 
 async function _getNpmConfig() {
+  const { default: NpmCliConfig } = await import('@npmcli/config')
   const npmcliConfig = new NpmCliConfig({
     definitions: {},
     npmPath: path.dirname(process.cwd()),
