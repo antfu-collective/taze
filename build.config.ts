@@ -9,8 +9,11 @@ export default defineBuildConfig({
     inlineDependencies: true,
     json: {
       compact: true,
-      namedExports: false,
+      namedExports: true,
       preferConst: true,
+    },
+    commonjs: {
+      requireReturnsDefault: 'auto',
     },
     dts: {
       respectExternal: false,
