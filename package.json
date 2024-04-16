@@ -31,7 +31,7 @@
     "typecheck": "tsc",
     "prepublishOnly": "nr build",
     "release": "bumpp && pnpm publish --no-git-checks",
-    "test": "vitest"
+    "test": "unbuild && vitest"
   },
   "dependencies": {
     "@antfu/ni": "^0.21.12",
