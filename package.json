@@ -31,7 +31,7 @@
     "typecheck": "tsc",
     "prepublishOnly": "nr build",
     "release": "bumpp && pnpm publish --no-git-checks",
-    "test": "vitest"
+    "test": "unbuild && vitest"
   },
   "dependencies": {
     "@antfu/ni": "^0.21.12",
@@ -41,7 +41,6 @@
     "execa": "^8.0.1",
     "picocolors": "^1.0.0",
     "prompts": "^2.4.2",
-    "semver": "^7.6.0",
     "ufo": "^1.5.3",
     "unconfig": "^0.3.13",
     "yargs": "^17.7.2"
@@ -67,6 +66,7 @@
     "npm-package-arg": "^11.0.2",
     "npm-registry-fetch": "^16.2.1",
     "rimraf": "^5.0.5",
+    "semver": "^7.6.0",
     "taze": "workspace:*",
     "typescript": "^5.4.5",
     "unbuild": "^2.0.0",
