@@ -2,7 +2,7 @@
   "name": "taze",
   "type": "module",
   "version": "0.13.5",
-  "packageManager": "pnpm@8.15.7",
+  "packageManager": "pnpm@9.0.0",
   "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
@@ -46,7 +46,7 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^2.13.3",
+    "@antfu/eslint-config": "^2.14.0",
     "@antfu/utils": "^0.7.7",
     "@npmcli/config": "^8.2.2",
     "@types/cli-progress": "^3.11.5",
