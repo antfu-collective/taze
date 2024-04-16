@@ -19,9 +19,9 @@ jobs:
         uses: pnpm/action-setup@v2
 
       - name: Set node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: lts/*
           cache: pnpm
 
       - name: Setup
@@ -44,7 +44,7 @@ jobs:
       - name: Set node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: lts/*
           cache: pnpm
 
       - name: Setup
