@@ -7,6 +7,11 @@ export default defineBuildConfig({
   ],
   rollup: {
     inlineDependencies: true,
+    json: {
+      compact: true,
+      namedExports: false,
+      preferConst: true,
+    },
   },
   clean: true,
   declaration: true,
