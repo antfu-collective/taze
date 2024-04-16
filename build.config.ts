@@ -12,6 +12,9 @@ export default defineBuildConfig({
       namedExports: false,
       preferConst: true,
     },
+    dts: {
+      respectExternal: false,
+    },
   },
   clean: true,
   declaration: true,
