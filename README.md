@@ -1,5 +1,5 @@
 <h1 align="center">🥦 Taze</h1>
-<p align="center"><sup>(/ta:zei/, <em>fresh</em> in Turkish)</sup></p>
+<p align="center"><sup>(/ta:zei/, <em>fresh</em> in Persian)</sup></p>
 <p align="center">A modern cli tool that keeps your deps fresh</p>
 
 <pre align="center">npx <b>taze</b></pre>
