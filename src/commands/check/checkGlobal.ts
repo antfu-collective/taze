@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { execa, execaCommand } from 'execa'
+import { async as ezspawn } from '@jsdevtools/ez-spawn'
 import c from 'picocolors'
 import prompts from 'prompts'
 import { type Agent, getCommand } from '@antfu/ni'
@@ -118,7 +118,7 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
   let pnpmStdout
 
   try {
-    pnpmStdout = (await execa('pnpm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })).stdout
+    pnpmStdout = (await ezspawn('pnpm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })).stdout
   }
   catch (error) {
     return []
@@ -152,7 +152,7 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
 }
 
 async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackageMeta> {
-  const { stdout } = await execa('npm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })
+  const { stdout } = await ezspawn('npm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })
   const npmOut = JSON.parse(stdout) as NpmOut
   const filter = createDependenciesFilter(options.include, options.exclude)
 
@@ -182,5 +182,5 @@ async function installPkg(pkg: GlobalPackageMeta) {
   const dependencies = dumpDependencies(changes, 'dependencies')
   const updateArgs = Object.entries(dependencies).map(([name, version]) => `${name}@${version}`)
   const installCommand = getCommand(pkg.agent, 'global', [...updateArgs])
-  await execaCommand(installCommand, { stdio: 'inherit' })
+  await ezspawn(installCommand, { stdio: 'inherit' })
 }
