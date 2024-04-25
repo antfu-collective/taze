@@ -11,6 +11,9 @@ importers:
       '@antfu/ni':
         specifier: ^0.21.12
         version: 0.21.12
+      '@jsdevtools/ez-spawn':
+        specifier: ^3.0.4
+        version: 3.0.4
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
@@ -20,9 +23,6 @@ importers:
       detect-indent:
         specifier: ^7.0.1
         version: 7.0.1
-      execa:
-        specifier: ^8.0.1
-        version: 8.0.1
       picocolors:
         specifier: ^1.0.0
         version: 1.0.0

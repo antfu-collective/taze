@@ -35,10 +35,10 @@
   },
   "dependencies": {
     "@antfu/ni": "^0.21.12",
+    "@jsdevtools/ez-spawn": "^3.0.4",
     "cli-progress": "^3.12.0",
     "deepmerge": "^4.3.1",
     "detect-indent": "^7.0.1",
-    "execa": "^8.0.1",
     "picocolors": "^1.0.0",
     "prompts": "^2.4.2",
     "ufo": "^1.5.3",
