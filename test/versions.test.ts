@@ -100,4 +100,18 @@ it('getMaxSatisfying', async () => {
     latest: '1.0.0-next.4',
     next: '1.0.0-next.2',
   }))
+
+  // should return the next tag version on next mode
+  // a good test case for this is eslint-plugin-react-hooks
+  expect('5.1.0-beta-4508873393-20240430').toBe(getMaxSatisfying([
+    '4.6.1',
+    '4.6.2',
+    '5.1.0-beta-4508873393-20240430',
+    '0.0.0-experimental-4508873393-20240430',
+  ], '^1.0.0-next.1', 'next', {
+    latest: '4.6.2',
+    next: '5.1.0-beta-4508873393-20240430',
+    rc: '4.2.1-rc.3',
+    experimental: '0.0.0-experimental-4508873393-20240430',
+  }))
 }, 10_000)
