@@ -27,7 +27,7 @@ export function getVersionRangePrefix(v: string) {
   return null
 }
 
-export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest' | 'newest'>) {
+export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest' | 'newest' | 'next'>) {
   if (!semver.validRange(version))
     return null
 
@@ -71,6 +71,9 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
   }
   else if (mode === 'newest') {
     version = versions[versions.length - 1]
+  }
+  else if (mode === 'next') {
+    version = tags.next
   }
   else if (mode === 'default' && (current === '*' || current.trim() === '')) {
     return
