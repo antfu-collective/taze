@@ -2,7 +2,7 @@ import type { MODE_CHOICES } from './constants'
 import type { SortOption } from './utils/sort'
 
 export type RangeMode = typeof MODE_CHOICES[number]
-export type PackageMode = Omit<RangeMode, 'default'> | 'ignore'
+export type PackageMode = Exclude<RangeMode, 'default'> | 'ignore'
 export type DepType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies' | 'packageManager' | 'pnpm.overrides' | 'resolutions' | 'overrides'
 
 export const DependenciesTypeShortMap = {
