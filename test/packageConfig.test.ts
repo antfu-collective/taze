@@ -1,5 +1,6 @@
 import process from 'node:process'
-import { describe, expect, it } from 'vitest'
+import { join } from 'node:path'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { CheckOptions, CommonOptions, ResolvedDepChange } from '../src'
 import { CheckPackages } from '../src'
 import { resolveConfig } from '../src/config'
@@ -8,10 +9,18 @@ function getPkgInfo(name: string, result: ResolvedDepChange[]) {
   return result.filter(r => r.name === name)[0]
 }
 
+beforeAll(() => {
+  process.env.IMPORTX_LOADER = 'jiti'
+})
+
+afterAll(() => {
+  delete process.env.IMPORTX_LOADER
+})
+
 describe('load config', () => {
   it('with packagemode', async () => {
     const options: CommonOptions = {
-      cwd: `${process.cwd()}/test/fixtures/pkgmode`,
+      cwd: join(process.cwd(), 'test/fixtures/pkgmode'),
       loglevel: 'silent',
     }
     const { packageMode } = await resolveConfig(options)
@@ -49,11 +58,11 @@ describe('check package', async () => {
     all: false,
   }
   const result = (await CheckPackages(options, {})).packages[0].resolved
-  it('not difined in config file / optionMode:default', () => {
+  it('not defined in config file / optionMode:default', () => {
     expect(getPkgInfo('express', result).update).toBe(true)
   })
 
-  it('difined in config file / optionMode:default', () => {
+  it('defined in config file / optionMode:default', () => {
     expect(getPkgInfo('typescript', result).update).toBe(true)
     expect(getPkgInfo('typescript', result).diff).toBe('major')
 
@@ -64,7 +73,7 @@ describe('check package', async () => {
   })
 
   // regex
-  it('difined in config file[regex] / optionMode:default', () => {
+  it('defined in config file[regex] / optionMode:default', () => {
     expect(getPkgInfo('vue-router', result).update).toBe(true)
     expect(getPkgInfo('vue-router', result).diff).toBe('minor')
   })
@@ -72,12 +81,12 @@ describe('check package', async () => {
   // option.mode = major
   options.mode = 'major'
   const result2 = (await CheckPackages(options, {})).packages[0].resolved
-  it('not difined in config file / optionMode:major', () => {
+  it('not defined in config file / optionMode:major', () => {
     expect(getPkgInfo('express', result2).update).toBe(true)
     expect(getPkgInfo('express', result2).diff).toBe('major')
   })
 
-  it('difined in config file / optionMode:major', () => {
+  it('defined in config file / optionMode:major', () => {
     expect(getPkgInfo('typescript', result2).update).toBe(true)
     expect(getPkgInfo('typescript', result2).diff).toBe('major')
 
@@ -88,11 +97,11 @@ describe('check package', async () => {
   // option.mode = minor
   options.mode = 'minor'
   const result3 = (await CheckPackages(options, {})).packages[0].resolved
-  it('not difined in config file / optionMode:minor', () => {
+  it('not defined in config file / optionMode:minor', () => {
     expect(getPkgInfo('express', result3).update).toBe(true)
   })
 
-  it('difined in config file / optionMode:minor', () => {
+  it('defined in config file / optionMode:minor', () => {
     expect(getPkgInfo('typescript', result3).update).toBe(false)
 
     expect(getPkgInfo('vue', result3).update).toBe(true)
@@ -104,11 +113,11 @@ describe('check package', async () => {
   // option.mode = newest
   options.mode = 'newest'
   const result4 = (await CheckPackages(options, {})).packages[0].resolved
-  it('not difined in config file / optionMode:newest', () => {
+  it('not defined in config file / optionMode:newest', () => {
     expect(getPkgInfo('express', result4).update).toBe(true)
   })
 
-  it('difined in config file / optionMode:newest', () => {
+  it('defined in config file / optionMode:newest', () => {
     expect(getPkgInfo('typescript', result4).update).toBe(false)
     expect(getPkgInfo('vue', result4).update).toBe(false)
     expect(getPkgInfo('vite', result4).update).toBe(false)

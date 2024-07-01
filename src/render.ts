@@ -1,4 +1,10 @@
+/* eslint-disable regexp/prefer-w */
+/* eslint-disable regexp/no-useless-escape */
+/* eslint-disable regexp/no-useless-quantifier */
+/* eslint-disable regexp/no-useless-non-capturing-group */
+/* eslint-disable regexp/no-super-linear-backtracking */
 /* eslint-disable no-console */
+
 import process from 'node:process'
 import c from 'picocolors'
 import { SemVer } from 'semver'

@@ -9,7 +9,7 @@ import { diffSorter } from '../filters/diff-sorter'
 import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 import { getPackageMode } from '../utils/config'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
-import { fetchPackumentWithFullMetaData } from '../utils/packument'
+import { fetchPackage } from '../utils/packument'
 
 const debug = {
   cache: _debug('taze:cache'),
@@ -69,21 +69,14 @@ export async function getPackageData(name: string): Promise<PackageData> {
   try {
     debug.resolve(`resolving ${name}`)
     const npmConfig = await getNpmConfig()
-    const data = await fetchPackumentWithFullMetaData(name, npmConfig)
+    const data = await fetchPackage(name, npmConfig)
 
     if (data) {
-      const result = {
-        tags: data['dist-tags'],
-        versions: Object.keys(data.versions || {}),
-        time: data.time,
-        // raw: data,
-      }
-
-      cache[name] = { data: result, cacheTime: now() }
+      cache[name] = { data, cacheTime: now() }
 
       cacheChanged = true
 
-      return result
+      return data
     }
   }
   catch (e) {
@@ -108,7 +101,7 @@ export function updateTargetVersion(
   forgiving = true,
   includeLocked = false,
 ) {
-  const versionLocked = /^[0-9]+/.test(dep.currentVersion)
+  const versionLocked = /^\d+/.test(dep.currentVersion)
   if (versionLocked && !includeLocked) {
     dep.targetVersion = dep.currentVersion
     dep.targetVersionTime = dep.currentVersionTime
