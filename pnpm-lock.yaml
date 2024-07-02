@@ -82,8 +82,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
       fast-npm-meta:
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.2.1
+        version: 0.2.1
       npm-package-arg:
         specifier: ^11.0.2
         version: 11.0.2
@@ -1726,8 +1726,8 @@ packages:
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
-  fast-npm-meta@0.1.1:
-    resolution: {integrity: sha512-uS9DjGncI/9XZ6HJFrci0WzSi++N8Jskbb2uB7+9SQlrgA3VaLhXhV9Gl5HwIGESHkayYYZFGnVNhJwRDKCWIA==}
+  fast-npm-meta@0.2.1:
+    resolution: {integrity: sha512-Iheh2ZXfpZ6lHO6+8wdo0sW4DUWZGw6e5t0Vp2jcTX+HNlneboxxBjLffa3E9ZWHyu8ZsGmd/GcoORKpq03UQA==}
 
   fastq@1.15.0:
     resolution: {integrity: sha512-wBrocU2LCXXa+lWBt8RoIRD89Fi8OdABODa/kEnyeyjS5aZO5/GNvI5sEINADqP/h8M29UHTHUb53sUu5Ihqdw==}
@@ -4717,7 +4717,7 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
-  fast-npm-meta@0.1.1: {}
+  fast-npm-meta@0.2.1: {}
 
   fastq@1.15.0:
     dependencies:

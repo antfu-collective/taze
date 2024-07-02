@@ -30,7 +30,7 @@ interface Packument {
 
 const NPM_REGISTRY = 'https://registry.npmjs.org/'
 
-export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>): Promise<PackageData> {
+export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>, force = false): Promise<PackageData> {
   const { default: npa } = await import('npm-package-arg')
   const { name, scope } = npa(spec)
 
@@ -40,10 +40,14 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
   const registry = pickRegistry(scope, npmConfigs)
 
   if (registry === NPM_REGISTRY) {
-    const data = await getVersions(spec, { fetch })
+    const data = await getVersions(spec, {
+      force,
+      fetch,
+    })
     return {
       tags: data.distTags,
       versions: data.versions,
+      time: data.time, 
     }
   }
 
