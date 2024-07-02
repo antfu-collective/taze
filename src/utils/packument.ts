@@ -1,8 +1,7 @@
 import process from 'node:process'
-import type { Options } from 'npm-registry-fetch'
 import { joinURL } from 'ufo'
 import { $fetch } from 'ofetch'
-import { getVersions } from 'fast-npm-meta'
+import { getVersions, pickRegistry } from 'fast-npm-meta'
 import type { PackageData } from '../types'
 
 // @types/pacote uses "import = require()" syntax which is not supported by unbuild
@@ -31,15 +30,14 @@ interface Packument {
 
 const NPM_REGISTRY = 'https://registry.npmjs.org/'
 
-export async function fetchPackage(spec: string, opts: Options): Promise<PackageData> {
+export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>): Promise<PackageData> {
   const { default: npa } = await import('npm-package-arg')
-  const { name } = npa(spec)
+  const { name, scope } = npa(spec)
 
   if (!name)
     throw new Error(`Invalid package name: ${name}`)
 
-  const npmRegistryFetch = await import('npm-registry-fetch')
-  const registry = npmRegistryFetch.pickRegistry(spec, opts)
+  const registry = pickRegistry(scope || '', npmConfigs as any)
 
   if (registry === NPM_REGISTRY) {
     const data = await getVersions(spec)
@@ -55,7 +53,7 @@ export async function fetchPackage(spec: string, opts: Options): Promise<Package
     headers: {
       'user-agent': `taze@npm node/${process.version}`,
       'accept': 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
-      ...opts.headers,
+      ...npmConfigs.headers,
     },
   }) as unknown as Packument
 
