@@ -47,7 +47,7 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
     return {
       tags: data.distTags,
       versions: data.versions,
-      time: data.time, 
+      time: data.time,
     }
   }
 
