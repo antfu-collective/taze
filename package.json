@@ -60,15 +60,15 @@
     "eslint": "^9.6.0",
     "esno": "^4.7.0",
     "fast-glob": "^3.3.2",
-    "fast-npm-meta": "^0.1.0",
+    "fast-npm-meta": "^0.1.1",
     "npm-package-arg": "^11.0.2",
     "picocolors": "^1.0.1",
     "prompts": "^2.4.2",
     "rimraf": "^5.0.7",
     "semver": "^7.6.2",
-    "ufo": "^1.5.3",
     "taze": "workspace:*",
     "typescript": "^5.5.3",
+    "ufo": "^1.5.3",
     "unbuild": "^2.0.0",
     "vitest": "^1.6.0"
   }

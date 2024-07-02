@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { joinURL } from 'ufo'
-import { $fetch } from 'ofetch'
+import { $fetch, fetch } from 'ofetch'
 import { getVersions, pickRegistry } from 'fast-npm-meta'
 import type { PackageData } from '../types'
 
@@ -37,10 +37,10 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
   if (!name)
     throw new Error(`Invalid package name: ${name}`)
 
-  const registry = pickRegistry(scope || '', npmConfigs as any)
+  const registry = pickRegistry(scope, npmConfigs)
 
   if (registry === NPM_REGISTRY) {
-    const data = await getVersions(spec)
+    const data = await getVersions(spec, { fetch })
     return {
       tags: data.distTags,
       versions: data.versions,
@@ -53,7 +53,7 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
     headers: {
       'user-agent': `taze@npm node/${process.version}`,
       'accept': 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
-      ...npmConfigs.headers,
+      ...npmConfigs.headers as any,
     },
   }) as unknown as Packument
 
