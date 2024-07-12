@@ -1,8 +1,12 @@
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import { resolve } from 'node:path'
 import os from 'node:os'
+import process from 'node:process'
 import semver from 'semver'
 import _debug from 'debug'
+import * as readYamlFile from 'read-yaml-file'
+import { getCatalogsFromWorkspaceManifest } from '@pnpm/catalogs.config'
+import { parseCatalogProtocol } from '@pnpm/catalogs.protocol-parser'
 import { getNpmConfig } from '../utils/npm'
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
@@ -166,11 +170,29 @@ export function getDiff(current: semver.SemVer, target: semver.SemVer): DiffType
   return 'error'
 }
 
+let maniFestCatalog: any
+function getCatalogVersion(raw: RawDep) {
+  const { currentVersion, name } = raw
+  if (currentVersion.startsWith('catalog:')) {
+    if (!maniFestCatalog) {
+      const workspace = resolve(process.cwd() ?? '', 'pnpm-workspace.yaml')
+      maniFestCatalog = readYamlFile.sync(workspace)
+    }
+    const catalogs = getCatalogsFromWorkspaceManifest(maniFestCatalog)
+    const catalogName = parseCatalogProtocol(currentVersion)
+    const version = catalogs[catalogName][name]
+    if (version) {
+      raw.currentVersion = version
+    }
+  }
+}
+
 export async function resolveDependency(
   raw: RawDep,
   options: CheckOptions,
   filter: DependencyFilter = () => true,
 ) {
+  getCatalogVersion(raw)
   const dep = { ...raw } as ResolvedDepChange
 
   const configMode = getPackageMode(dep.name, options)
