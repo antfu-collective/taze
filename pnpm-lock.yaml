@@ -20,9 +20,6 @@ importers:
       '@pnpm/catalogs.protocol-parser':
         specifier: ^0.1.0
         version: 0.1.0
-      '@pnpm/workspace.read-manifest':
-        specifier: ^2.2.0
-        version: 2.2.0
       ofetch:
         specifier: ^1.3.4
         version: 1.3.4
@@ -820,10 +817,6 @@ packages:
 
   '@pnpm/error@6.0.1':
     resolution: {integrity: sha512-7yjO0RgmWYb4OKgcWC33yD4Z2CxE7Tm7vXX1SmS7GDifDT/bgZZhHeS2xq/+W6y9yhwIrRSA+7AlQL1NM2wIvw==}
-    engines: {node: '>=18.12'}
-
-  '@pnpm/workspace.read-manifest@2.2.0':
-    resolution: {integrity: sha512-8rWN1LjG8qCqR32UcDVBBaXfmQhl1Ye698KB1L+MlJTa/S568UyQOfINdC8eL5ba6vggoDp4opgUcY8FoEdNhQ==}
     engines: {node: '>=18.12'}
 
   '@rollup/plugin-alias@5.1.0':
@@ -3625,12 +3618,6 @@ snapshots:
   '@pnpm/error@6.0.1':
     dependencies:
       '@pnpm/constants': 8.0.0
-
-  '@pnpm/workspace.read-manifest@2.2.0':
-    dependencies:
-      '@pnpm/constants': 8.0.0
-      '@pnpm/error': 6.0.1
-      read-yaml-file: 2.1.0
 
   '@rollup/plugin-alias@5.1.0(rollup@3.29.4)':
     dependencies:
