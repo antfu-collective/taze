@@ -291,6 +291,7 @@ function isLocalPackage(currentVersion: string) {
     'link:',
     'file:',
     'workspace:',
+    'catalog:',
   ]
   return localPackagePrefix.some(prefix => currentVersion.startsWith(prefix))
 }
