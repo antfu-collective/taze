@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { joinURL } from 'ufo'
-import { $fetch, fetch } from 'ofetch'
+import { fetch } from 'ofetch'
 import { getVersions, pickRegistry } from 'fast-npm-meta'
 import type { PackageData } from '../types'
 
@@ -51,17 +51,21 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
     }
   }
 
-  const url = joinURL(registry, name)
+  const npmRegistryFetch = await import('npm-registry-fetch')
 
-  const packument = await $fetch(url, {
+  const url = joinURL(npmRegistryFetch.pickRegistry(spec, npmConfigs), name)
+  const packument = await npmRegistryFetch.json(url, {
+    ...npmConfigs,
     headers: {
       'user-agent': `taze@npm node/${process.version}`,
       'accept': 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
       ...npmConfigs.headers as any,
     },
+    spec,
   }) as unknown as Packument
 
   return {
+    ...packument,
     tags: packument['dist-tags'],
     versions: Object.keys(packument.versions),
   }
