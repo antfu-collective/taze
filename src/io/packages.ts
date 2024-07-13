@@ -2,7 +2,7 @@ import path from 'node:path'
 import { existsSync, promises as fs } from 'node:fs'
 import fg from 'fast-glob'
 import detectIndent from 'detect-indent'
-import type { CommonOptions, PackageMeta, RawDep } from '../types'
+import type { CommonOptions, PackageMeta } from '../types'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
@@ -70,5 +70,5 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
     ),
   )).flat()
 
-  return packages.flat()
+  return packages
 }

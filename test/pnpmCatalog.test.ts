@@ -5,7 +5,7 @@ import { CheckPackages } from '../src'
 
 it('pnpm catalog', async () => {
   const options: CheckOptions = {
-    cwd: `${process.cwd()}/test/fixtures/pnpm catalog`,
+    cwd: `${process.cwd()}/test/fixtures/pnpm-catalog`,
   }
   const result = await CheckPackages(options, {})
 
