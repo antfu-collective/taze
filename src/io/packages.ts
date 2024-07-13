@@ -4,6 +4,7 @@ import fg from 'fast-glob'
 import detectIndent from 'detect-indent'
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
+import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
 
 export async function readJSON(filepath: string) {
@@ -95,13 +96,10 @@ export async function loadPackages(options: CommonOptions) {
 
   if (options.recursive) {
     packagesNames = await fg('**/package.json', {
-      ignore: [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/public/**',
-      ].concat(options.ignorePaths || []),
+      ignore: DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || []),
       cwd: options.cwd,
       onlyFiles: true,
+      dot: false,
     })
   }
   else {
