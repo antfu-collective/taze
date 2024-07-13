@@ -6,7 +6,7 @@ import _debug from 'debug'
 import { getNpmConfig } from '../utils/npm'
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { diffSorter } from '../filters/diff-sorter'
-import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
+import { getMaxSatisfying, getPrefixedVersion, getVersionRangePrefix } from '../utils/versions'
 import { getPackageMode } from '../utils/config'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchPackage } from '../utils/packument'
@@ -232,10 +232,21 @@ export async function resolveDependency(
     err = error
   }
 
-  if (target)
+  if (target) {
+    const prefix = getVersionRangePrefix(dep.currentVersion) || ''
+    const _version = dep.currentVersion.replace(prefix, '')
+    if (!dep.pkgData.versions.includes(_version)) {
+      dep.diff = 'error'
+      dep.update = false
+      dep.resolveError = `Current version ${dep.currentVersion} not found in versions list`
+      return dep
+    }
+
     updateTargetVersion(dep, target, undefined, options.includeLocked)
-  else
+  }
+  else {
     dep.targetVersion = dep.currentVersion
+  }
 
   if (dep.targetVersion === dep.currentVersion) {
     dep.diff = null
