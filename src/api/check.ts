@@ -21,8 +21,8 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
   callbacks.afterPackagesLoaded?.(packages)
 
   const privatePackageNames = packages
-    .filter(i => i.raw.private)
-    .map(i => i.raw.name)
+    .filter(i => i.private)
+    .map(i => i.name)
     .filter(i => i)
 
   // to filter out private dependency in monorepo

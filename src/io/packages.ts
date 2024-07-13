@@ -1,6 +1,7 @@
 import path from 'node:path'
-import { promises as fs } from 'node:fs'
+import { existsSync, promises as fs } from 'node:fs'
 import fg from 'fast-glob'
+import YAML from 'js-yaml'
 import detectIndent from 'detect-indent'
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
@@ -28,7 +29,45 @@ const depsFields = [
   'overrides',
 ] as const
 
-export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
+export async function writePackage(
+  pkg: PackageMeta,
+  options: CommonOptions,
+) {
+  switch (pkg.type) {
+    case 'package.json':
+      return writePackageJSON(pkg, options)
+    case 'pnpm-workspace.yaml':
+      return writePnpmWorkspace(pkg, options)
+    default:
+      throw new Error(`Unsupported package type: ${pkg.type}`)
+  }
+}
+
+export async function writePnpmWorkspace(
+  pkg: PackageMeta,
+  _options: CommonOptions,
+) {
+  const catalogName = pkg.name.replace('pnpm-catalog:', '')
+  const versions = dumpDependencies(pkg.resolved, 'pnpm:catalog')
+
+  if (!Object.keys(versions).length)
+    return
+
+  if (catalogName === 'default') {
+    pkg.raw.catalog = versions
+  }
+  else {
+    pkg.raw.catalogs ??= {}
+    pkg.raw.catalogs[catalogName] = versions
+  }
+
+  await fs.writeFile(pkg.filepath, YAML.dump(pkg.raw), 'utf-8')
+}
+
+export async function writePackageJSON(
+  pkg: PackageMeta,
+  options: CommonOptions,
+) {
   const { raw, filepath, resolved } = pkg
 
   let changed = false
@@ -55,11 +94,66 @@ export async function writePackage(pkg: PackageMeta, options: CommonOptions) {
     await writeJSON(filepath, raw)
 }
 
+export async function loadPnpmWorkspace(
+  relative: string,
+  options: CommonOptions,
+  shouldUpdate: (name: string) => boolean,
+): Promise<PackageMeta[]> {
+  const filepath = path.resolve(options.cwd ?? '', relative)
+  const rawText = await fs.readFile(filepath, 'utf-8')
+  const raw = YAML.load(rawText) as any
+
+  const catalogs: PackageMeta[] = []
+
+  function createCatalogFromKeyValue(catalogName: string, map: Record<string, string>): PackageMeta {
+    const deps: RawDep[] = Object.entries(map)
+      .map(([name, version]) => parseDependency(name, version, 'pnpm:catalog', shouldUpdate))
+
+    return {
+      name: `pnpm-catalog:${catalogName}`,
+      private: true,
+      version: '',
+      type: 'pnpm-workspace.yaml',
+      relative,
+      filepath,
+      raw,
+      deps,
+      resolved: [],
+    }
+  }
+
+  if (raw.catalog) {
+    catalogs.push(
+      createCatalogFromKeyValue('default', raw.catalog),
+    )
+  }
+
+  if (raw.catalogs) {
+    for (const key of Object.keys(raw.catalogs)) {
+      catalogs.push(
+        createCatalogFromKeyValue(key, raw.catalogs[key]),
+      )
+    }
+  }
+
+  return catalogs
+}
+
 export async function loadPackage(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
-): Promise<PackageMeta> {
+): Promise<PackageMeta[]> {
+  if (relative.endsWith('pnpm-workspace.yaml'))
+    return loadPnpmWorkspace(relative, options, shouldUpdate)
+  return loadPackageJSON(relative, options, shouldUpdate)
+}
+
+export async function loadPackageJSON(
+  relative: string,
+  options: CommonOptions,
+  shouldUpdate: (name: string) => boolean,
+): Promise<PackageMeta[]> {
   const filepath = path.resolve(options.cwd ?? '', relative)
   const raw = await readJSON(filepath)
   const deps: RawDep[] = []
@@ -78,18 +172,22 @@ export async function loadPackage(
     }
   }
 
-  return {
-    name: raw.name,
-    version: raw.version,
-    relative,
-    filepath,
-    raw,
-    deps,
-    resolved: [],
-  }
+  return [
+    {
+      name: raw.name,
+      private: !!raw.private,
+      version: raw.version,
+      type: 'package.json',
+      relative,
+      filepath,
+      raw,
+      deps,
+      resolved: [],
+    },
+  ]
 }
 
-export async function loadPackages(options: CommonOptions) {
+export async function loadPackages(options: CommonOptions): Promise<PackageMeta[]> {
   let packagesNames: string[] = []
 
   const filter = createDependenciesFilter(options.include, options.exclude)
@@ -106,11 +204,15 @@ export async function loadPackages(options: CommonOptions) {
     packagesNames = ['package.json']
   }
 
-  const packages = await Promise.all(
+  if (existsSync(path.join(options.cwd || '', 'pnpm-workspace.yaml'))) {
+    packagesNames.push('pnpm-workspace.yaml')
+  }
+
+  const packages = (await Promise.all(
     packagesNames.map(
       relative => loadPackage(relative, options, filter),
     ),
-  )
+  )).flat()
 
-  return packages
+  return packages.flat()
 }

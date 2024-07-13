@@ -3,7 +3,16 @@ import type { SortOption } from './utils/sort'
 
 export type RangeMode = typeof MODE_CHOICES[number]
 export type PackageMode = Exclude<RangeMode, 'default'> | 'ignore'
-export type DepType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies' | 'packageManager' | 'pnpm.overrides' | 'resolutions' | 'overrides'
+export type DepType =
+  | 'dependencies'
+  | 'devDependencies'
+  | 'peerDependencies'
+  | 'optionalDependencies'
+  | 'packageManager'
+  | 'pnpm.overrides'
+  | 'resolutions'
+  | 'overrides'
+  | 'pnpm:catalog'
 
 export const DependenciesTypeShortMap = {
   'dependencies': '',
@@ -14,6 +23,7 @@ export const DependenciesTypeShortMap = {
   'pnpm.overrides': 'pnpm-overrides',
   'resolutions': 'resolutions',
   'overrides': 'overrides',
+  'pnpm:catalog': 'pnpm-catalog',
 }
 
 export interface RawDep {
@@ -101,6 +111,14 @@ export interface PackageMeta {
    * Package name
    */
   name: string
+  /**
+   * Is private package
+   */
+  private: boolean
+  /**
+   * Package type
+   */
+  type: 'package.json' | 'pnpm-workspace.yaml' | 'global'
   /**
    * Package version
    */
