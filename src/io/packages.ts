@@ -47,7 +47,7 @@ export async function writePnpmWorkspace(
   pkg: PackageMeta,
   _options: CommonOptions,
 ) {
-  const catalogName = pkg.name.replace('pnpm-catalog:', '')
+  const catalogName = pkg.name.replace('catalog:', '')
   const versions = dumpDependencies(pkg.resolved, 'pnpm:catalog')
 
   if (!Object.keys(versions).length)
@@ -110,7 +110,7 @@ export async function loadPnpmWorkspace(
       .map(([name, version]) => parseDependency(name, version, 'pnpm:catalog', shouldUpdate))
 
     return {
-      name: `pnpm-catalog:${catalogName}`,
+      name: `catalog:${catalogName}`,
       private: true,
       version: '',
       type: 'pnpm-workspace.yaml',

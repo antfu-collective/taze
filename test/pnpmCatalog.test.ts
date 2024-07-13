@@ -3,18 +3,18 @@ import { expect, it } from 'vitest'
 import type { CheckOptions } from '../src'
 import { CheckPackages } from '../src'
 
-it('pnpm-catalog', async () => {
+it('pnpm catalog', async () => {
   const options: CheckOptions = {
-    cwd: `${process.cwd()}/test/fixtures/pnpm-catalog`,
+    cwd: `${process.cwd()}/test/fixtures/pnpm catalog`,
   }
   const result = await CheckPackages(options, {})
 
   expect(result.packages.map(p => p.name)).toMatchInlineSnapshot(`
     [
       "@taze/monorepo-example",
-      "pnpm-catalog:default",
-      "pnpm-catalog:react17",
-      "pnpm-catalog:react18",
+      "catalog:default",
+      "catalog:react17",
+      "catalog:react18",
     ]
   `)
 
@@ -59,7 +59,7 @@ it('pnpm-catalog', async () => {
         ],
       },
       {
-        "name": "pnpm-catalog:default",
+        "name": "catalog:default",
         "packages": [
           [
             "react",
@@ -72,7 +72,7 @@ it('pnpm-catalog', async () => {
         ],
       },
       {
-        "name": "pnpm-catalog:react17",
+        "name": "catalog:react17",
         "packages": [
           [
             "react",
@@ -85,7 +85,7 @@ it('pnpm-catalog', async () => {
         ],
       },
       {
-        "name": "pnpm-catalog:react18",
+        "name": "catalog:react18",
         "packages": [
           [
             "react",

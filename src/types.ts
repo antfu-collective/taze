@@ -23,7 +23,7 @@ export const DependenciesTypeShortMap = {
   'pnpm.overrides': 'pnpm-overrides',
   'resolutions': 'resolutions',
   'overrides': 'overrides',
-  'pnpm:catalog': 'pnpm-catalog',
+  'pnpm:catalog': 'catalog',
 }
 
 export interface RawDep {
