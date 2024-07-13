@@ -107,7 +107,7 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
   try {
     diffType = getDiff(new SemVer(from), new SemVer(to))
   }
-  catch (error) {
+  catch {
   }
   const color = DiffColorMap[diffType || 'patch']
 

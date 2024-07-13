@@ -120,7 +120,7 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
   try {
     pnpmStdout = (await ezspawn('pnpm', ['ls', '--global', '--depth=0', '--json'], { stdio: 'pipe' })).stdout
   }
-  catch (error) {
+  catch {
     return []
   }
 
