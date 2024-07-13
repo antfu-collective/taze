@@ -82,9 +82,14 @@ export function renderChanges(
         .join(', ')
       : c.dim('no change')
 
+    const displayName = pkg.name?.startsWith('catalog:')
+      ? c.dim('catalog:') + c.yellow(pkg.name.slice('catalog:'.length))
+      : pkg.name
+        ? c.cyan(pkg.name)
+        : c.red('›') + c.dim(` ${filepath || ''}`.trimEnd())
+
     lines.push(
-      // c.dim(c.gray(filepath)),
-      `${c.cyan(pkg.name ?? '›')} ${c.dim('-')} ${diffEntries}`,
+      `${displayName} ${c.dim('-')} ${diffEntries}`,
       '',
     )
 

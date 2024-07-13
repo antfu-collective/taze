@@ -139,6 +139,8 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
   )
     .map((deps, i) => ({
       agent: 'pnpm',
+      type: 'global',
+      private: true,
       resolved: [],
       raw: null,
       version: '',
@@ -167,6 +169,8 @@ async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackag
 
   return {
     agent: 'npm',
+    private: true,
+    type: 'global',
     resolved: [],
     raw: null,
     version: '',
