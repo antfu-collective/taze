@@ -27,7 +27,7 @@ export async function loadPackageJSON(
       if (key === 'packageManager') {
         if (raw.packageManager) {
           const [name, version] = raw.packageManager.split('@')
-          deps.push(parseDependency(name, `^${version}`, 'packageManager', shouldUpdate))
+          deps.push(parseDependency(name, `^${version.split('+')[0]}`, 'packageManager', shouldUpdate))
         }
       }
       else {
