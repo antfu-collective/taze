@@ -92,6 +92,11 @@ export default defineConfig({
   write: true,
   // run `npm install` or `yarn install` right after bumping
   install: true,
+  // ignore paths for looking for package.json in monorepo
+  ignorePaths: [
+    '**/node_modules/**',
+    '**/test/**',
+  ],
   // override with different bumping mode for each package
   packageMode: {
     'typescript': 'major',
