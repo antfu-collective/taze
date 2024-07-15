@@ -27,7 +27,8 @@ export async function loadPackageJSON(
       if (key === 'packageManager') {
         if (raw.packageManager) {
           const [name, version] = raw.packageManager.split('@')
-          deps.push(parseDependency(name, `^${version}`, 'packageManager', shouldUpdate))
+          // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
+          deps.push(parseDependency(name, `^${version.split('+')[0]}`, 'packageManager', shouldUpdate))
         }
       }
       else {
