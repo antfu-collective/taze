@@ -11,7 +11,7 @@ export async function loadPnpmWorkspace(
 ): Promise<PackageMeta[]> {
   const filepath = path.resolve(options.cwd ?? '', relative)
   const rawText = await fs.readFile(filepath, 'utf-8')
-  const raw = YAML.load(rawText) as any
+  const raw = YAML.load(rawText) as any || {}
 
   const catalogs: PackageMeta[] = []
 
