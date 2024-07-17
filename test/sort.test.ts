@@ -59,7 +59,7 @@ describe('sort resolvedDepChanges', () => {
 
   describe('sorts by time', () => {
     it('sorts ascending', () => {
-      expect(getOrderChange(sortDepChanges(input, 'time-asc'))).toMatchInlineSnapshot(`
+      expect(getOrderChange(sortDepChanges(input, 'time-asc', false))).toMatchInlineSnapshot(`
         [
           1,
           2,
@@ -70,7 +70,7 @@ describe('sort resolvedDepChanges', () => {
     })
 
     it('sorts descending', () => {
-      expect(getOrderChange(sortDepChanges(input, 'time-desc'))).toMatchInlineSnapshot(`
+      expect(getOrderChange(sortDepChanges(input, 'time-desc', false))).toMatchInlineSnapshot(`
         [
           2,
           1,
@@ -83,7 +83,7 @@ describe('sort resolvedDepChanges', () => {
 
   describe('sorts by time difference', () => {
     it('sorts ascending', () => {
-      expect(getOrderChange(sortDepChanges(input, 'diff-asc'))).toMatchInlineSnapshot(`
+      expect(getOrderChange(sortDepChanges(input, 'diff-asc', false))).toMatchInlineSnapshot(`
         [
           0,
           1,
@@ -94,7 +94,7 @@ describe('sort resolvedDepChanges', () => {
     })
 
     it('sorts descending', () => {
-      expect(getOrderChange(sortDepChanges(input, 'diff-desc'))).toMatchInlineSnapshot(`
+      expect(getOrderChange(sortDepChanges(input, 'diff-desc', false))).toMatchInlineSnapshot(`
         [
           3,
           2,

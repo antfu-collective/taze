@@ -15,6 +15,7 @@ import { renderChanges } from './render'
 export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptions) {
   const {
     sort = 'diff-asc',
+    group = true,
   } = options
 
   pkgs.forEach((i) => {
@@ -27,7 +28,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         updateTargetVersion(i, i.latestVersionAvailable, undefined, options.includeLocked)
       }
     })
-    i.resolved = sortDepChanges(i.resolved, sort)
+    i.resolved = sortDepChanges(i.resolved, sort, group)
   })
 
   if (!pkgs.some(i => i.resolved.some(i => i.update)))
