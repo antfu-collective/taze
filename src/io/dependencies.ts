@@ -24,6 +24,17 @@ export function setByPath(obj: any, path: string, value: any) {
   const keys = path.split('.')
   const lastKey = keys.pop() as string
   const target = keys.reduce((o, i) => o[i] = o[i] || {}, obj)
+  const vscodeVersion = value['@types/vscode']
+  if (vscodeVersion) {
+    if (obj.engines) {
+      obj.engines.vscode = vscodeVersion
+    }
+    else {
+      obj.engines = {
+        vscode: vscodeVersion,
+      }
+    }
+  }
   target[lastKey] = value
 }
 
