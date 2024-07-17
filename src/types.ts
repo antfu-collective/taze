@@ -15,14 +15,14 @@ export type DepType =
   | 'pnpm:catalog'
 
 export const DependenciesTypeShortMap = {
+  'packageManager': 'package-manager',
   'dependencies': '',
   'devDependencies': 'dev',
   'peerDependencies': 'peer',
   'optionalDependencies': 'optional',
-  'packageManager': 'package-manager',
-  'pnpm.overrides': 'pnpm-overrides',
   'resolutions': 'resolutions',
   'overrides': 'overrides',
+  'pnpm.overrides': 'pnpm-overrides',
   'pnpm:catalog': 'catalog',
 }
 
@@ -98,6 +98,12 @@ export interface CheckOptions extends CommonOptions {
   install?: boolean
   update?: boolean
   global?: boolean
+  /**
+   * Group dependencies by source, e.g. dependencies, devDependencies, etc.
+   *
+   * @default true
+   */
+  group?: boolean
   /**
    * include locked dependencies & devDependencies
    * @default false

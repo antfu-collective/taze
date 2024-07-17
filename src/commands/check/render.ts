@@ -13,7 +13,11 @@ import { timeDifference } from '../../utils/time'
 import { FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, colorizeVersionDiff, formatTable } from '../../render'
 import { DiffColorMap } from '../../utils/diff'
 
-export function renderChange(change: ResolvedDepChange, interactive?: InteractiveContext) {
+export function renderChange(
+  change: ResolvedDepChange,
+  interactive?: InteractiveContext,
+  grouped = false,
+) {
   const update = change.update && (!interactive || change.interactiveChecked)
   const isSelected = interactive && interactive.isSelected(change)
   const pre = interactive
@@ -29,7 +33,7 @@ export function renderChange(change: ResolvedDepChange, interactive?: Interactiv
 
   return [
     `${pre} ${update ? name : c.gray(name)}`,
-    c.gray(DependenciesTypeShortMap[change.source]),
+    grouped ? '' : c.gray(DependenciesTypeShortMap[change.source]),
     timeDifference(change.currentVersionTime),
     c.gray(change.currentVersion),
     update ? c.dim(c.gray('→')) : '',
@@ -60,6 +64,7 @@ export function renderChanges(
 
   const {
     sort = 'diff-asc',
+    group = true,
   } = options
 
   if (changes.length) {
@@ -74,7 +79,7 @@ export function renderChanges(
         diffCounts[diff] += 1
       })
 
-    changes = sortDepChanges(changes, sort)
+    changes = sortDepChanges(changes, sort, group)
 
     const diffEntries = Object.keys(diffCounts).length
       ? Object.entries(diffCounts)
@@ -93,10 +98,35 @@ export function renderChanges(
       '',
     )
 
-    lines.push(...formatTable(
-      changes.map(c => renderChange(c, interactive)),
+    const table = formatTable(
+      changes.map(c => renderChange(c, interactive, group)),
       'LLRRRRRL',
-    ))
+    )
+
+    const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))
+
+    if (group) {
+      const groups = new Map<string, ResolvedDepChange[]>()
+      for (const change of changes) {
+        const key = change.source
+        if (!groups.has(key))
+          groups.set(key, [])
+        groups.get(key)!.push(change)
+      }
+      // Use predefined order
+      for (const key of Object.keys(DependenciesTypeShortMap)) {
+        const group = groups.get(key)
+        if (!group)
+          continue
+        if (lines.at(-1) !== '')
+          lines.push('')
+        lines.push(`  ${c.blue(key)}`)
+        lines.push(...group.map(change => `  ${changeToTable.get(change)!}`))
+      }
+    }
+    else {
+      lines.push(...table)
+    }
 
     lines.push('')
   }
@@ -120,6 +150,7 @@ export function renderChanges(
     errLines,
   }
 }
+
 function renderResolveError(dep: ResolvedDepChange) {
   const lines: string[] = []
 

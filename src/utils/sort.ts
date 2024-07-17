@@ -1,4 +1,4 @@
-import type { ResolvedDepChange } from '../types'
+import { DependenciesTypeShortMap, type ResolvedDepChange } from '../types'
 import { DiffMap } from './diff'
 import { toDate } from './time'
 
@@ -19,10 +19,14 @@ export function parseSortOption(option: SortOption) {
   return option.split('-') as [SortKey, SortOrder]
 }
 
-export function sortDepChanges(changes: readonly ResolvedDepChange[], option: SortOption): ResolvedDepChange[] {
+export function sortDepChanges(
+  changes: readonly ResolvedDepChange[],
+  option: SortOption,
+  grouped: boolean,
+): ResolvedDepChange[] {
   const [sortKey, order = 'asc'] = parseSortOption(option)
 
-  const sorted = changes.concat()
+  let sorted = changes.concat()
     .sort((a, b) => {
       if (sortKey === 'time') {
         if (a.targetVersionTime && b.targetVersionTime) {
@@ -40,7 +44,18 @@ export function sortDepChanges(changes: readonly ResolvedDepChange[], option: So
       return 0
     })
 
-  return order === 'desc'
+  sorted = order === 'desc'
     ? sorted.reverse()
     : sorted
+
+  if (grouped) {
+    const order = Object.keys(DependenciesTypeShortMap)
+    sorted = sorted.sort((a, b) => {
+      const ai = order.indexOf(a.source)
+      const bi = order.indexOf(b.source)
+      return ai - bi
+    })
+  }
+
+  return sorted
 }

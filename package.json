@@ -2,7 +2,7 @@
   "name": "taze",
   "type": "module",
   "version": "0.15.2",
-  "packageManager": "pnpm@9.5.0",
+  "packageManager": "pnpm@9.4.0",
   "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
@@ -34,7 +34,7 @@
     "test": "unbuild && vitest"
   },
   "dependencies": {
-    "@antfu/ni": "^0.22.0",
+    "@antfu/ni": "^0.21.0",
     "@jsdevtools/ez-spawn": "^3.0.4",
     "js-yaml": "^4.1.0",
     "npm-registry-fetch": "^17.1.0",

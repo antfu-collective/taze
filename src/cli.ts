@@ -123,6 +123,10 @@ yargs(hideBin(process.argv))
           choices: SORT_CHOICES,
           describe: 'sort by most outdated absolute or relative to dependency',
         })
+        .option('group', {
+          type: 'boolean',
+          describe: 'group dependencies by source on display',
+        })
         .option('includeLocked', {
           alias: 'l',
           type: 'boolean',
