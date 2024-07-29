@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dumpDependencies } from '../src/io/dependencies'
+import { dumpDependencies, setByPath } from '../src/io/dependencies'
 import type { ResolvedDepChange } from '../src/types'
 
 describe('dumpDependencies', () => {
@@ -85,6 +85,28 @@ describe('dumpDependencies', () => {
             "@taze/nested-lvl2": "^2.0.0",
           },
           "@taze/nested-foo": "^1.0.0",
+        },
+      }
+    `)
+  })
+
+  it('dump `setByPath` with vscode', () => {
+    const pkgObj = {
+      devDependencies: {
+        '@types/vscode': '^1.77.0',
+      },
+    }
+    setByPath(pkgObj, 'devDependencies', {
+      '@types/vscode': '^1.91.0',
+    })
+
+    expect(pkgObj).toMatchInlineSnapshot(`
+      {
+        "devDependencies": {
+          "@types/vscode": "^1.91.0",
+        },
+        "engines": {
+          "vscode": "^1.91.0",
         },
       }
     `)
