@@ -9,6 +9,10 @@ import { DEFAULT_CHECK_OPTIONS, DEFAULT_USAGE_OPTIONS } from './constants'
 const debug = _debug('taze:config')
 
 function normalizeConfig<T extends CommonOptions>(options: T) {
+  // interop
+  if ('default' in options)
+    options = options.default as T
+
   options.ignorePaths = toArray(options.ignorePaths)
   options.exclude = toArray(options.exclude)
   options.include = toArray(options.include)
@@ -50,6 +54,12 @@ export async function resolveConfig<T extends CommonOptions>(
 
   debug(`config file found ${config.sources[0]}`)
   const configOptions = normalizeConfig(config.config)
+
+  console.log({
+    defaults,
+    configOptions,
+    options,
+  })
 
   return deepmerge(deepmerge(defaults, configOptions), options as T) as T
 }

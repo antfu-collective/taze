@@ -9,14 +9,6 @@ function getPkgInfo(name: string, result: ResolvedDepChange[]) {
   return result.filter(r => r.name === name)[0]
 }
 
-beforeAll(() => {
-  process.env.IMPORTX_LOADER = 'jiti'
-})
-
-afterAll(() => {
-  delete process.env.IMPORTX_LOADER
-})
-
 describe('load config', () => {
   it('with packagemode', async () => {
     const options: CommonOptions = {
