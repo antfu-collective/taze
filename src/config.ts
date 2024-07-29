@@ -55,11 +55,5 @@ export async function resolveConfig<T extends CommonOptions>(
   debug(`config file found ${config.sources[0]}`)
   const configOptions = normalizeConfig(config.config)
 
-  console.log({
-    defaults,
-    configOptions,
-    options,
-  })
-
   return deepmerge(deepmerge(defaults, configOptions), options as T) as T
 }

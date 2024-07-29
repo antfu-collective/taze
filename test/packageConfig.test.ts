@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { join } from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { CheckOptions, CommonOptions, ResolvedDepChange } from '../src'
 import { CheckPackages } from '../src'
 import { resolveConfig } from '../src/config'
