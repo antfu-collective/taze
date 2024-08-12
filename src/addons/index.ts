@@ -1,4 +1,4 @@
-import { addonVSCode } from './vscode';
+import { addonVSCode } from './vscode'
 
 export const builtinAddons = [
   addonVSCode,
