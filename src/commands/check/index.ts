@@ -10,6 +10,7 @@ import type {
 } from '../../types'
 import { CheckPackages } from '../../api/check'
 import { writePackage } from '../../io/packages'
+import { builtinAddons } from '../../addons'
 import { promptInteractive } from './interactive'
 import { outputErr, renderPackages } from './render'
 
@@ -96,8 +97,13 @@ export async function check(options: CheckOptions) {
   }
 
   if (options.write) {
-    for (const pkg of resolvePkgs)
+    for (const pkg of resolvePkgs) {
+      // TODO: somehow make this field controlable by CLI?
+      for (const addon of (options.addons || builtinAddons)) {
+        await addon.postprocess?.(pkg, options)
+      }
       await writePackage(pkg, options)
+    }
   }
 
   // tips

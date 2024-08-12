@@ -79,6 +79,12 @@ export interface CommonOptions {
    * Override bumping mode for specific dependencies
    */
   packageMode?: { [name: string]: PackageMode }
+  /**
+   * Custom addons
+   *
+   * @default builtin addons
+   */
+  addons?: Addon[]
 }
 
 export interface UsageOptions extends CommonOptions {
@@ -163,4 +169,16 @@ export interface InteractiveContext {
    * Whether the dependency is marked as checked in the interactive list.
    */
   isChecked: (dep: RawDep) => boolean
+}
+
+export interface Addon {
+  postprocess?: (
+    pkg: PackageMeta,
+    options: CheckOptions,
+  ) => void | Promise<void>
+
+  beforeWrite?: (
+    pkg: PackageMeta,
+    options: CheckOptions,
+  ) => void | Promise<void>
 }

@@ -1,5 +1,6 @@
 import path from 'node:path'
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
+import { builtinAddons } from '../addons'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
 import { readJSON, writeJSON } from './packages'
 
@@ -56,28 +57,30 @@ export async function writePackageJSON(
   pkg: PackageMeta,
   options: CommonOptions,
 ) {
-  const { raw, filepath, resolved } = pkg
-
   let changed = false
 
   depsFields.forEach((key) => {
     if (options.depFields?.[key] === false)
       return
     if (key === 'packageManager') {
-      const value = Object.entries(dumpDependencies(resolved, 'packageManager'))[0]
+      const value = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))[0]
       if (value) {
-        raw.packageManager = `${value[0]}@${value[1].replace('^', '')}`
+        pkg.raw.packageManager = `${value[0]}@${value[1].replace('^', '')}`
         changed = true
       }
     }
     else {
-      if (getByPath(raw, key)) {
-        setByPath(raw, key, dumpDependencies(resolved, key))
+      if (getByPath(pkg.raw, key)) {
+        setByPath(pkg.raw, key, dumpDependencies(pkg.resolved, key))
         changed = true
       }
     }
   })
 
-  if (changed)
-    await writeJSON(filepath, raw)
+  if (changed) {
+    for (const addon of (options.addons || builtinAddons)) {
+      await addon.beforeWrite?.(pkg, options)
+    }
+    await writeJSON(pkg.filepath, pkg.raw)
+  }
 }

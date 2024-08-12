@@ -42,7 +42,9 @@ export async function checkGlobal(options: CheckOptions) {
   ])
   const pkgs = globalPkgs.flat(1)
 
-  const bars = options.loglevel === 'silent' ? null : createMultiProgressBar()
+  const bars = options.loglevel === 'silent'
+    ? null
+    : createMultiProgressBar()
   await Promise.all(pkgs.map(async (pkg) => {
     const depBar = bars?.create(pkg.deps.length, 0, { type: c.green(pkg.agent) })
     await resolvePackage(
