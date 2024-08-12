@@ -59,13 +59,22 @@ export async function writePnpmWorkspace(
   if (!Object.keys(versions).length)
     return
 
+  let changed = false
+
   if (catalogName === 'default') {
-    pkg.raw.catalog = versions
+    if (JSON.stringify(pkg.raw.catalog) !== JSON.stringify(versions)) {
+      pkg.raw.catalog = versions
+      changed = true
+    }
   }
   else {
     pkg.raw.catalogs ??= {}
-    pkg.raw.catalogs[catalogName] = versions
+    if (pkg.raw.catalogs[catalogName] !== versions) {
+      pkg.raw.catalogs[catalogName] = versions
+      changed = true
+    }
   }
 
-  await fs.writeFile(pkg.filepath, YAML.dump(pkg.raw), 'utf-8')
+  if (changed)
+    await fs.writeFile(pkg.filepath, YAML.dump(pkg.raw), 'utf-8')
 }
