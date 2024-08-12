@@ -18,30 +18,33 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     group = true,
   } = options
 
-  pkgs.forEach((i) => {
-    i.interactiveChecked = true
-    i.resolved.forEach((i) => {
-      i.interactiveChecked = i.update
-      if (i.latestVersionAvailable && !i.update) {
-        i.interactiveChecked = false
-        i.update = true
-        updateTargetVersion(i, i.latestVersionAvailable, undefined, options.includeLocked)
+  const checked = new Set<object>()
+
+  pkgs.forEach((pkg) => {
+    pkg.resolved.forEach((dep) => {
+      if (dep.update) {
+        checked.add(dep)
+      }
+      else if (dep.latestVersionAvailable) {
+        // Set `update` flag to true to render option in the list,
+        // but don't check it by default.
+        dep.update = true
+        updateTargetVersion(dep, dep.latestVersionAvailable, undefined, options.includeLocked)
       }
     })
-    i.resolved = sortDepChanges(i.resolved, sort, group)
   })
 
-  if (!pkgs.some(i => i.resolved.some(i => i.update)))
+  if (flatDeps().length === 0)
     return []
 
   const promise = createControlledPromise<PackageMeta[]>()
 
-  const listRenderer = createListRenderer()
-  let renderer: InteractiveRenderer = listRenderer
+  sortDeps()
+  let renderer: InteractiveRenderer = createListRenderer()
 
   registerInput()
-
   renderer.render()
+
   return await promise
     .finally(() => {
       renderer = {
@@ -52,13 +55,26 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
   // ==== functions ====
 
-  function createListRenderer(): InteractiveRenderer {
-    const deps = pkgs.flatMap(i => i.resolved.filter(i => i.update))
+  function flatDeps() {
+    return pkgs.flatMap(pkg => pkg.resolved.filter(dep => dep.update))
+  }
+
+  function sortDeps() {
+    pkgs.forEach((pkg) => {
+      pkg.resolved = sortDepChanges(pkg.resolved, sort, group)
+    })
+  }
+
+  function createListRenderer(initialSelected?: ResolvedDepChange): InteractiveRenderer {
+    const deps = flatDeps()
+
     let index = 0
+    if (initialSelected)
+      index = Math.max(0, deps.findIndex(dep => dep === initialSelected))
+
     const ctx: InteractiveContext = {
-      isSelected(dep) {
-        return dep === deps[index]
-      },
+      isChecked: dep => checked.has(dep),
+      isSelected: dep => dep === deps[index],
     }
 
     return {
@@ -77,17 +93,15 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         sr.render(index)
       },
       onKey(key) {
-        const allInteractiveChecked = deps.every(d => d.interactiveChecked)
-
         switch (key.name) {
           case 'escape':
             process.exit()
           case 'enter':
           case 'return':
             console.clear()
-            pkgs.forEach((i) => {
-              i.resolved.forEach((i) => {
-                i.update = !!i.interactiveChecked
+            pkgs.forEach((pkg) => {
+              pkg.resolved.forEach((dep) => {
+                dep.update = ctx.isChecked(dep)
               })
             })
             promise.resolve(pkgs)
@@ -100,15 +114,23 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           case 'j':
             index = (index + 1) % deps.length
             return true
-          case 'space':
-            deps[index].interactiveChecked = !deps[index].interactiveChecked
+          case 'space': {
+            const dep = deps[index]
+            if (checked.has(dep))
+              checked.delete(dep)
+            else
+              checked.add(dep)
             return true
+          }
           case 'right':
           case 'l':
             renderer = createVersionSelectRender(deps[index])
             return true
           case 'a':
-            deps.forEach(d => d.interactiveChecked = !allInteractiveChecked)
+            if (deps.every(dep => checked.has(dep)))
+              checked.clear()
+            else
+              deps.forEach(dep => checked.add(dep))
             return true
         }
       },
@@ -160,7 +182,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
       onKey(key) {
         switch (key.name) {
           case 'escape':
-            renderer = listRenderer
+            renderer = createListRenderer(dep)
             return true
           case 'up':
           case 'k':
@@ -178,7 +200,12 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           case 'h':
           case 'l':
             updateTargetVersion(dep, versions[index].version, undefined, options.includeLocked)
-            renderer = listRenderer
+
+            // Order may have changed so we need to sort to keep navigation
+            // in sync with the rendering.
+            sortDeps()
+
+            renderer = createListRenderer(dep)
             return true
         }
       },

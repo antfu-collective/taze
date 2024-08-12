@@ -52,7 +52,6 @@ export interface ResolvedDepChange extends RawDep {
   diff: DiffType
   pkgData: PackageData
   resolveError?: Error | string | null
-  interactiveChecked?: boolean
   aliasName?: string
 }
 
@@ -149,12 +148,19 @@ export interface PackageMeta {
    * Resolved dependencies
    */
   resolved: ResolvedDepChange[]
-  interactiveChecked?: boolean
 }
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void
 
 export interface InteractiveContext {
+  /**
+   * Whether the dependency is selected with cursor in the interactive list.
+   */
   isSelected: (dep: RawDep) => boolean
+
+  /**
+   * Whether the dependency is marked as checked in the interactive list.
+   */
+  isChecked: (dep: RawDep) => boolean
 }

@@ -18,12 +18,11 @@ export function renderChange(
   interactive?: InteractiveContext,
   grouped = false,
 ) {
-  const update = change.update && (!interactive || change.interactiveChecked)
-  const isSelected = interactive && interactive.isSelected(change)
+  const update = change.update && (!interactive || interactive.isChecked(change))
   const pre = interactive
     ? [
-        isSelected ? FIG_POINTER : FIG_NO_POINTER,
-        change.interactiveChecked ? FIG_CHECK : FIG_UNCHECK,
+        interactive.isSelected(change) ? FIG_POINTER : FIG_NO_POINTER,
+        interactive.isChecked(change) ? FIG_CHECK : FIG_UNCHECK,
       ].join('')
     : ' '
 
@@ -70,7 +69,7 @@ export function renderChanges(
   if (changes.length) {
     const diffCounts: Record<string, number> = {}
     changes
-      .filter(i => !interactive || i.interactiveChecked)
+      .filter(dep => !interactive || interactive.isChecked(dep))
       .forEach(({ diff }) => {
         if (!diff)
           return
