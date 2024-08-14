@@ -16,7 +16,8 @@ export const addonVSCode: Addon = {
     if (version && pkg.raw.engines?.vscode !== version) {
       // eslint-disable-next-line no-console
       console.log(`[addon] Updated VS Code engine field to ${version}`)
-      pkg.raw.engines.vscode = /^[^><]/.test(version) ? version : `^${version}`
+      // If the version is not a range (fixed version), we prepend it with a caret
+      pkg.raw.engines.vscode = /[>^<:~]/.test(version) ? version : `^${version}`
     }
   },
 }
