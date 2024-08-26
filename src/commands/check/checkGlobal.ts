@@ -120,7 +120,7 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
   let pnpmStdout
 
   try {
-    pnpmStdout = (await exec('pnpm', ['ls', '--global', '--depth=0', '--json'])).stdout
+    pnpmStdout = (await exec('pnpm', ['ls', '--global', '--depth=0', '--json'], { throwOnError: true })).stdout
   }
   catch {
     return []
@@ -156,7 +156,7 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
 }
 
 async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackageMeta> {
-  const { stdout } = await exec('npm', ['ls', '--global', '--depth=0', '--json'])
+  const { stdout } = await exec('npm', ['ls', '--global', '--depth=0', '--json'], { throwOnError: true })
   const npmOut = JSON.parse(stdout) as NpmOut
   const filter = createDependenciesFilter(options.include, options.exclude)
 
@@ -188,5 +188,5 @@ async function installPkg(pkg: GlobalPackageMeta) {
   const dependencies = dumpDependencies(changes, 'dependencies')
   const updateArgs = Object.entries(dependencies).map(([name, version]) => `${name}@${version}`)
   const installCommand = getCommand(pkg.agent, 'global', [...updateArgs])
-  await exec(installCommand)
+  await exec(installCommand, [], { throwOnError: true })
 }
