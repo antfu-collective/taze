@@ -2,7 +2,8 @@
 import { exec } from 'tinyexec'
 import c from 'picocolors'
 import prompts from 'prompts'
-import { type Agent, getCommand } from '@antfu/ni'
+import type { Agent } from 'package-manager-detector'
+import { getCommand } from '@antfu/ni'
 import { createMultiProgressBar } from '../../log'
 import type { CheckOptions, PackageMeta, RawDep } from '../../types'
 import { dumpDependencies } from '../../io/dependencies'
@@ -187,6 +188,6 @@ async function installPkg(pkg: GlobalPackageMeta) {
   const changes = pkg.resolved.filter(i => i.update)
   const dependencies = dumpDependencies(changes, 'dependencies')
   const updateArgs = Object.entries(dependencies).map(([name, version]) => `${name}@${version}`)
-  const installCommand = getCommand(pkg.agent, 'global', [...updateArgs])
-  await exec(installCommand, [], { throwOnError: true })
+  const install = getCommand(pkg.agent, 'global', [...updateArgs])
+  await exec(install.command, install.args, { throwOnError: true })
 }
