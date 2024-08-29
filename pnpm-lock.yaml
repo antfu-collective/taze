@@ -14,9 +14,6 @@ importers:
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
-      npm-registry-fetch:
-        specifier: ^17.1.0
-        version: 17.1.0
       ofetch:
         specifier: ^1.3.4
         version: 1.3.4
@@ -102,6 +99,9 @@ importers:
       npm-package-arg:
         specifier: ^11.0.3
         version: 11.0.3
+      npm-registry-fetch:
+        specifier: ^17.1.0
+        version: 17.1.0
       picocolors:
         specifier: ^1.0.1
         version: 1.0.1
