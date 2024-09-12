@@ -3,6 +3,7 @@ import type { Argv } from 'yargs'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import c from 'picocolors'
+import restoreCursor from 'restore-cursor'
 import pkgJson from '../package.json'
 import { check } from './commands/check'
 import { usage } from './commands/usage'
@@ -150,3 +151,5 @@ yargs(hideBin(process.argv))
   .alias('v', 'version')
   .help()
   .argv
+
+restoreCursor()

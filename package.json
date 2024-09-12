@@ -69,6 +69,7 @@
     "npm-registry-fetch": "^17.1.0",
     "picocolors": "^1.0.1",
     "prompts": "^2.4.2",
+    "restore-cursor": "^5.1.0",
     "rimraf": "^6.0.1",
     "semver": "^7.6.3",
     "taze": "workspace:*",
