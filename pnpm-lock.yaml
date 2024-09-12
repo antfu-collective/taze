@@ -20,9 +20,6 @@ importers:
       package-manager-detector:
         specifier: ^0.2.0
         version: 0.2.0
-      restore-cursor:
-        specifier: ^5.1.0
-        version: 5.1.0
       tinyexec:
         specifier: ^0.3.0
         version: 0.3.0
@@ -111,6 +108,9 @@ importers:
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
+      restore-cursor:
+        specifier: ^5.1.0
+        version: 5.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
