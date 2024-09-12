@@ -1,6 +1,6 @@
 import process from 'node:process'
-import c from 'picocolors'
 import { MultiBar, Presets } from 'cli-progress'
+import c from 'picocolors'
 import { LOG_LEVELS } from './constants'
 import { visualLength, visualPadEnd, visualPadStart } from './render'
 import type { LogLevel } from './types'

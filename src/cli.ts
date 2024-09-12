@@ -1,17 +1,17 @@
 import process from 'node:process'
-import type { Argv } from 'yargs'
-import yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
 import c from 'picocolors'
 import restoreCursor from 'restore-cursor'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import type { Argv } from 'yargs'
 import pkgJson from '../package.json'
 import { check } from './commands/check'
+import { checkGlobal } from './commands/check/checkGlobal'
 import { usage } from './commands/usage'
 import { resolveConfig } from './config'
 import { LOG_LEVELS, MODE_CHOICES } from './constants'
-import type { CommonOptions } from './types'
 import { SORT_CHOICES } from './utils/sort'
-import { checkGlobal } from './commands/check/checkGlobal'
+import type { CommonOptions } from './types'
 
 function commonOptions(args: Argv<object>): Argv<CommonOptions> {
   return args

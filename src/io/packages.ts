@@ -1,12 +1,12 @@
-import path from 'node:path'
 import { existsSync, promises as fs } from 'node:fs'
-import fg from 'fast-glob'
+import path from 'node:path'
 import detectIndent from 'detect-indent'
-import type { CommonOptions, PackageMeta } from '../types'
-import { createDependenciesFilter } from '../utils/dependenciesFilter'
+import fg from 'fast-glob'
 import { DEFAULT_IGNORE_PATHS } from '../constants'
+import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
 import { loadPnpmWorkspace, writePnpmWorkspace } from './pnpmWorkspaces'
+import type { CommonOptions, PackageMeta } from '../types'
 
 export async function readJSON(filepath: string) {
   return JSON.parse(await fs.readFile(filepath, 'utf-8'))

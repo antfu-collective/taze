@@ -1,8 +1,8 @@
 import path from 'node:path'
-import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import { builtinAddons } from '../addons'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
 import { readJSON, writeJSON } from './packages'
+import type { CommonOptions, PackageMeta, RawDep } from '../types'
 
 const depsFields = [
   'dependencies',

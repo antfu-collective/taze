@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { joinURL } from 'ufo'
-import { fetch } from 'ofetch'
 import { getVersions, pickRegistry } from 'fast-npm-meta'
+import { fetch } from 'ofetch'
+import { joinURL } from 'ufo'
 import type { PackageData } from '../types'
 
 // @types/pacote uses "import = require()" syntax which is not supported by unbuild

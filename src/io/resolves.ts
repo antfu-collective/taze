@@ -1,15 +1,15 @@
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
-import { resolve } from 'node:path'
 import os from 'node:os'
-import semver from 'semver'
+import { resolve } from 'node:path'
 import _debug from 'debug'
-import { getNpmConfig } from '../utils/npm'
-import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import semver from 'semver'
 import { diffSorter } from '../filters/diff-sorter'
-import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 import { getPackageMode } from '../utils/config'
+import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchPackage } from '../utils/packument'
+import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 
 const debug = {
   cache: _debug('taze:cache'),

@@ -1,16 +1,16 @@
 /* eslint-disable no-fallthrough */
+import process from 'node:process'
 /* eslint-disable no-console */
 import readline from 'node:readline'
-import process from 'node:process'
-import c from 'picocolors'
 import { createControlledPromise, notNullish } from '@antfu/utils'
-import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
+import c from 'picocolors'
 import { getVersionOfRange, updateTargetVersion } from '../../io/resolves'
-import { getPrefixedVersion } from '../../utils/versions'
-import { FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, colorizeVersionDiff, createSliceRender, formatTable } from '../../render'
-import { timeDifference } from '../../utils/time'
+import { colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable } from '../../render'
 import { sortDepChanges } from '../../utils/sort'
+import { timeDifference } from '../../utils/time'
+import { getPrefixedVersion } from '../../utils/versions'
 import { renderChanges } from './render'
+import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
 
 export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptions) {
   const {

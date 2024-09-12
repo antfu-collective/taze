@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { expect, it } from 'vitest'
-import type { CheckOptions } from '../src'
 import { CheckPackages } from '../src'
+import type { CheckOptions } from '../src'
 
 it('pnpm catalog', async () => {
   const options: CheckOptions = {
