@@ -9,13 +9,19 @@ export const addonVSCode: Addon = {
       return
     }
 
-    const version = pkg.raw.dependencies?.['@types/vscode']
+    const version: string = pkg.raw.dependencies?.['@types/vscode']
       || pkg.raw.devDependencies?.['@types/vscode']
       || pkg.raw.peerDependencies?.['@types/vscode']
+      || ''
+
+    // Protocols like `workspace:` and `catalog:`, we skip them
+    if (version.includes(':')) {
+      return
+    }
 
     if (version && pkg.raw.engines?.vscode !== version) {
       // eslint-disable-next-line no-console
-      console.log(`[addon] Updated VS Code engine field to ${version}`)
+      console.log(`[taze addon] Updated VS Code engine field to ${version}`)
       // If the version is not a range (fixed version), we prepend it with a caret
       pkg.raw.engines.vscode = /[>^<:~]/.test(version) ? version : `^${version}`
     }
