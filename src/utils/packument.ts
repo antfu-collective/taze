@@ -28,6 +28,7 @@ interface Packument {
   }
 }
 
+const TIMEOUT = 5000
 const NPM_REGISTRY = 'https://registry.npmjs.org/'
 
 export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>, force = false): Promise<PackageData> {
@@ -40,10 +41,15 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
   const registry = pickRegistry(scope, npmConfigs)
 
   if (registry === NPM_REGISTRY) {
-    const data = await getVersions(spec, {
-      force,
-      fetch,
-    })
+    const data = await Promise.race([
+      getVersions(spec, {
+        force,
+        fetch,
+      }),
+      new Promise<ReturnType<typeof getVersions>>(
+        (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
+      ),
+    ])
     return {
       tags: data.distTags,
       versions: data.versions,
@@ -54,15 +60,20 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
   const npmRegistryFetch = await import('npm-registry-fetch')
 
   const url = joinURL(npmRegistryFetch.pickRegistry(spec, npmConfigs), name)
-  const packument = await npmRegistryFetch.json(url, {
-    ...npmConfigs,
-    headers: {
-      'user-agent': `taze@npm node/${process.version}`,
-      'accept': 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
-      ...npmConfigs.headers as any,
-    },
-    spec,
-  }) as unknown as Packument
+  const packument = await Promise.race([
+    npmRegistryFetch.json(url, {
+      ...npmConfigs,
+      headers: {
+        'user-agent': `taze@npm node/${process.version}`,
+        'accept': 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
+        ...npmConfigs.headers as any,
+      },
+      spec,
+    }) as unknown as Packument,
+    new Promise<Packument>(
+      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
+    ),
+  ])
 
   return {
     ...packument,
