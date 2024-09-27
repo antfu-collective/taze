@@ -1,8 +1,8 @@
+import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import YAML from 'js-yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
-import type { CommonOptions, PackageMeta, RawDep } from '../types'
 
 export async function loadPnpmWorkspace(
   relative: string,

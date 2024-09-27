@@ -1,3 +1,4 @@
+import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
 /* eslint-disable no-fallthrough */
 import process from 'node:process'
 /* eslint-disable no-console */
@@ -10,7 +11,6 @@ import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { getPrefixedVersion } from '../../utils/versions'
 import { renderChanges } from './render'
-import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
 
 export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptions) {
   const {

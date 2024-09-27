@@ -1,6 +1,6 @@
+import type { ResolvedDepChange } from '../src/types'
 import { describe, expect, it } from 'vitest'
 import { dumpDependencies } from '../src/io/dependencies'
-import type { ResolvedDepChange } from '../src/types'
 
 describe('dumpDependencies', () => {
   function makeDepChange(source: string, override: Partial<ResolvedDepChange> = {}) {

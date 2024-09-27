@@ -1,6 +1,6 @@
+import type { DependencyResolvedCallback, PackageMeta, UsageOptions } from '../types'
 import { loadPackages } from '../io/packages'
 import { getPackageData } from '../io/resolves'
-import type { DependencyResolvedCallback, PackageMeta, UsageOptions } from '../types'
 
 export interface UsageEventCallbacks {
   onLoaded?: (usages: UnresolvedUsage[]) => void

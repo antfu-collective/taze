@@ -1,9 +1,9 @@
+import type { LogLevel } from './types'
 import process from 'node:process'
 import { MultiBar, Presets } from 'cli-progress'
 import c from 'picocolors'
 import { LOG_LEVELS } from './constants'
 import { visualLength, visualPadEnd, visualPadStart } from './render'
-import type { LogLevel } from './types'
 
 interface Options {
   columns: number

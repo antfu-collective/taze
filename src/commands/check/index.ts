@@ -1,18 +1,18 @@
+import type { SingleBar } from 'cli-progress'
+import type {
+  CheckOptions,
+  PackageMeta,
+} from '../../types'
 /* eslint-disable no-console */
 import { parseNi, parseNu, run } from '@antfu/ni'
 import c from 'picocolors'
 import prompts from 'prompts'
-import type { SingleBar } from 'cli-progress'
 import { builtinAddons } from '../../addons'
 import { CheckPackages } from '../../api/check'
 import { writePackage } from '../../io/packages'
 import { createMultiProgressBar } from '../../log'
 import { promptInteractive } from './interactive'
 import { outputErr, renderPackages } from './render'
-import type {
-  CheckOptions,
-  PackageMeta,
-} from '../../types'
 
 export async function check(options: CheckOptions) {
   let exitCode = 0

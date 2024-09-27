@@ -1,5 +1,5 @@
-import { filterToRegex } from './dependenciesFilter'
 import type { CheckOptions } from '../types'
+import { filterToRegex } from './dependenciesFilter'
 
 export function getPackageMode(pkgName: string, options: CheckOptions) {
   if (!options.packageMode)

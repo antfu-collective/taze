@@ -1,11 +1,3 @@
-import c from 'picocolors'
-import semver from 'semver'
-import { colorizeVersionDiff, FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, formatTable } from '../../render'
-import { DependenciesTypeShortMap } from '../../types'
-import { DiffColorMap } from '../../utils/diff'
-import { sortDepChanges } from '../../utils/sort'
-import { timeDifference } from '../../utils/time'
-
 import type {
   CheckOptions,
   DiffType,
@@ -13,6 +5,14 @@ import type {
   PackageMeta,
   ResolvedDepChange,
 } from '../../types'
+import c from 'picocolors'
+import semver from 'semver'
+import { colorizeVersionDiff, FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, formatTable } from '../../render'
+import { DependenciesTypeShortMap } from '../../types'
+import { DiffColorMap } from '../../utils/diff'
+import { sortDepChanges } from '../../utils/sort'
+
+import { timeDifference } from '../../utils/time'
 
 export function renderChange(
   change: ResolvedDepChange,

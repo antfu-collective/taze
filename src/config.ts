@@ -1,10 +1,10 @@
+import type { CommonOptions } from './types'
 import process from 'node:process'
 import _debug from 'debug'
 import deepmerge from 'deepmerge'
 import { createConfigLoader } from 'unconfig'
 import { DEFAULT_CHECK_OPTIONS, DEFAULT_USAGE_OPTIONS } from './constants'
 import { toArray } from './utils/toArray'
-import type { CommonOptions } from './types'
 
 const debug = _debug('taze:config')
 

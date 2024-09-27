@@ -1,16 +1,16 @@
+import type { Agent } from 'package-manager-detector'
+import type { CheckOptions, PackageMeta, RawDep } from '../../types'
 /* eslint-disable no-console */
 import { getCommand } from '@antfu/ni'
 import c from 'picocolors'
 import prompts from 'prompts'
 import { exec } from 'tinyexec'
-import type { Agent } from 'package-manager-detector'
 import { dumpDependencies } from '../../io/dependencies'
 import { resolvePackage } from '../../io/resolves'
 import { createMultiProgressBar } from '../../log'
 import { createDependenciesFilter } from '../../utils/dependenciesFilter'
 import { promptInteractive } from './interactive'
 import { outputErr, renderPackages } from './render'
-import type { CheckOptions, PackageMeta, RawDep } from '../../types'
 
 interface NpmOut {
   dependencies: {

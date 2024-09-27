@@ -1,8 +1,8 @@
 // ported from: https://github.com/raineorshine/npm-check-updates/blob/master/lib/package-managers/npm.js
 
+import type { Recordable } from '@npmcli/config'
 import path from 'node:path'
 import process from 'node:process'
-import type { Recordable } from '@npmcli/config'
 
 async function _getNpmConfig() {
   const { default: NpmCliConfig } = await import('@npmcli/config')

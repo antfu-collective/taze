@@ -1,6 +1,6 @@
+import type { PackageData, ResolvedDepChange } from '../src'
 import { describe, expect, it } from 'vitest'
 import { parseSortOption, sortDepChanges } from '../src/utils/sort'
-import type { PackageData, ResolvedDepChange } from '../src'
 
 describe('sort resolvedDepChanges', () => {
   const pkgData: PackageData = {
