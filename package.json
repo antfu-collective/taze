@@ -37,6 +37,7 @@
     "@antfu/ni": "^0.23.0",
     "js-yaml": "^4.1.0",
     "ofetch": "^1.4.0",
+    "p-limit": "^6.1.0",
     "package-manager-detector": "^0.2.0",
     "tinyexec": "^0.3.0",
     "unconfig": "^0.6.0",

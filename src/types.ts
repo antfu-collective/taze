@@ -104,6 +104,12 @@ export interface CheckOptions extends CommonOptions {
   update?: boolean
   global?: boolean
   /**
+   * Number of concurrent requests
+   *
+   * @default 10
+   */
+  concurrency?: number
+  /**
    * Group dependencies by source, e.g. dependencies, devDependencies, etc.
    *
    * @default true

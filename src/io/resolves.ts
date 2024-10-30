@@ -3,6 +3,7 @@ import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
 import { resolve } from 'node:path'
 import _debug from 'debug'
+import pLimit from 'p-limit'
 import semver from 'semver'
 import { diffSorter } from '../filters/diff-sorter'
 import { getPackageMode } from '../utils/config'
@@ -268,14 +269,19 @@ export async function resolveDependencies(
   const total = deps.length
   let counter = 0
 
+  const {
+    concurrency = 10,
+  } = options
+
+  const limit = pLimit(concurrency)
+
   return Promise.all(
-    deps
-      .map(async (raw) => {
-        const dep = await resolveDependency(raw, options, filter)
-        counter += 1
-        progressCallback(raw.name, counter, total)
-        return dep
-      }),
+    deps.map(raw => limit(async () => {
+      const dep = await resolveDependency(raw, options, filter)
+      counter += 1
+      progressCallback(raw.name, counter, total)
+      return dep
+    })),
   )
 }
 
