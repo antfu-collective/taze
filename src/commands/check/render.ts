@@ -83,8 +83,8 @@ export function renderChanges(
 
     const diffEntries = Object.keys(diffCounts).length
       ? Object.entries(diffCounts)
-        .map(([key, value]) => `${c[DiffColorMap[key as DiffType || 'patch']](value)} ${key}`)
-        .join(', ')
+          .map(([key, value]) => `${c[DiffColorMap[key as DiffType || 'patch']](value)} ${key}`)
+          .join(', ')
       : c.dim('no change')
 
     const displayName = pkg.name?.startsWith('catalog:')
