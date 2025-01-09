@@ -10,6 +10,11 @@ export const addonVSCode: Addon = {
       return
     }
 
+    const minEngineVersion = semver.minVersion(pkg.raw.engines.vscode)
+    if (!minEngineVersion) {
+      return
+    }
+
     const version: string = pkg.raw.dependencies?.['@types/vscode']
       || pkg.raw.devDependencies?.['@types/vscode']
       || pkg.raw.peerDependencies?.['@types/vscode']
@@ -20,7 +25,7 @@ export const addonVSCode: Addon = {
       return
     }
 
-    if (version && semver.gt(version, pkg.raw.engines.vscode)) {
+    if (version && semver.gt(version, minEngineVersion)) {
       // eslint-disable-next-line no-console
       console.log(`[taze addon] Updated VS Code engine field to ${version}`)
       // If the version is not a range (fixed version), we prepend it with a caret
