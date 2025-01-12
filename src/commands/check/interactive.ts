@@ -16,6 +16,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
   const {
     sort = 'diff-asc',
     group = true,
+    noTimeDiff = false,
   } = options
 
   const checked = new Set<object>()
@@ -170,11 +171,11 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           formatTable(versions.map((v, idx) => {
             return [
               (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.gray(v.name)),
-              timeDifference(dep.currentVersionTime),
+              noTimeDiff ? '' : timeDifference(dep.currentVersionTime),
               c.gray(dep.currentVersion),
               c.dim(c.gray('→')),
               colorizeVersionDiff(dep.currentVersion, v.targetVersion),
-              timeDifference(v.time),
+              noTimeDiff ? '' : timeDifference(v.time),
             ]
           }), 'LLLL').join('\n'),
         )

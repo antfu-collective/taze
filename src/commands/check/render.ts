@@ -18,6 +18,7 @@ export function renderChange(
   change: ResolvedDepChange,
   interactive?: InteractiveContext,
   grouped = false,
+  noTimeDiff = false,
 ) {
   const update = change.update && (!interactive || interactive.isChecked(change))
   const pre = interactive
@@ -34,13 +35,13 @@ export function renderChange(
   return [
     `${pre} ${update ? name : c.gray(name)}`,
     grouped ? '' : c.gray(DependenciesTypeShortMap[change.source]),
-    timeDifference(change.currentVersionTime),
+    noTimeDiff ? '' : timeDifference(change.currentVersionTime),
     c.gray(change.currentVersion),
     update ? c.dim(c.gray('→')) : '',
     update
       ? colorizeVersionDiff(change.currentVersion, change.targetVersion)
       : c.gray(c.strikethrough(change.targetVersion)),
-    update
+    update && !noTimeDiff
       ? timeDifference(change.targetVersionTime)
       : '',
     (change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
@@ -99,7 +100,7 @@ export function renderChanges(
     )
 
     const table = formatTable(
-      changes.map(c => renderChange(c, interactive, group)),
+      changes.map(c => renderChange(c, interactive, group, options.noTimeDiff)),
       'LLRRRRRL',
     )
 
