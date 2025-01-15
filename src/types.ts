@@ -122,12 +122,12 @@ export interface CheckOptions extends CommonOptions {
    */
   includeLocked?: boolean
   /**
-   * Hide the time difference between the current and the updated version
+   * Show time difference between the current and the updated version
    *
-   * @default false
+   * @default true
    * @description hide the time difference
    */
-  noTimeDiff?: boolean
+  timediff?: boolean
 }
 
 export interface PackageMeta {
