@@ -133,6 +133,10 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           describe: 'include locked dependencies & devDependencies',
         })
+        .option('timediff', {
+          type: 'boolean',
+          describe: 'show time difference between the current and the updated version',
+        })
         .help()
     },
     async (args) => {

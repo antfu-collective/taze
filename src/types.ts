@@ -121,6 +121,13 @@ export interface CheckOptions extends CommonOptions {
    * @description exclude the locked deps/devDeps by default
    */
   includeLocked?: boolean
+  /**
+   * Show time difference between the current and the updated version
+   *
+   * @default true
+   * @description hide the time difference
+   */
+  timediff?: boolean
 }
 
 export interface PackageMeta {
