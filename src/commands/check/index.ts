@@ -4,7 +4,7 @@ import type {
   PackageMeta,
 } from '../../types'
 /* eslint-disable no-console */
-import { parseNi, parseNu, run } from '@antfu/ni'
+import { parseNi, parseNu, run, detect } from '@antfu/ni'
 import c from 'picocolors'
 import prompts from 'prompts'
 import { builtinAddons } from '../../addons'
@@ -124,8 +124,9 @@ export async function check(options: CheckOptions) {
   }
   else if (hasChanges) {
     if (!options.install && !options.update && !options.interactive) {
+      const packageManager = await detect()
       console.log(
-        c.yellow(`ℹ changes written to package.json, run ${c.cyan('npm i')} to install updates.`),
+        c.yellow(`ℹ changes written to package.json, run ${c.cyan(`${packageManager} i`)} to install updates.`),
       )
     }
 
