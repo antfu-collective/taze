@@ -55,13 +55,14 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
       onlyFiles: true,
       dot: false,
     })
+    packagesNames.sort((a, b) => a.localeCompare(b))
   }
   else {
     packagesNames = ['package.json']
   }
 
   if (existsSync(path.join(options.cwd || '', 'pnpm-workspace.yaml'))) {
-    packagesNames.push('pnpm-workspace.yaml')
+    packagesNames.unshift('pnpm-workspace.yaml')
   }
 
   const packages = (await Promise.all(
