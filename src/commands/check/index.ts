@@ -4,7 +4,7 @@ import type {
   PackageMeta,
 } from '../../types'
 /* eslint-disable no-console */
-import { parseNi, parseNu, run, detect } from '@antfu/ni'
+import { detect, parseNi, parseNu, run } from '@antfu/ni'
 import c from 'picocolors'
 import prompts from 'prompts'
 import { builtinAddons } from '../../addons'

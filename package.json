@@ -39,23 +39,23 @@
     "ofetch": "^1.4.1",
     "package-manager-detector": "^0.2.8",
     "tinyexec": "^0.3.2",
-    "unconfig": "^0.6.0",
+    "unconfig": "^0.6.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^3.14.0",
+    "@antfu/eslint-config": "^3.15.0",
     "@antfu/utils": "^8.1.0",
     "@npmcli/config": "^10.0.0",
     "@types/cli-progress": "^3.11.6",
     "@types/debug": "^4.1.12",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^22.10.6",
+    "@types/node": "^22.10.7",
     "@types/npm-package-arg": "^6.1.4",
     "@types/npm-registry-fetch": "^8.0.7",
     "@types/prompts": "^2.4.9",
     "@types/semver": "^7.5.8",
     "@types/yargs": "^17.0.33",
-    "bumpp": "^9.10.0",
+    "bumpp": "^9.10.1",
     "cli-progress": "^3.12.0",
     "cross-env": "^7.0.3",
     "debug": "^4.4.0",
@@ -77,6 +77,6 @@
     "typescript": "^5.7.3",
     "ufo": "^1.5.4",
     "unbuild": "^3.3.1",
-    "vitest": "^2.1.8"
+    "vitest": "^3.0.3"
   }
 }
