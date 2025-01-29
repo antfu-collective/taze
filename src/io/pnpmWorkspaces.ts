@@ -1,7 +1,7 @@
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import YAML from 'js-yaml'
+import { parse, stringify } from 'yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
 
 export async function loadPnpmWorkspace(
@@ -11,7 +11,7 @@ export async function loadPnpmWorkspace(
 ): Promise<PackageMeta[]> {
   const filepath = path.resolve(options.cwd ?? '', relative)
   const rawText = await fs.readFile(filepath, 'utf-8')
-  const raw = YAML.load(rawText) as any || {}
+  const raw = parse(rawText) as any || {}
 
   const catalogs: PackageMeta[] = []
 
@@ -76,5 +76,5 @@ export async function writePnpmWorkspace(
   }
 
   if (changed)
-    await fs.writeFile(pkg.filepath, YAML.dump(pkg.raw), 'utf-8')
+    await fs.writeFile(pkg.filepath, stringify(pkg.raw), 'utf-8')
 }
