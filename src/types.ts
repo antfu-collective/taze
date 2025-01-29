@@ -1,3 +1,5 @@
+import type { Agent } from 'package-manager-detector'
+import type { Document } from 'yaml'
 import type { MODE_CHOICES } from './constants'
 import type { SortOption } from './utils/sort'
 
@@ -130,7 +132,7 @@ export interface CheckOptions extends CommonOptions {
   timediff?: boolean
 }
 
-export interface PackageMeta {
+interface BasePackageMeta {
   /**
    * Package name
    */
@@ -139,10 +141,6 @@ export interface PackageMeta {
    * Is private package
    */
   private: boolean
-  /**
-   * Package type
-   */
-  type: 'package.json' | 'pnpm-workspace.yaml' | 'global'
   /**
    * Package version
    */
@@ -156,10 +154,6 @@ export interface PackageMeta {
    */
   relative: string
   /**
-   * Raw package.json Object
-   */
-  raw: any
-  /**
    * Dependencies
    */
   deps: RawDep[]
@@ -168,6 +162,34 @@ export interface PackageMeta {
    */
   resolved: ResolvedDepChange[]
 }
+
+export interface PackageJsonMeta extends BasePackageMeta {
+  /**
+   * Package type
+   */
+  type: 'package.json'
+  /**
+   * Raw package.json Object
+   */
+  raw: any
+}
+
+export interface GlobalPackageMeta extends BasePackageMeta {
+  agent: Agent
+  type: 'global'
+  raw: null
+}
+
+export interface PnpmWorkspaceMeta extends BasePackageMeta {
+  type: 'pnpm-workspace.yaml'
+  raw: any
+  document: Document
+}
+
+export type PackageMeta =
+  | PackageJsonMeta
+  | GlobalPackageMeta
+  | PnpmWorkspaceMeta
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void

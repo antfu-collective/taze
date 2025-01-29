@@ -1,21 +1,22 @@
-import type { CommonOptions, PackageMeta, RawDep } from '../types'
+import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { parse, stringify } from 'yaml'
+import { parse, parseDocument, stringify } from 'yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
 
 export async function loadPnpmWorkspace(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
-): Promise<PackageMeta[]> {
+): Promise<PnpmWorkspaceMeta[]> {
   const filepath = path.resolve(options.cwd ?? '', relative)
   const rawText = await fs.readFile(filepath, 'utf-8')
-  const raw = parse(rawText) as any || {}
+  const raw = parse(rawText)
+  const document = parseDocument(rawText)
 
-  const catalogs: PackageMeta[] = []
+  const catalogs: PnpmWorkspaceMeta[] = []
 
-  function createCatalogFromKeyValue(catalogName: string, map: Record<string, string>): PackageMeta {
+  function createCatalogFromKeyValue(catalogName: string, map: Record<string, string>): PnpmWorkspaceMeta {
     const deps: RawDep[] = Object.entries(map)
       .map(([name, version]) => parseDependency(name, version, 'pnpm:catalog', shouldUpdate))
 
@@ -29,7 +30,8 @@ export async function loadPnpmWorkspace(
       raw,
       deps,
       resolved: [],
-    }
+      document,
+    } satisfies PnpmWorkspaceMeta
   }
 
   if (raw.catalog) {
@@ -50,7 +52,7 @@ export async function loadPnpmWorkspace(
 }
 
 export async function writePnpmWorkspace(
-  pkg: PackageMeta,
+  pkg: PnpmWorkspaceMeta,
   _options: CommonOptions,
 ) {
   const catalogName = pkg.name.replace('catalog:', '')
