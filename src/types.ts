@@ -183,8 +183,6 @@ export interface GlobalPackageMeta extends BasePackageMeta {
 export interface PnpmWorkspaceMeta extends BasePackageMeta {
   type: 'pnpm-workspace.yaml'
   raw: any
-  // it's maintained in real time and is the final write-back
-  contents: any
   document: Document
 }
 

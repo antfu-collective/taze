@@ -32,7 +32,6 @@ export async function loadPnpmWorkspace(
       relative,
       filepath,
       raw,
-      contents: raw,
       deps,
       resolved: [],
       document,
@@ -60,35 +59,38 @@ export async function writePnpmWorkspace(
   pkg: PnpmWorkspaceMeta,
   _options: CommonOptions,
 ) {
-  const catalogName = pkg.name.replace('catalog:', '')
   const versions = dumpDependencies(pkg.resolved, 'pnpm:catalog')
 
   if (!Object.keys(versions).length)
     return
 
+  const catalogName = pkg.name.replace('catalog:', '')
+  const contents = {
+    ...pkg.raw,
+  }
   let changed = false
 
   if (catalogName === 'default') {
-    pkg.contents.catalog ??= {}
+    contents.catalog ??= {}
     // due to the pnpm catalog feature
     // its type must be `YAMLMap<Scalar.Parsed, Scalar.Parsed>`
     if (!pkg.document.has('catalog')) {
       pkg.document.set('catalog', new YAMLMap())
     }
     const catalog = pkg.document.get('catalog') as YAMLMap<Scalar.Parsed, Scalar.Parsed>
-    updateCatalog(catalog, pkg.contents.catalog)
+    updateCatalog(catalog, contents.catalog)
   }
   else {
-    pkg.contents.catalogs ??= {}
+    contents.catalogs ??= {}
     if (!pkg.document.has('catalogs')) {
       pkg.document.set('catalogs', new YAMLMap())
     }
     const catalog = (pkg.document.get('catalogs') as YAMLMap).get(catalogName) as YAMLMap<Scalar.Parsed, Scalar.Parsed>
-    updateCatalog(catalog, pkg.contents.catalogs[catalogName])
+    updateCatalog(catalog, contents.catalogs[catalogName])
   }
 
   if (changed)
-    await fs.writeFile(pkg.filepath, stringify(pkg.contents), 'utf-8')
+    await fs.writeFile(pkg.filepath, stringify(contents), 'utf-8')
 
   function updateCatalog(catalog: YAMLMap<Scalar.Parsed, Scalar.Parsed>, contents: Record<string, any>) {
     for (const [key, targetVersion] of Object.entries(versions)) {
