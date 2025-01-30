@@ -1,8 +1,12 @@
+import type { Scalar } from 'yaml'
 import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { parse, parseDocument, stringify } from 'yaml'
+import _debug from 'debug'
+import { isAlias, parse, parseDocument, stringify, YAMLMap } from 'yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
+
+const debug = _debug('taze:io:pnpmWorkspace')
 
 export async function loadPnpmWorkspace(
   relative: string,
@@ -28,6 +32,7 @@ export async function loadPnpmWorkspace(
       relative,
       filepath,
       raw,
+      contents: raw,
       deps,
       resolved: [],
       document,
@@ -64,19 +69,69 @@ export async function writePnpmWorkspace(
   let changed = false
 
   if (catalogName === 'default') {
-    if (JSON.stringify(pkg.raw.catalog) !== JSON.stringify(versions)) {
-      pkg.raw.catalog = versions
-      changed = true
+    pkg.contents.catalog ??= {}
+    // due to the pnpm catalog feature
+    // its type must be `YAMLMap<Scalar.Parsed, Scalar.Parsed>`
+    if (!pkg.document.has('catalog')) {
+      pkg.document.set('catalog', new YAMLMap())
+    }
+    const catalog = pkg.document.get('catalog') as YAMLMap<Scalar.Parsed, Scalar.Parsed>
+    for (const [key, targetVersion] of Object.entries(versions)) {
+      const pair = catalog.items.find(i => i.key.value === key)
+      if (!pair?.value || !pair.key) {
+        debug(`Exception encountered while parsing pnpm-workspace.yaml, key: ${key}`)
+        continue
+      }
+
+      // don't process if it's an alias
+      if (isAlias(pair?.value)) {
+        pkg.contents.catalog[key] = pair.value.toString()
+        continue
+      }
+
+      if (pair.value.value !== targetVersion) {
+        if (pair.value.anchor) {
+          pkg.contents.catalog[key] = `&${pair.value.anchor} ${targetVersion}`
+        }
+        else {
+          pkg.contents.catalog[key] = targetVersion
+        }
+        changed = true
+      }
     }
   }
   else {
-    pkg.raw.catalogs ??= {}
-    if (pkg.raw.catalogs[catalogName] !== versions) {
-      pkg.raw.catalogs[catalogName] = versions
-      changed = true
+    pkg.contents.catalogs ??= {}
+    if (!pkg.document.has('catalogs')) {
+      pkg.document.set('catalogs', new YAMLMap())
+    }
+    const catalog = (pkg.document.get('catalogs') as YAMLMap).get(catalogName) as YAMLMap<Scalar.Parsed, Scalar.Parsed>
+
+    for (const [key, targetVersion] of Object.entries(versions)) {
+      const pair = catalog.items.find(i => i.key.value === key)
+      if (!pair?.value || !pair.key) {
+        debug(`Exception encountered while parsing pnpm-workspace.yaml, key: ${key}`)
+        continue
+      }
+
+      // don't process if it's an alias
+      if (isAlias(pair?.value)) {
+        pkg.contents.catalogs[catalogName][key] = pair.value.toString()
+        continue
+      }
+
+      if (pair.value.value !== targetVersion) {
+        if (pair.value.anchor) {
+          pkg.contents.catalogs[catalogName][key] = `&${pair.value.anchor} ${targetVersion}`
+        }
+        else {
+          pkg.contents.catalogs[catalogName][key] = targetVersion
+        }
+        changed = true
+      }
     }
   }
 
   if (changed)
-    await fs.writeFile(pkg.filepath, stringify(pkg.raw), 'utf-8')
+    await fs.writeFile(pkg.filepath, stringify(pkg.contents), 'utf-8')
 }
