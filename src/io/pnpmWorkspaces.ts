@@ -76,29 +76,7 @@ export async function writePnpmWorkspace(
       pkg.document.set('catalog', new YAMLMap())
     }
     const catalog = pkg.document.get('catalog') as YAMLMap<Scalar.Parsed, Scalar.Parsed>
-    for (const [key, targetVersion] of Object.entries(versions)) {
-      const pair = catalog.items.find(i => i.key.value === key)
-      if (!pair?.value || !pair.key) {
-        debug(`Exception encountered while parsing pnpm-workspace.yaml, key: ${key}`)
-        continue
-      }
-
-      // don't process if it's an alias
-      if (isAlias(pair?.value)) {
-        pkg.contents.catalog[key] = pair.value.toString()
-        continue
-      }
-
-      if (pair.value.value !== targetVersion) {
-        if (pair.value.anchor) {
-          pkg.contents.catalog[key] = `&${pair.value.anchor} ${targetVersion}`
-        }
-        else {
-          pkg.contents.catalog[key] = targetVersion
-        }
-        changed = true
-      }
-    }
+    updateCatalog(catalog, pkg.contents.catalog)
   }
   else {
     pkg.contents.catalogs ??= {}
@@ -106,7 +84,13 @@ export async function writePnpmWorkspace(
       pkg.document.set('catalogs', new YAMLMap())
     }
     const catalog = (pkg.document.get('catalogs') as YAMLMap).get(catalogName) as YAMLMap<Scalar.Parsed, Scalar.Parsed>
+    updateCatalog(catalog, pkg.contents.catalogs[catalogName])
+  }
 
+  if (changed)
+    await fs.writeFile(pkg.filepath, stringify(pkg.contents), 'utf-8')
+
+  function updateCatalog(catalog: YAMLMap<Scalar.Parsed, Scalar.Parsed>, contents: Record<string, any>) {
     for (const [key, targetVersion] of Object.entries(versions)) {
       const pair = catalog.items.find(i => i.key.value === key)
       if (!pair?.value || !pair.key) {
@@ -116,22 +100,19 @@ export async function writePnpmWorkspace(
 
       // don't process if it's an alias
       if (isAlias(pair?.value)) {
-        pkg.contents.catalogs[catalogName][key] = pair.value.toString()
+        contents[key] = pair.value.toString()
         continue
       }
 
       if (pair.value.value !== targetVersion) {
         if (pair.value.anchor) {
-          pkg.contents.catalogs[catalogName][key] = `&${pair.value.anchor} ${targetVersion}`
+          contents[key] = `&${pair.value.anchor} ${targetVersion}`
         }
         else {
-          pkg.contents.catalogs[catalogName][key] = targetVersion
+          contents[key] = targetVersion
         }
         changed = true
       }
     }
   }
-
-  if (changed)
-    await fs.writeFile(pkg.filepath, stringify(pkg.contents), 'utf-8')
 }
