@@ -1,9 +1,8 @@
-import type { Scalar } from 'yaml'
 import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import _debug from 'debug'
-import { isAlias, parse, parseDocument, stringify, YAMLMap } from 'yaml'
+import { Alias, isAlias, parse, parseDocument, Scalar, stringify, YAMLMap } from 'yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
 
 const debug = _debug('taze:io:pnpmWorkspace')
@@ -72,8 +71,6 @@ export async function writePnpmWorkspace(
 
   if (catalogName === 'default') {
     contents.catalog ??= {}
-    // due to the pnpm catalog feature
-    // its type must be `YAMLMap<Scalar.Parsed, Scalar.Parsed>`
     if (!pkg.document.has('catalog')) {
       pkg.document.set('catalog', new YAMLMap())
     }
@@ -92,6 +89,7 @@ export async function writePnpmWorkspace(
   if (changed)
     await fs.writeFile(pkg.filepath, stringify(contents), 'utf-8')
 
+  // currently only support preserve yaml anchor and alias with single string value
   function updateCatalog(catalog: YAMLMap<Scalar.Parsed, Scalar.Parsed>, contents: Record<string, any>) {
     for (const [key, targetVersion] of Object.entries(versions)) {
       const pair = catalog.items.find(i => i.key.value === key)
@@ -100,15 +98,16 @@ export async function writePnpmWorkspace(
         continue
       }
 
-      // don't process if it's an alias
       if (isAlias(pair?.value)) {
-        contents[key] = pair.value.toString()
+        contents[key] = new Alias(pair.value.source)
         continue
       }
 
       if (pair.value.value !== targetVersion) {
         if (pair.value.anchor) {
-          contents[key] = `&${pair.value.anchor} ${targetVersion}`
+          const node = new Scalar(targetVersion)
+          node.anchor = pair.value.anchor
+          contents[key] = node
         }
         else {
           contents[key] = targetVersion
