@@ -1,7 +1,10 @@
-import type { CheckOptions } from '../src'
+import type { CheckOptions, PnpmWorkspaceMeta } from '../src'
+import fs from 'node:fs/promises'
 import process from 'node:process'
 import { expect, it } from 'vitest'
+import { parse, parseDocument } from 'yaml'
 import { CheckPackages } from '../src'
+import { writePnpmWorkspace } from '../src/io/pnpmWorkspaces'
 
 it('pnpm catalog', async () => {
   const options: CheckOptions = {
@@ -99,4 +102,38 @@ it('pnpm catalog', async () => {
       },
     ]
   `)
+})
+
+it('pnpm catalog updates should preserve yaml anchors and aliases with single string value', async () => {
+  const workspaceYamlContents = `
+catalog:
+  react: &foo ^18.2.0
+  react-dom: *foo
+  `
+  const document = parseDocument(workspaceYamlContents)
+  const pkg: PnpmWorkspaceMeta = {
+    name: 'catalog:default',
+    resolved: [
+      // @ts-expect-error testing purpose
+      { name: 'react', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' },
+      // @ts-expect-error testing purpose
+      { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' },
+    ],
+    raw: parse(workspaceYamlContents),
+    document,
+    filepath: '',
+    type: 'pnpm-workspace.yaml',
+  }
+
+  let output: string
+  // @ts-expect-error testing purpose
+  fs.writeFile = (_path, data, _ops) => output = data
+
+  await writePnpmWorkspace(pkg, {})
+  // @ts-expect-error testing purpose
+  expect(output).toMatchInlineSnapshot(`
+"catalog:
+  react: &foo ^18.3.1
+  react-dom: *foo
+"`)
 })
