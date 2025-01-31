@@ -1,10 +1,9 @@
 import type { CheckOptions, PnpmWorkspaceMeta } from '../src'
-import fs from 'node:fs/promises'
 import process from 'node:process'
-import { expect, it } from 'vitest'
-import { parse, parseDocument } from 'yaml'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { parse, parseDocument, stringify } from 'yaml'
 import { CheckPackages } from '../src'
-import { writePnpmWorkspace } from '../src/io/pnpmWorkspaces'
+import * as pnpmWorkspaces from '../src/io/pnpmWorkspaces'
 
 it('pnpm catalog', async () => {
   const options: CheckOptions = {
@@ -104,7 +103,25 @@ it('pnpm catalog', async () => {
   `)
 })
 
-it('pnpm catalog updates should preserve yaml anchors and aliases with single string value', async () => {
+describe('pnpm catalog updates', async () => {
+  // stringified yaml output that should be
+  // written to the pnpm-workspace.yaml file
+  let output: string | undefined
+  beforeAll(() => {
+    // mock fn writeYaml
+    vi.spyOn(pnpmWorkspaces, 'writeYaml').mockImplementation((_pkg: PnpmWorkspaceMeta, contents: any) => {
+      return Promise.resolve().then(() => {
+        output = stringify(contents)
+      })
+    })
+  })
+
+  afterAll(() => {
+    // @ts-expect-error we mocked it in `beforeAll` hook
+    pnpmWorkspaces.writeYaml.mockRestore()
+  })
+
+  it('pnpm catalog updates should preserve yaml anchors and aliases with single string value, when anchor is defined inline', async () => {
   const workspaceYamlContents = `
 catalog:
   react: &foo ^18.2.0
@@ -124,16 +141,11 @@ catalog:
     filepath: '',
     type: 'pnpm-workspace.yaml',
   }
-
-  let output: string
-  // @ts-expect-error testing purpose
-  fs.writeFile = (_path, data, _ops) => output = data
-
-  await writePnpmWorkspace(pkg, {})
-  // @ts-expect-error testing purpose
+    await pnpmWorkspaces.writePnpmWorkspace(pkg, {})
   expect(output).toMatchInlineSnapshot(`
 "catalog:
   react: &foo ^18.3.1
   react-dom: *foo
 "`)
+  })
 })

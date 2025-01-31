@@ -87,7 +87,7 @@ export async function writePnpmWorkspace(
   }
 
   if (changed)
-    await fs.writeFile(pkg.filepath, stringify(contents), 'utf-8')
+    await writeYaml(pkg, contents)
 
   // currently only support preserve yaml anchor and alias with single string value
   function updateCatalog(catalog: YAMLMap<Scalar.Parsed, Scalar.Parsed>, contents: Record<string, any>) {
@@ -116,4 +116,8 @@ export async function writePnpmWorkspace(
       }
     }
   }
+}
+
+export function writeYaml(pkg: PnpmWorkspaceMeta, yamlContents: any) {
+  return fs.writeFile(pkg.filepath, stringify(yamlContents), 'utf-8')
 }
