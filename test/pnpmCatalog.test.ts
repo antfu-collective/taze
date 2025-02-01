@@ -109,10 +109,8 @@ describe('pnpm catalog updates', async () => {
   let output: string | undefined
   beforeAll(() => {
     // mock fn writeYaml
-    vi.spyOn(pnpmWorkspaces, 'writeYaml').mockImplementation((_pkg: PnpmWorkspaceMeta, contents: any) => {
-      return Promise.resolve().then(() => {
-        output = stringify(contents)
-      })
+    vi.spyOn(pnpmWorkspaces, 'writeYaml').mockImplementation(async (_pkg: PnpmWorkspaceMeta, contents: any) => {
+      output = stringify(contents)
     })
   })
 
