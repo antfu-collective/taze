@@ -2,7 +2,8 @@ import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import _debug from 'debug'
-import { Alias, isAlias, parse, parseDocument, Scalar, stringify, YAMLMap } from 'yaml'
+import { Alias, isAlias, parse, parseDocument, Scalar, YAMLMap } from 'yaml'
+import { writeYaml } from '../utils/writeYaml'
 import { dumpDependencies, parseDependency } from './dependencies'
 
 const debug = _debug('taze:io:pnpmWorkspace')
@@ -116,8 +117,4 @@ export async function writePnpmWorkspace(
       }
     }
   }
-}
-
-export function writeYaml(pkg: PnpmWorkspaceMeta, yamlContents: any) {
-  return fs.writeFile(pkg.filepath, stringify(yamlContents), 'utf-8')
 }

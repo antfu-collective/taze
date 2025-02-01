@@ -1,9 +1,10 @@
 import type { CheckOptions, PnpmWorkspaceMeta } from '../src'
 import process from 'node:process'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { parse, parseDocument, stringify } from 'yaml'
 import { CheckPackages } from '../src'
-import * as pnpmWorkspaces from '../src/io/pnpmWorkspaces'
+import { writePnpmWorkspace } from '../src/io/pnpmWorkspaces'
+import * as writeYamlUtil from '../src/utils/writeYaml'
 
 it('pnpm catalog', async () => {
   const options: CheckOptions = {
@@ -103,23 +104,17 @@ it('pnpm catalog', async () => {
   `)
 })
 
-describe('pnpm catalog updates', async () => {
+it('pnpm catalog updates should preserve yaml anchors and aliases with single string value, when anchor is defined inline', async () => {
   // stringified yaml output that should be
   // written to the pnpm-workspace.yaml file
   let output: string | undefined
-  beforeAll(() => {
-    // mock fn writeYaml
-    vi.spyOn(pnpmWorkspaces, 'writeYaml').mockImplementation(async (_pkg: PnpmWorkspaceMeta, contents: any) => {
+
+  const writeYaml = vi.spyOn(writeYamlUtil, 'writeYaml').mockImplementation((_pkg: PnpmWorkspaceMeta, contents: any) => {
+    return Promise.resolve().then(() => {
       output = stringify(contents)
     })
   })
 
-  afterAll(() => {
-    // @ts-expect-error we mocked it in `beforeAll` hook
-    pnpmWorkspaces.writeYaml.mockRestore()
-  })
-
-  it('pnpm catalog updates should preserve yaml anchors and aliases with single string value, when anchor is defined inline', async () => {
   const workspaceYamlContents = `
 catalog:
   react: &foo ^18.2.0
@@ -136,14 +131,15 @@ catalog:
     ],
     raw: parse(workspaceYamlContents),
     document,
-    filepath: '',
+    filepath: '/tmp/pnpm-workspace.yaml',
     type: 'pnpm-workspace.yaml',
   }
-    await pnpmWorkspaces.writePnpmWorkspace(pkg, {})
+  await writePnpmWorkspace(pkg, {})
   expect(output).toMatchInlineSnapshot(`
 "catalog:
   react: &foo ^18.3.1
   react-dom: *foo
 "`)
-  })
+
+  writeYaml.mockRestore()
 })
