@@ -11,10 +11,10 @@ it('pnpm catalog', async () => {
 
   expect(result.packages.map(p => p.name)).toMatchInlineSnapshot(`
     [
-      "@taze/monorepo-example",
       "catalog:default",
       "catalog:react17",
       "catalog:react18",
+      "@taze/monorepo-example",
     ]
   `)
 
@@ -25,39 +25,6 @@ it('pnpm catalog', async () => {
     })),
   ).toMatchInlineSnapshot(`
     [
-      {
-        "name": "@taze/monorepo-example",
-        "packages": [
-          [
-            "express",
-            "4.12.x",
-          ],
-          [
-            "lodash",
-            "^4.13.19",
-          ],
-          [
-            "multer",
-            "^0.1.8",
-          ],
-          [
-            "react-bootstrap",
-            "^0.22.6",
-          ],
-          [
-            "webpack",
-            "~1.9.10",
-          ],
-          [
-            "@types/lodash",
-            "^4.14.0",
-          ],
-          [
-            "typescript",
-            "3.5",
-          ],
-        ],
-      },
       {
         "name": "catalog:default",
         "packages": [
@@ -94,6 +61,39 @@ it('pnpm catalog', async () => {
           [
             "react-dom",
             "^18.2.0",
+          ],
+        ],
+      },
+      {
+        "name": "@taze/monorepo-example",
+        "packages": [
+          [
+            "express",
+            "4.12.x",
+          ],
+          [
+            "lodash",
+            "^4.13.19",
+          ],
+          [
+            "multer",
+            "^0.1.8",
+          ],
+          [
+            "react-bootstrap",
+            "^0.22.6",
+          ],
+          [
+            "webpack",
+            "~1.9.10",
+          ],
+          [
+            "@types/lodash",
+            "^4.14.0",
+          ],
+          [
+            "typescript",
+            "3.5",
           ],
         ],
       },
