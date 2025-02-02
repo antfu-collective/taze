@@ -1,9 +1,10 @@
+import type { Scalar } from 'yaml'
 import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import _debug from 'debug'
-import { Alias, isAlias, parse, parseDocument, Scalar, YAMLMap } from 'yaml'
-import { writeYaml } from '../utils/writeYaml'
+import { isAlias, parse, parseDocument, YAMLMap } from 'yaml'
+import { findAnchor, writeYaml } from '../utils/yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
 
 const debug = _debug('taze:io:pnpmWorkspace')
@@ -65,33 +66,29 @@ export async function writePnpmWorkspace(
     return
 
   const catalogName = pkg.name.replace('catalog:', '')
-  const contents = {
-    ...pkg.raw,
-  }
+  const document = pkg.document.clone()
   let changed = false
 
   if (catalogName === 'default') {
-    contents.catalog ??= {}
-    if (!pkg.document.has('catalog')) {
-      pkg.document.set('catalog', new YAMLMap())
+    if (!document.has('catalog')) {
+      document.set('catalog', new YAMLMap())
     }
-    const catalog = pkg.document.get('catalog') as YAMLMap<Scalar.Parsed, Scalar.Parsed>
-    updateCatalog(catalog, contents.catalog)
+    const catalog = document.get('catalog') as YAMLMap<Scalar.Parsed, Scalar.Parsed>
+    updateCatalog(catalog)
   }
   else {
-    contents.catalogs ??= {}
-    if (!pkg.document.has('catalogs')) {
-      pkg.document.set('catalogs', new YAMLMap())
+    if (!document.has('catalogs')) {
+      document.set('catalogs', new YAMLMap())
     }
-    const catalog = (pkg.document.get('catalogs') as YAMLMap).get(catalogName) as YAMLMap<Scalar.Parsed, Scalar.Parsed>
-    updateCatalog(catalog, contents.catalogs[catalogName])
+    const catalog = (document.get('catalogs') as YAMLMap).get(catalogName) as YAMLMap<Scalar.Parsed, Scalar.Parsed>
+    updateCatalog(catalog)
   }
 
   if (changed)
-    await writeYaml(pkg, contents)
+    await writeYaml(pkg, document)
 
   // currently only support preserve yaml anchor and alias with single string value
-  function updateCatalog(catalog: YAMLMap<Scalar.Parsed, Scalar.Parsed>, contents: Record<string, any>) {
+  function updateCatalog(catalog: YAMLMap<Scalar.Parsed, Scalar.Parsed>) {
     for (const [key, targetVersion] of Object.entries(versions)) {
       const pair = catalog.items.find(i => i.key.value === key)
       if (!pair?.value || !pair.key) {
@@ -100,19 +97,18 @@ export async function writePnpmWorkspace(
       }
 
       if (isAlias(pair?.value)) {
-        contents[key] = new Alias(pair.value.source)
-        continue
+        const anchor = findAnchor(document, pair.value)
+        if (!anchor) {
+          debug(`can't find anchor for alias: ${pair.value} in pnpm-workspace.yaml`)
+          continue
+        }
+        else if (anchor.value !== targetVersion) {
+          anchor.value = targetVersion
+          changed = true
+        }
       }
-
-      if (pair.value.value !== targetVersion) {
-        if (pair.value.anchor) {
-          const node = new Scalar(targetVersion)
-          node.anchor = pair.value.anchor
-          contents[key] = node
-        }
-        else {
-          contents[key] = targetVersion
-        }
+      else if (pair.value.value !== targetVersion) {
+        pair.value.value = targetVersion
         changed = true
       }
     }
