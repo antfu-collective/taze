@@ -1,4 +1,5 @@
-import { DependenciesTypeShortMap, type ResolvedDepChange } from '../types'
+import type { ResolvedDepChange } from '../types'
+import { DependenciesTypeShortMap } from '../types'
 import { DiffMap } from './diff'
 import { toDate } from './time'
 
