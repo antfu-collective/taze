@@ -46,7 +46,7 @@ export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
   const data: Record<string, any> = {}
   deps
     .filter(i => i.source === type)
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => (a.aliasName || a.name).localeCompare(b.aliasName || b.name))
     .forEach((i) => {
       const version = i.update ? i.targetVersion : i.currentVersion
       let targetLeaf = data
