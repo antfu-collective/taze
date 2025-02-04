@@ -1,5 +1,4 @@
-import type { Agent } from 'package-manager-detector'
-import type { CheckOptions, PackageMeta, RawDep } from '../../types'
+import type { CheckOptions, GlobalPackageMeta, RawDep } from '../../types'
 /* eslint-disable no-console */
 import { getCommand } from '@antfu/ni'
 import c from 'picocolors'
@@ -27,10 +26,6 @@ interface PnpmOut {
       version: string
     }
   }
-}
-
-interface GlobalPackageMeta extends PackageMeta {
-  agent: Agent
 }
 
 export async function checkGlobal(options: CheckOptions) {

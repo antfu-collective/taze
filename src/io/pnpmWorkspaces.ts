@@ -1,21 +1,27 @@
-import type { CommonOptions, PackageMeta, RawDep } from '../types'
+import type { Scalar } from 'yaml'
+import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import YAML from 'js-yaml'
+import _debug from 'debug'
+import { isAlias, parse, parseDocument, YAMLMap } from 'yaml'
+import { findAnchor, writeYaml } from '../utils/yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
+
+const debug = _debug('taze:io:pnpmWorkspace')
 
 export async function loadPnpmWorkspace(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
-): Promise<PackageMeta[]> {
+): Promise<PnpmWorkspaceMeta[]> {
   const filepath = path.resolve(options.cwd ?? '', relative)
   const rawText = await fs.readFile(filepath, 'utf-8')
-  const raw = YAML.load(rawText) as any || {}
+  const raw = parse(rawText)
+  const document = parseDocument(rawText)
 
-  const catalogs: PackageMeta[] = []
+  const catalogs: PnpmWorkspaceMeta[] = []
 
-  function createCatalogFromKeyValue(catalogName: string, map: Record<string, string>): PackageMeta {
+  function createCatalogFromKeyValue(catalogName: string, map: Record<string, string>): PnpmWorkspaceMeta {
     const deps: RawDep[] = Object.entries(map)
       .map(([name, version]) => parseDependency(name, version, 'pnpm:catalog', shouldUpdate))
 
@@ -29,7 +35,8 @@ export async function loadPnpmWorkspace(
       raw,
       deps,
       resolved: [],
-    }
+      document,
+    } satisfies PnpmWorkspaceMeta
   }
 
   if (raw.catalog) {
@@ -50,31 +57,60 @@ export async function loadPnpmWorkspace(
 }
 
 export async function writePnpmWorkspace(
-  pkg: PackageMeta,
+  pkg: PnpmWorkspaceMeta,
   _options: CommonOptions,
 ) {
-  const catalogName = pkg.name.replace('catalog:', '')
   const versions = dumpDependencies(pkg.resolved, 'pnpm:catalog')
 
   if (!Object.keys(versions).length)
     return
 
+  const catalogName = pkg.name.replace('catalog:', '')
+  const document = pkg.document.clone()
   let changed = false
 
   if (catalogName === 'default') {
-    if (JSON.stringify(pkg.raw.catalog) !== JSON.stringify(versions)) {
-      pkg.raw.catalog = versions
-      changed = true
+    if (!document.has('catalog')) {
+      document.set('catalog', new YAMLMap())
     }
+    const catalog = document.get('catalog') as YAMLMap<Scalar.Parsed, Scalar.Parsed>
+    updateCatalog(catalog)
   }
   else {
-    pkg.raw.catalogs ??= {}
-    if (pkg.raw.catalogs[catalogName] !== versions) {
-      pkg.raw.catalogs[catalogName] = versions
-      changed = true
+    if (!document.has('catalogs')) {
+      document.set('catalogs', new YAMLMap())
     }
+    const catalog = (document.get('catalogs') as YAMLMap).get(catalogName) as YAMLMap<Scalar.Parsed, Scalar.Parsed>
+    updateCatalog(catalog)
   }
 
   if (changed)
-    await fs.writeFile(pkg.filepath, YAML.dump(pkg.raw), 'utf-8')
+    await writeYaml(pkg, document)
+
+  // currently only support preserve yaml anchor and alias with single string value
+  function updateCatalog(catalog: YAMLMap<Scalar.Parsed, Scalar.Parsed>) {
+    for (const [key, targetVersion] of Object.entries(versions)) {
+      const pair = catalog.items.find(i => i.key.value === key)
+      if (!pair?.value || !pair.key) {
+        debug(`Exception encountered while parsing pnpm-workspace.yaml, key: ${key}`)
+        continue
+      }
+
+      if (isAlias(pair?.value)) {
+        const anchor = findAnchor(document, pair.value)
+        if (!anchor) {
+          debug(`can't find anchor for alias: ${pair.value} in pnpm-workspace.yaml`)
+          continue
+        }
+        else if (anchor.value !== targetVersion) {
+          anchor.value = targetVersion
+          changed = true
+        }
+      }
+      else if (pair.value.value !== targetVersion) {
+        pair.value.value = targetVersion
+        changed = true
+      }
+    }
+  }
 }

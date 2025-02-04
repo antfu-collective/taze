@@ -35,11 +35,11 @@
   },
   "dependencies": {
     "@antfu/ni": "^23.3.1",
-    "js-yaml": "^4.1.0",
     "ofetch": "^1.4.1",
     "package-manager-detector": "^0.2.9",
     "tinyexec": "^0.3.2",
     "unconfig": "^0.6.1",
+    "yaml": "^2.7.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -48,7 +48,6 @@
     "@npmcli/config": "^10.0.1",
     "@types/cli-progress": "^3.11.6",
     "@types/debug": "^4.1.12",
-    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.13.1",
     "@types/npm-package-arg": "^6.1.4",
     "@types/npm-registry-fetch": "^8.0.7",
