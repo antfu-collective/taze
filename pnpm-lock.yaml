@@ -253,6 +253,11 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  '@babel/parser@7.26.7':
+    resolution: {integrity: sha512-kEvgGGgEjRUutvdVvZhbn/BxVt+5VSpwXz1j3WYXQbXDo8KzFOPNG2GQbdAiNq8g6wn1yKk7C/qrke03a84V+w==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
   '@babel/standalone@7.26.4':
     resolution: {integrity: sha512-SF+g7S2mhTT1b7CHyfNjDkPU1corxg4LPYsyP0x5KuCl+EbtBQHRLqr9N3q7e7+x7NQ5LYxQf8mJ2PmzebLr0A==}
     engines: {node: '>=6.9.0'}
@@ -267,6 +272,10 @@ packages:
 
   '@babel/types@7.26.3':
     resolution: {integrity: sha512-vN5p+1kl59GVKMvTHt55NzzmYVxprfJD+ql7U9NFIfKCBkYE55LYtS+WtPlaYOyzydrKI8Nezd+aZextrd+FMA==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/types@7.26.7':
+    resolution: {integrity: sha512-t8kDRGrKXyp6+tjUh7hw2RLyclsW4TRoRvRHtSyAX9Bb5ldlFh+90YAYY6awRXrlB4G5G2izNeGySpATlFzmOg==}
     engines: {node: '>=6.9.0'}
 
   '@clack/core@0.4.1':
@@ -2443,6 +2452,11 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  nanoid@3.3.8:
+    resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
+    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -2815,6 +2829,10 @@ packages:
 
   postcss@8.4.49:
     resolution: {integrity: sha512-OCVPnIObs4N29kxTjzLfUryOkvZEq+pf8jTF0lg8E7uETuWHA+v7j3c/xJmiqpX450191LlmZfUKkXxkTry7nA==}
+    engines: {node: ^10 || ^12 || >=14}
+
+  postcss@8.5.1:
+    resolution: {integrity: sha512-6oz2beyjc5VMn/KV1pPw8fliQkhBXrVn1Z3TVyqZxU8kZpzEKhBdmCFqI6ZbmGtamQvQGuU1sgPTk8ZrXDD7jQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   prelude-ls@1.2.1:
@@ -3500,6 +3518,10 @@ snapshots:
     dependencies:
       '@babel/types': 7.26.3
 
+  '@babel/parser@7.26.7':
+    dependencies:
+      '@babel/types': 7.26.7
+
   '@babel/standalone@7.26.4': {}
 
   '@babel/template@7.25.9':
@@ -3521,6 +3543,11 @@ snapshots:
       - supports-color
 
   '@babel/types@7.26.3':
+    dependencies:
+      '@babel/helper-string-parser': 7.25.9
+      '@babel/helper-validator-identifier': 7.25.9
+
+  '@babel/types@7.26.7':
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
@@ -4273,7 +4300,7 @@ snapshots:
 
   '@vue/compiler-core@3.3.13':
     dependencies:
-      '@babel/parser': 7.26.3
+      '@babel/parser': 7.26.7
       '@vue/shared': 3.3.13
       estree-walker: 2.0.2
       source-map-js: 1.2.1
@@ -4285,7 +4312,7 @@ snapshots:
 
   '@vue/compiler-sfc@3.3.13':
     dependencies:
-      '@babel/parser': 7.26.3
+      '@babel/parser': 7.26.7
       '@vue/compiler-core': 3.3.13
       '@vue/compiler-dom': 3.3.13
       '@vue/compiler-ssr': 3.3.13
@@ -4293,7 +4320,7 @@ snapshots:
       '@vue/shared': 3.3.13
       estree-walker: 2.0.2
       magic-string: 0.30.17
-      postcss: 8.4.49
+      postcss: 8.5.1
       source-map-js: 1.2.1
 
   '@vue/compiler-ssr@3.3.13':
@@ -4303,7 +4330,7 @@ snapshots:
 
   '@vue/reactivity-transform@3.3.13':
     dependencies:
-      '@babel/parser': 7.26.3
+      '@babel/parser': 7.26.7
       '@vue/compiler-core': 3.3.13
       '@vue/shared': 3.3.13
       estree-walker: 2.0.2
@@ -5866,6 +5893,8 @@ snapshots:
 
   nanoid@3.3.7: {}
 
+  nanoid@3.3.8: {}
+
   natural-compare@1.4.0: {}
 
   natural-orderby@5.0.0: {}
@@ -6234,6 +6263,12 @@ snapshots:
   postcss@8.4.49:
     dependencies:
       nanoid: 3.3.7
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
+  postcss@8.5.1:
+    dependencies:
+      nanoid: 3.3.8
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
