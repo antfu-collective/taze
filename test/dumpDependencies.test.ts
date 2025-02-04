@@ -1,9 +1,9 @@
-import type { ResolvedDepChange } from '../src/types'
+import type { DepType, ResolvedDepChange } from '../src/types'
 import { describe, expect, it } from 'vitest'
 import { dumpDependencies } from '../src/io/dependencies'
 
 describe('dumpDependencies', () => {
-  function makeDepChange(source: string, override: Partial<ResolvedDepChange> = {}) {
+  function makeDepChange(source: DepType, override: Partial<ResolvedDepChange> = {}) {
     return {
       name: '@types/semver',
       currentVersion: '^7.3.10',
@@ -88,5 +88,15 @@ describe('dumpDependencies', () => {
         },
       }
     `)
+  })
+
+  it('dump sorted by key', () => {
+    const dump = dumpDependencies([
+      makeDepChange('dependencies', { name: 'd', aliasName: 'a' }),
+      makeDepChange('dependencies', { name: 'c' }),
+      makeDepChange('dependencies', { name: 'b' }),
+    ], 'dependencies')
+    expect(Object.keys(dump)).toEqual(['a', 'b', 'c'],
+    )
   })
 })
