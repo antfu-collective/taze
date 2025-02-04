@@ -2,7 +2,7 @@
   "name": "taze",
   "type": "module",
   "version": "18.3.1",
-  "packageManager": "pnpm@9.15.5",
+  "packageManager": "pnpm@9.15.4",
   "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
@@ -49,7 +49,7 @@
     "@types/cli-progress": "^3.11.6",
     "@types/debug": "^4.1.12",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^22.13.0",
+    "@types/node": "^22.13.1",
     "@types/npm-package-arg": "^6.1.4",
     "@types/npm-registry-fetch": "^8.0.7",
     "@types/prompts": "^2.4.9",
@@ -64,7 +64,7 @@
     "eslint": "^9.19.0",
     "esno": "^4.8.0",
     "fast-glob": "^3.3.3",
-    "fast-npm-meta": "^0.2.2",
+    "fast-npm-meta": "^0.3.0",
     "npm-package-arg": "^12.0.1",
     "npm-registry-fetch": "^18.0.2",
     "p-limit": "^6.2.0",
@@ -72,11 +72,11 @@
     "prompts": "^2.4.2",
     "restore-cursor": "^5.1.0",
     "rimraf": "^6.0.1",
-    "semver": "^7.7.0",
+    "semver": "^7.7.1",
     "taze": "workspace:*",
     "typescript": "^5.7.3",
     "ufo": "^1.5.4",
     "unbuild": "^3.3.1",
-    "vitest": "^3.0.4"
+    "vitest": "^3.0.5"
   }
 }

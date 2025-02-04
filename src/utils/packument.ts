@@ -45,6 +45,7 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
       getVersions(spec, {
         force,
         fetch,
+        metadata: true,
       }),
       new Promise<ReturnType<typeof getVersions>>(
         (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
@@ -52,8 +53,15 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
     ])
     return {
       tags: data.distTags,
-      versions: data.versions,
-      time: data.time,
+      versions: Object.keys(data.versionsMeta),
+      time: {
+        ...Object.fromEntries(
+          Object.entries(data.versionsMeta)
+            .map(([version, meta]) => [version, meta.time]),
+        ),
+        created: data.timeCreated,
+        modified: data.timeModified,
+      },
     }
   }
 
