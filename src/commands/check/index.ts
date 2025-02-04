@@ -1,9 +1,10 @@
+/* eslint-disable no-console */
 import type { SingleBar } from 'cli-progress'
+import type { Agent } from 'package-manager-detector'
 import type {
   CheckOptions,
   PackageMeta,
 } from '../../types'
-/* eslint-disable no-console */
 import { detect, parseNi, parseNu, run } from '@antfu/ni'
 import c from 'picocolors'
 import prompts from 'prompts'
@@ -123,8 +124,9 @@ export async function check(options: CheckOptions) {
     console.log()
   }
   else if (hasChanges) {
+    let packageManager: Agent | undefined
     if (!options.install && !options.update && !options.interactive) {
-      const packageManager = await detect()
+      packageManager = await detect()
       console.log(
         c.yellow(`ℹ changes written to package.json, run ${c.cyan(`${packageManager} i`)} to install updates.`),
       )
@@ -152,10 +154,14 @@ export async function check(options: CheckOptions) {
     }
 
     if (options.update) {
+      packageManager ||= await detect()
       console.log(c.magenta('updating...'))
       console.log()
 
-      await run(parseNu, options.recursive ? ['-r'] : [])
+      await run(parseNu, [
+        options.recursive && '-r',
+        packageManager === 'pnpm' && '--no-save',
+      ].filter(Boolean) as string[])
     }
   }
 
