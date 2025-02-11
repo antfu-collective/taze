@@ -6,7 +6,7 @@
 /* eslint-disable no-console */
 
 import process from 'node:process'
-import c from 'picocolors'
+import c from 'ansis'
 import { SemVer } from 'semver'
 import { getDiff } from './io/resolves'
 import { DiffColorMap } from './utils/diff'
@@ -15,7 +15,7 @@ export const FIG_CHECK = c.green('◉')
 export const FIG_UNCHECK = c.gray('◌')
 export const FIG_POINTER = c.cyan('❯ ')
 export const FIG_NO_POINTER = '  '
-export const FIG_BLOCK = c.bold(c.dim(c.gray('┃')))
+export const FIG_BLOCK = c.bold.dim.gray('┃')
 
 function ansiRegex({ onlyFirst = false } = {}) {
   const pattern = [

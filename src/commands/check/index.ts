@@ -6,7 +6,7 @@ import type {
   PackageMeta,
 } from '../../types'
 import { detect, parseNi, parseNu, run } from '@antfu/ni'
-import c from 'picocolors'
+import c from 'ansis'
 import prompts from 'prompts'
 import { builtinAddons } from '../../addons'
 import { CheckPackages } from '../../api/check'
@@ -128,7 +128,7 @@ export async function check(options: CheckOptions) {
     if (!options.install && !options.update && !options.interactive) {
       packageManager = await detect()
       console.log(
-        c.yellow(`ℹ changes written to package.json, run ${c.cyan(`${packageManager} i`)} to install updates.`),
+        c.yellow`ℹ changes written to package.json, run ${c.cyan`${packageManager} i`} to install updates.`,
       )
     }
 

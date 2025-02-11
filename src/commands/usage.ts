@@ -1,6 +1,6 @@
 import type { SingleBar } from 'cli-progress'
 import type { UsageOptions } from '../types'
-import c from 'picocolors'
+import c from 'ansis'
 import { CheckUsages } from '../api/usage'
 import { createMultiProgressBar, TableLogger, wrapJoin } from '../log'
 import { colorizeVersionDiff, visualPadStart } from '../render'
@@ -45,7 +45,7 @@ export async function usage(options: UsageOptions) {
       if (options.detail) {
         logger.log()
         logger.row(
-          `${c.green(name)} ${c.gray(`· ${versions.length} versions · latest: ${c.blue(latest)}`)}`,
+          `${c.green(name)} ${c.gray`· ${versions.length} versions · latest: ${c.blue(latest)}`}`,
         )
         const pad = Math.max(8, ...Object.keys(versionMap).map(i => i.length)) + 2
 
@@ -62,7 +62,7 @@ export async function usage(options: UsageOptions) {
       else {
         logger.row(
           c.green(name),
-          c.gray(`${c.cyan(packagesCount.toString())} in use / ${c[color](versions.length.toString())} versions`),
+          c.gray`${c.cyan(packagesCount.toString())} in use / ${c[color](versions.length.toString())} versions`,
           versions.map(v => c.gray(colorizeVersionDiff(latest || v, v, false))).join(c.gray(', ')),
           c.gray('→'),
           latest,

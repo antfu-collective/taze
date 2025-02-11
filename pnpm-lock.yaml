@@ -63,6 +63,9 @@ importers:
       '@types/yargs':
         specifier: ^17.0.33
         version: 17.0.33
+      ansis:
+        specifier: ^3.12.0
+        version: 3.12.0
       bumpp:
         specifier: ^10.0.3
         version: 10.0.3
@@ -102,9 +105,6 @@ importers:
       p-limit:
         specifier: ^6.2.0
         version: 6.2.0
-      picocolors:
-        specifier: ^1.1.1
-        version: 1.1.1
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
@@ -1097,6 +1097,10 @@ packages:
   ansi-styles@6.2.1:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
+
+  ansis@3.12.0:
+    resolution: {integrity: sha512-SxhlInpMkv9QCyI2yHyrhVrTF8dH93M/S86DT5f9brFgr92uJLOCg0RNmtx3YKWKcRmNAaU+gyUfHMdUiqxvFw==}
+    engines: {node: '>=14'}
 
   are-docs-informative@0.0.2:
     resolution: {integrity: sha512-ixiS0nLNNG5jNQzgZJNoUpBKdo9yTYZMGJ+QgT2jmjR7G7+QHRCc4v6LQ3NgE7EBJq+o0ams3waJwkrlBom8Ig==}
@@ -4082,6 +4086,8 @@ snapshots:
       color-convert: 2.0.1
 
   ansi-styles@6.2.1: {}
+
+  ansis@3.12.0: {}
 
   are-docs-informative@0.0.2: {}
 

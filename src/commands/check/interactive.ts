@@ -4,7 +4,7 @@ import process from 'node:process'
 /* eslint-disable no-console */
 import readline from 'node:readline'
 import { createControlledPromise, notNullish } from '@antfu/utils'
-import c from 'picocolors'
+import c from 'ansis'
 import { getVersionOfRange, updateTargetVersion } from '../../io/resolves'
 import { colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable } from '../../render'
 import { sortDepChanges } from '../../utils/sort'
@@ -81,10 +81,10 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     return {
       render() {
         const sr = createSliceRender()
-        const Y = (v: string) => c.bold(c.green(v))
+        const Y = (v: string) => c.bold.green(v)
         console.clear()
-        sr.push({ content: `${FIG_BLOCK} ${c.gray(`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`)}`, fixed: true })
-        sr.push({ content: `${FIG_BLOCK} ${c.gray(`${Y('enter')} to confirm, ${Y('esc')} to cancel, ${Y('a')} to select/unselect all`)}`, fixed: true })
+        sr.push({ content: `${FIG_BLOCK} ${c.gray`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`}`, fixed: true })
+        sr.push({ content: `${FIG_BLOCK} ${c.gray`${Y('enter')} to confirm, ${Y('esc')} to cancel, ${Y('a')} to select/unselect all`}`, fixed: true })
         sr.push({ content: '', fixed: true })
 
         pkgs.forEach((pkg) => {
@@ -165,7 +165,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     return {
       render() {
         console.clear()
-        console.log(`${FIG_BLOCK} ${c.gray(`Select a version for ${c.green(c.bold(dep.name))}${c.gray(` (current ${dep.currentVersion})`)}`)}`)
+        console.log(`${FIG_BLOCK} ${c.gray`Select a version for ${c.green.bold(dep.name)}${c.gray` (current ${dep.currentVersion})`}`}`)
         console.log()
         console.log(
           formatTable(versions.map((v, idx) => {
@@ -173,7 +173,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
               (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.gray(v.name)),
               timediff ? timeDifference(dep.currentVersionTime) : '',
               c.gray(dep.currentVersion),
-              c.dim(c.gray('→')),
+              c.dim.gray('→'),
               colorizeVersionDiff(dep.currentVersion, v.targetVersion),
               timediff ? timeDifference(v.time) : '',
             ]

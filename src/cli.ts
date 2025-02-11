@@ -1,7 +1,7 @@
 import type { Argv } from 'yargs'
 import type { CommonOptions } from './types'
 import process from 'node:process'
-import c from 'picocolors'
+import c from 'ansis'
 import restoreCursor from 'restore-cursor'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'

@@ -1,4 +1,4 @@
-import c from 'picocolors'
+import c from 'ansis'
 
 const msPerMinute = 60 * 1000
 const msPerHour = msPerMinute * 60
@@ -23,11 +23,11 @@ export function timeDifference(from?: number | string, to = +new Date()) {
     return c.gray('⩽1d')
 
   else if (elapsed < msPerMonth)
-    return c.green(`~${Math.round(elapsed / msPerDay)}d`)
+    return c.green`~${Math.round(elapsed / msPerDay)}d`
 
   else if (elapsed < msPerYear)
-    return c.yellow(`~${Math.round(elapsed / msPerMonth)}mo`)
+    return c.yellow`~${Math.round(elapsed / msPerMonth)}mo`
 
   else
-    return c.red(`~${+(elapsed / msPerYear).toFixed(1)}y`)
+    return c.red`~${+(elapsed / msPerYear).toFixed(1)}y`
 }
