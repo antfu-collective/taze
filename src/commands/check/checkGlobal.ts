@@ -57,10 +57,6 @@ export async function checkGlobal(options: CheckOptions) {
   if (options.interactive)
     resolvePkgs = await promptInteractive(resolvePkgs, options) as GlobalPackageMeta[]
 
-  if (!resolvePkgs.length) {
-    return exitCode
-  }
-
   const { lines, errLines } = renderPackages(resolvePkgs, options)
 
   const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
@@ -185,6 +181,8 @@ async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackag
 
 async function installPkg(pkg: GlobalPackageMeta) {
   const changes = pkg.resolved.filter(i => i.update)
+  if (!changes.length)
+    return
   const dependencies = dumpDependencies(changes, 'dependencies')
   const updateArgs = Object.entries(dependencies).map(([name, version]) => `${name}@${version}`)
   const install = getCommand(pkg.agent, 'global', [...updateArgs])
