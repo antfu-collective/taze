@@ -5,7 +5,7 @@ import type {
   PackageMeta,
   ResolvedDepChange,
 } from '../../types'
-import c from 'picocolors'
+import c from 'ansis'
 import semver from 'semver'
 import { colorizeVersionDiff, FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, formatTable } from '../../render'
 import { DependenciesTypeShortMap } from '../../types'
@@ -30,22 +30,22 @@ export function renderChange(
 
   let name = change.name
   if (change.aliasName)
-    name = c.dim(`${change.aliasName} ← `) + change.name
+    name = c.dim`${change.aliasName} ← ` + change.name
 
   return [
     `${pre} ${update ? name : c.gray(name)}`,
     grouped ? '' : c.gray(DependenciesTypeShortMap[change.source]),
     timediff ? timeDifference(change.currentVersionTime) : '',
     c.gray(change.currentVersion),
-    update ? c.dim(c.gray('→')) : '',
+    update ? c.dim.gray('→') : '',
     update
       ? colorizeVersionDiff(change.currentVersion, change.targetVersion)
-      : c.gray(c.strikethrough(change.targetVersion)),
+      : c.gray.strikethrough(change.targetVersion),
     update && timediff
       ? timeDifference(change.targetVersionTime)
       : '',
     (change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
-      ? c.dim(c.magenta(`(${change.latestVersionAvailable} available)`))
+      ? c.dim.magenta`(${change.latestVersionAvailable} available)`
       : '',
   ]
 }
@@ -159,20 +159,20 @@ function renderResolveError(dep: ResolvedDepChange) {
     return lines
 
   if (dep.resolveError === '404') {
-    lines.push(c.red(`> ${c.underline(dep.name)} not found`))
+    lines.push(c.red`> ${c.underline(dep.name)} not found`)
   }
   else if (dep.resolveError === 'invalid_range') {
     // lines.push(c.yellow(`> ${c.underline(dep.name)} has an unresolvable version range: ${c.underline(dep.currentVersion)}`))
   }
   else {
-    lines.push(c.red(`> ${c.underline(dep.name)} unknown error`))
+    lines.push(c.red`> ${c.underline(dep.name)} unknown error`)
     lines.push(c.red(dep.resolveError.toString()))
   }
   return lines
 }
 
 export function outputErr(errLines: string[]) {
-  console.error(c.inverse(c.red(c.bold(' ERROR '))))
+  console.error(c.inverse.red.bold` ERROR `)
   console.error()
   console.error(errLines.join('\n'))
   console.error()

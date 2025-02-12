@@ -1,7 +1,7 @@
 import type { CheckOptions, GlobalPackageMeta, RawDep } from '../../types'
 /* eslint-disable no-console */
 import { getCommand } from '@antfu/ni'
-import c from 'picocolors'
+import c from 'ansis'
 import prompts from 'prompts'
 import { exec } from 'tinyexec'
 import { dumpDependencies } from '../../io/dependencies'
@@ -145,7 +145,7 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
       filepath: '',
       relative: '',
       deps,
-      name: c.red('pnpm') + c.gray(c.dim(' (global)')) + c.gray(c.dim(` ${pnpmOuts[i].path}`)),
+      name: c.red`pnpm` + c.gray.dim` (global) ` + c.gray.dim(pnpmOuts[i].path),
     }))
 
   return pkgMetas
@@ -175,7 +175,7 @@ async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackag
     filepath: '',
     relative: '',
     deps,
-    name: c.red('npm') + c.gray(c.dim(' (global)')),
+    name: c.red`npm` + c.gray.dim` (global)`,
   }
 }
 
