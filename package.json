@@ -35,8 +35,10 @@
   },
   "dependencies": {
     "@antfu/ni": "^23.3.1",
+    "find-up-simple": "^1.0.0",
     "ofetch": "^1.4.1",
     "package-manager-detector": "^0.2.9",
+    "pathe": "^2.0.3",
     "tinyexec": "^0.3.2",
     "unconfig": "^7.0.0",
     "yaml": "^2.7.0",

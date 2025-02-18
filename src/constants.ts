@@ -20,6 +20,7 @@ export const DEFAULT_COMMON_OPTIONS: CommonOptions = {
   recursive: false,
   force: false,
   ignorePaths: '',
+  ignoreOtherWorkspaces: true,
   include: '',
   exclude: '',
   depFields: {},

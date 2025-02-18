@@ -97,6 +97,8 @@ export default defineConfig({
     '**/node_modules/**',
     '**/test/**',
   ],
+  // ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)
+  ignoreOtherWorkspaces: true,
   // override with different bumping mode for each package
   packageMode: {
     'typescript': 'major',

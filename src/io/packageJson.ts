@@ -1,5 +1,5 @@
 import type { CommonOptions, PackageMeta, RawDep } from '../types'
-import path from 'node:path'
+import { resolve } from 'pathe'
 import { builtinAddons } from '../addons'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
 import { readJSON, writeJSON } from './packages'
@@ -19,7 +19,7 @@ export async function loadPackageJSON(
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
 ): Promise<PackageMeta[]> {
-  const filepath = path.resolve(options.cwd ?? '', relative)
+  const filepath = resolve(options.cwd ?? '', relative)
   const raw = await readJSON(filepath)
   const deps: RawDep[] = []
 

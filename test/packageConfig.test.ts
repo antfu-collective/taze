@@ -1,6 +1,6 @@
 import type { CheckOptions, CommonOptions, ResolvedDepChange } from '../src'
-import { join } from 'node:path'
 import process from 'node:process'
+import { join } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import { CheckPackages } from '../src'
 import { resolveConfig } from '../src/config'

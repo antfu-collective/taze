@@ -48,6 +48,11 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
       type: 'string',
       describe: 'ignore paths for search package.json',
     })
+    .option('ignore-other-workspaces', {
+      type: 'boolean',
+      default: true,
+      describe: 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)',
+    })
     .option('include', {
       alias: 'n',
       type: 'string',

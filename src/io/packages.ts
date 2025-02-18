@@ -1,8 +1,10 @@
 import type { CommonOptions, PackageMeta } from '../types'
 import { existsSync, promises as fs } from 'node:fs'
-import path from 'node:path'
+import process from 'node:process'
 import detectIndent from 'detect-indent'
 import fg from 'fast-glob'
+import { findUp } from 'find-up-simple'
+import { dirname, join, resolve } from 'pathe'
 import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
@@ -46,6 +48,7 @@ export async function loadPackage(
 export async function loadPackages(options: CommonOptions): Promise<PackageMeta[]> {
   let packagesNames: string[] = []
 
+  const cwd = resolve(options.cwd || process.cwd())
   const filter = createDependenciesFilter(options.include, options.exclude)
 
   if (options.recursive) {
@@ -61,7 +64,25 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
     packagesNames = ['package.json']
   }
 
-  if (existsSync(path.join(options.cwd || '', 'pnpm-workspace.yaml'))) {
+  if (options.ignoreOtherWorkspaces) {
+    packagesNames = (await Promise.all(
+      packagesNames.map(async (packagePath) => {
+        if (!packagePath.includes('/'))
+          return [packagePath]
+
+        const absolute = join(cwd, packagePath)
+        const gitDir = await findUp('.git', { cwd: absolute, stopAt: cwd })
+        if (gitDir && dirname(gitDir) !== cwd)
+          return []
+        const pnpmWorkspace = await findUp('pnpm-workspace.yaml', { cwd: absolute, stopAt: cwd })
+        if (pnpmWorkspace && dirname(pnpmWorkspace) !== cwd)
+          return []
+        return [packagePath]
+      }),
+    )).flat()
+  }
+
+  if (existsSync(join(cwd, 'pnpm-workspace.yaml'))) {
     packagesNames.unshift('pnpm-workspace.yaml')
   }
 

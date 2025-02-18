@@ -63,6 +63,7 @@ export interface CommonOptions {
   cwd?: string
   recursive?: boolean
   ignorePaths?: string | string[]
+  ignoreOtherWorkspaces?: boolean
   include?: string | string[]
   exclude?: string | string[]
   loglevel?: LogLevel

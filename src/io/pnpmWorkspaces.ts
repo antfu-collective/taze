@@ -1,8 +1,8 @@
 import type { Scalar } from 'yaml'
 import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
 import fs from 'node:fs/promises'
-import path from 'node:path'
 import _debug from 'debug'
+import { resolve } from 'pathe'
 import { isAlias, parse, parseDocument, YAMLMap } from 'yaml'
 import { findAnchor, writeYaml } from '../utils/yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
@@ -14,7 +14,7 @@ export async function loadPnpmWorkspace(
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
 ): Promise<PnpmWorkspaceMeta[]> {
-  const filepath = path.resolve(options.cwd ?? '', relative)
+  const filepath = resolve(options.cwd ?? '', relative)
   const rawText = await fs.readFile(filepath, 'utf-8')
   const raw = parse(rawText)
   const document = parseDocument(rawText)

@@ -1,14 +1,14 @@
 // ported from: https://github.com/raineorshine/npm-check-updates/blob/master/lib/package-managers/npm.js
 
 import type { Recordable } from '@npmcli/config'
-import path from 'node:path'
 import process from 'node:process'
+import { dirname, join } from 'pathe'
 
 async function _getNpmConfig() {
   const { default: NpmCliConfig } = await import('@npmcli/config')
   const npmcliConfig = new NpmCliConfig({
     definitions: {},
-    npmPath: path.dirname(process.cwd()),
+    npmPath: dirname(process.cwd()),
     flatten: (current, total) => {
       Object.assign(total, current)
     },
@@ -24,8 +24,8 @@ async function _getNpmConfig() {
       if (cli)
         cli.data[key] = value
     }
-    setCliOption('userconfig', path.join(npmcliConfig.home, '.npmrc'))
-    setCliOption('globalconfig', path.join(npmcliConfig.globalPrefix, 'etc', 'npmrc'))
+    setCliOption('userconfig', join(npmcliConfig.home, '.npmrc'))
+    setCliOption('globalconfig', join(npmcliConfig.globalPrefix, 'etc', 'npmrc'))
   }
 
   // npmcliConfig.load() would set unnecessary environment variables
