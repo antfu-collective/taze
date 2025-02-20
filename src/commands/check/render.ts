@@ -104,9 +104,9 @@ export function renderChanges(
       'LLRRRRRL',
     )
 
-    const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))
-
     if (group) {
+      const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))
+
       const groups = new Map<string, ResolvedDepChange[]>()
       for (const change of changes) {
         const key = change.source
