@@ -1,6 +1,7 @@
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
+import process from 'node:process'
 import _debug from 'debug'
 import pLimit from 'p-limit'
 import { resolve } from 'pathe'
@@ -247,6 +248,22 @@ export async function resolveDependency(
     const targetVersion = semver.minVersion(target || dep.targetVersion)
     if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
       dep.latestVersionAvailable = tags.latest
+  }
+  catch {}
+
+  try {
+    if (options.nodecompat) {
+      const currentNodeVersion = process.version
+      const { nodeSemver } = dep.pkgData
+      if (nodeSemver
+        && dep.latestVersionAvailable
+        && dep.latestVersionAvailable in nodeSemver) {
+        dep.nodeCompatibleVersion = {
+          compatible: semver.satisfies(currentNodeVersion, nodeSemver[dep.latestVersionAvailable]),
+          semver: nodeSemver[dep.latestVersionAvailable],
+        }
+      }
+    }
   }
   catch {}
 

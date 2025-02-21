@@ -197,3 +197,12 @@ export function createSliceRender() {
     },
   }
 }
+
+export function colorizeNodeCompatibility(nodeVersionCompatibility?: { semver: string, compatible: boolean }) {
+  if (!nodeVersionCompatibility)
+    return c.dim(c.yellow('N/A'))
+
+  return nodeVersionCompatibility.compatible
+    ? c.dim(c.green(nodeVersionCompatibility.semver))
+    : c.dim(c.red(nodeVersionCompatibility.semver))
+}

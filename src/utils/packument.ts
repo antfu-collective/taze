@@ -62,6 +62,11 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
         created: data.timeCreated,
         modified: data.timeModified,
       },
+      nodeSemver: { ...Object.fromEntries(
+        Object.entries(data.versionsMeta)
+          .map(([version, meta]) => [version, meta.engines?.node])
+          .filter(([_, node]) => node),
+      ) },
     }
   }
 

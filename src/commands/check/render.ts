@@ -7,7 +7,15 @@ import type {
 } from '../../types'
 import c from 'ansis'
 import semver from 'semver'
-import { colorizeVersionDiff, FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, formatTable } from '../../render'
+import {
+  colorizeNodeCompatibility,
+  colorizeVersionDiff,
+  FIG_CHECK,
+  FIG_NO_POINTER,
+  FIG_POINTER,
+  FIG_UNCHECK,
+  formatTable,
+} from '../../render'
 import { DependenciesTypeShortMap } from '../../types'
 import { DiffColorMap } from '../../utils/diff'
 import { sortDepChanges } from '../../utils/sort'
@@ -50,6 +58,21 @@ export function renderChange(
   ]
 }
 
+export function renderAppendedChanges(
+  change: ResolvedDepChange,
+  nodeCompat = true,
+) {
+  const appendedChanges: string[] = []
+  if (nodeCompat) {
+    appendedChanges.push(
+      change.nodeCompatibleVersion
+        ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
+        : c.yellow(`NA`),
+    )
+  }
+  return appendedChanges
+}
+
 export function renderChanges(
   pkg: PackageMeta,
   options: CheckOptions,
@@ -66,6 +89,7 @@ export function renderChanges(
   const {
     sort = 'diff-asc',
     group = true,
+    nodecompat = true,
   } = options
 
   if (changes.length) {
@@ -104,9 +128,9 @@ export function renderChanges(
       'LLRRRRRL',
     )
 
-    if (group) {
-      const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))
+    const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))
 
+    if (group) {
       const groups = new Map<string, ResolvedDepChange[]>()
       for (const change of changes) {
         const key = change.source
@@ -114,19 +138,28 @@ export function renderChanges(
           groups.set(key, [])
         groups.get(key)!.push(change)
       }
+
+      const groupsTable: string[] = []
       // Use predefined order
       for (const key of Object.keys(DependenciesTypeShortMap)) {
         const group = groups.get(key)
         if (!group)
           continue
-        if (lines.at(-1) !== '')
-          lines.push('')
-        lines.push(`  ${c.blue(key)}`)
-        lines.push(...group.map(change => `  ${changeToTable.get(change)!}`))
+        if (groupsTable.at(-1) !== '')
+          groupsTable.push('')
+        const groupTable: string[][] = []
+        groupTable.push([`  ${c.blue(key)}`, 'Node compatibility'])
+        groupTable.push(...group.map(change => [`  ${changeToTable.get(change)!}`, ...renderAppendedChanges(change, nodecompat)]))
+        groupsTable.push(...formatTable(groupTable, 'LL'))
       }
+      lines.push(...groupsTable)
     }
     else {
-      lines.push(...table)
+      const fullTable = formatTable([
+        ['', c.blue('Node compatibility')],
+        ...changes.map(change => [`  ${changeToTable.get(change)!}`, ...renderAppendedChanges(change, nodecompat)]),
+      ], 'LL')
+      lines.push(...fullTable)
     }
 
     lines.push('')
