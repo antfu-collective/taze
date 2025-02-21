@@ -131,6 +131,12 @@ export interface CheckOptions extends CommonOptions {
    * @description hide the time difference
    */
   timediff?: boolean
+  /**
+   * Show package compatibility with current node version
+   *
+   * @default true
+   */
+  nodecompat?: boolean
 }
 
 interface BasePackageMeta {

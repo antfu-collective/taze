@@ -142,6 +142,10 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           describe: 'show time difference between the current and the updated version',
         })
+        .option('nodecompat', {
+          type: 'boolean',
+          describe: 'show package compatibility with current node version',
+        })
         .help()
     },
     async (args) => {
