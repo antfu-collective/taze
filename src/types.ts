@@ -56,7 +56,7 @@ export interface ResolvedDepChange extends RawDep {
   pkgData: PackageData
   resolveError?: Error | string | null
   aliasName?: string
-  nodeCompatibleVersion: { semver: string, compatible: boolean }
+  nodeCompatibleVersion?: { semver: string, compatible: boolean }
 }
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent'
