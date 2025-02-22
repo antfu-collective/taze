@@ -252,7 +252,8 @@ export async function resolveDependency(
   catch {}
 
   try {
-    if (options.nodecompat) {
+    const { nodecompat = true } = options
+    if (nodecompat) {
       const currentNodeVersion = process.version
       const { nodeSemver } = dep.pkgData
       if (nodeSemver
