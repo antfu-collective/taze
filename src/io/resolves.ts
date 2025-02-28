@@ -248,20 +248,17 @@ export async function resolveDependency(
     const targetVersion = semver.minVersion(target || dep.targetVersion)
     if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
       dep.latestVersionAvailable = tags.latest
-  }
-  catch {}
 
-  try {
     const { nodecompat = true } = options
     if (nodecompat) {
       const currentNodeVersion = process.version
       const { nodeSemver } = dep.pkgData
       if (nodeSemver
-        && dep.latestVersionAvailable
-        && dep.latestVersionAvailable in nodeSemver) {
+        && targetVersion?.version
+        && targetVersion?.version in nodeSemver) {
         dep.nodeCompatibleVersion = {
-          compatible: semver.satisfies(currentNodeVersion, nodeSemver[dep.latestVersionAvailable]),
-          semver: nodeSemver[dep.latestVersionAvailable],
+          compatible: semver.satisfies(currentNodeVersion, nodeSemver[targetVersion?.version]),
+          semver: nodeSemver[targetVersion?.version],
         }
       }
     }
