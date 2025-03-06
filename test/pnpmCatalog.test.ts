@@ -1,11 +1,29 @@
-import type { Document } from 'yaml'
 import type { CheckOptions, PnpmWorkspaceMeta } from '../src'
 import process from 'node:process'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { parse, parseDocument } from 'yaml'
+import { parsePnpmWorkspaceYaml } from 'pnpm-catalogs-utils'
+import { afterEach, beforeEach, describe, expect, it, vi, vitest } from 'vitest'
 import { CheckPackages } from '../src'
-import { writePnpmWorkspace } from '../src/io/pnpmWorkspaces'
-import * as YamlUtil from '../src/utils/yaml'
+import * as pnpmWorkspaces from '../src/io/pnpmWorkspaces'
+
+// output that should be written to the pnpm-workspace.yaml file
+let output: string | undefined
+vi.mock('node:fs/promises', async (importActual) => {
+  return {
+    ...await importActual(),
+    writeFile(_path: string, data: any) {
+      output = data.toString()
+      return Promise.resolve()
+    },
+  }
+})
+
+beforeEach(() => {
+  output = undefined
+})
+
+afterEach(() => {
+  vitest.restoreAllMocks()
+})
 
 it('pnpm catalog', async () => {
   const options: CheckOptions = {
@@ -106,45 +124,32 @@ it('pnpm catalog', async () => {
 })
 
 describe('pnpm catalog update w/ yaml anchors and aliases', () => {
-  // stringified yaml output that should be
-  // written to the pnpm-workspace.yaml file
-  let output: string | undefined
-
-  const writeYaml = vi.spyOn(YamlUtil, 'writeYaml').mockImplementation((_pkg: PnpmWorkspaceMeta, document: Document) => {
-    return Promise.resolve().then(() => {
-      output = document.toString()
-    })
-  })
-
-  beforeEach(() => {
-    output = undefined
-  })
-
-  afterAll(() => {
-    writeYaml.mockRestore()
-  })
-
   it('should preserve yaml anchors and aliases with single string value, when anchor is defined inline', async () => {
     const workspaceYamlContents = `
     catalog:
       react: &foo ^18.2.0
       react-dom: *foo
       `
-    const document = parseDocument(workspaceYamlContents)
+    const context = parsePnpmWorkspaceYaml(workspaceYamlContents)
     const pkg: PnpmWorkspaceMeta = {
+      type: 'pnpm-workspace.yaml',
       name: 'catalog:default',
       resolved: [
-        // @ts-expect-error testing purpose
-        { name: 'react', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' },
-        // @ts-expect-error testing purpose
-        { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' },
+        // testing purpose
+        { name: 'react', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
+        // testing purpose
+        { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
       ],
-      raw: parse(workspaceYamlContents),
-      document,
+      raw: context.toJSON(),
+      context,
       filepath: '/tmp/pnpm-workspace.yaml',
-      type: 'pnpm-workspace.yaml',
+      private: false,
+      version: '',
+      relative: '',
+      deps: [],
     }
-    await writePnpmWorkspace(pkg, {})
+    await pnpmWorkspaces.writePnpmWorkspace(pkg, {})
+
     expect(output).toMatchInlineSnapshot(`
     "catalog:
       react: &foo ^18.3.1
@@ -161,21 +166,25 @@ describe('pnpm catalog update w/ yaml anchors and aliases', () => {
       react: *react
       react-dom: *react
       `
-    const document = parseDocument(workspaceYamlContents)
+    const context = parsePnpmWorkspaceYaml(workspaceYamlContents)
     const pkg: PnpmWorkspaceMeta = {
       name: 'catalog:default',
       resolved: [
-        // @ts-expect-error testing purpose
-        { name: 'react', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' },
-        // @ts-expect-error testing purpose
-        { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' },
+        // testing purpose
+        { name: 'react', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
+        // testing purpose
+        { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
       ],
-      raw: parse(workspaceYamlContents),
-      document,
+      raw: context.toJSON(),
+      context,
       filepath: '/tmp/pnpm-workspace.yaml',
       type: 'pnpm-workspace.yaml',
+      private: false,
+      version: '',
+      relative: '',
+      deps: [],
     }
-    await writePnpmWorkspace(pkg, {})
+    await pnpmWorkspaces.writePnpmWorkspace(pkg, {})
     expect(output).toMatchInlineSnapshot(`
     "defines:
       - &react ^18.3.1

@@ -39,6 +39,7 @@
     "ofetch": "^1.4.1",
     "package-manager-detector": "^0.2.9",
     "pathe": "^2.0.3",
+    "pnpm-catalogs-utils": "^0.1.0",
     "tinyexec": "^0.3.2",
     "unconfig": "^7.0.0",
     "yaml": "^2.7.0",

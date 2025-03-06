@@ -1,5 +1,5 @@
 import type { Agent } from 'package-manager-detector'
-import type { Document } from 'yaml'
+import type { PnpmWorkspaceYaml } from 'pnpm-catalogs-utils'
 import type { MODE_CHOICES } from './constants'
 import type { SortOption } from './utils/sort'
 
@@ -184,7 +184,7 @@ export interface GlobalPackageMeta extends BasePackageMeta {
 export interface PnpmWorkspaceMeta extends BasePackageMeta {
   type: 'pnpm-workspace.yaml'
   raw: any
-  document: Document
+  context: PnpmWorkspaceYaml
 }
 
 export type PackageMeta =

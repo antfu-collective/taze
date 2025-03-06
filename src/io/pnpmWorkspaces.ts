@@ -1,13 +1,9 @@
-import type { Scalar } from 'yaml'
+import type { PnpmWorkspaceYaml } from 'pnpm-catalogs-utils'
 import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
-import fs from 'node:fs/promises'
-import _debug from 'debug'
+import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'pathe'
-import { isAlias, parse, parseDocument, YAMLMap } from 'yaml'
-import { findAnchor, writeYaml } from '../utils/yaml'
+import { parsePnpmWorkspaceYaml } from 'pnpm-catalogs-utils'
 import { dumpDependencies, parseDependency } from './dependencies'
-
-const debug = _debug('taze:io:pnpmWorkspace')
 
 export async function loadPnpmWorkspace(
   relative: string,
@@ -15,9 +11,9 @@ export async function loadPnpmWorkspace(
   shouldUpdate: (name: string) => boolean,
 ): Promise<PnpmWorkspaceMeta[]> {
   const filepath = resolve(options.cwd ?? '', relative)
-  const rawText = await fs.readFile(filepath, 'utf-8')
-  const raw = parse(rawText)
-  const document = parseDocument(rawText)
+  const rawText = await readFile(filepath, 'utf-8')
+  const context = parsePnpmWorkspaceYaml(rawText)
+  const raw = context.document.toJSON()
 
   const catalogs: PnpmWorkspaceMeta[] = []
 
@@ -33,9 +29,9 @@ export async function loadPnpmWorkspace(
       relative,
       filepath,
       raw,
+      context,
       deps,
       resolved: [],
-      document,
     } satisfies PnpmWorkspaceMeta
   }
 
@@ -66,51 +62,16 @@ export async function writePnpmWorkspace(
     return
 
   const catalogName = pkg.name.replace('catalog:', '')
-  const document = pkg.document.clone()
-  let changed = false
 
-  if (catalogName === 'default') {
-    if (!document.has('catalog')) {
-      document.set('catalog', new YAMLMap())
-    }
-    const catalog = document.get('catalog') as YAMLMap<Scalar.Parsed, Scalar.Parsed>
-    updateCatalog(catalog)
-  }
-  else {
-    if (!document.has('catalogs')) {
-      document.set('catalogs', new YAMLMap())
-    }
-    const catalog = (document.get('catalogs') as YAMLMap).get(catalogName) as YAMLMap<Scalar.Parsed, Scalar.Parsed>
-    updateCatalog(catalog)
+  for (const [key, targetVersion] of Object.entries(versions)) {
+    pkg.context.setPackage(catalogName, key, targetVersion)
   }
 
-  if (changed)
-    await writeYaml(pkg, document)
-
-  // currently only support preserve yaml anchor and alias with single string value
-  function updateCatalog(catalog: YAMLMap<Scalar.Parsed, Scalar.Parsed>) {
-    for (const [key, targetVersion] of Object.entries(versions)) {
-      const pair = catalog.items.find(i => i.key.value === key)
-      if (!pair?.value || !pair.key) {
-        debug(`Exception encountered while parsing pnpm-workspace.yaml, key: ${key}`)
-        continue
-      }
-
-      if (isAlias(pair?.value)) {
-        const anchor = findAnchor(document, pair.value)
-        if (!anchor) {
-          debug(`can't find anchor for alias: ${pair.value} in pnpm-workspace.yaml`)
-          continue
-        }
-        else if (anchor.value !== targetVersion) {
-          anchor.value = targetVersion
-          changed = true
-        }
-      }
-      else if (pair.value.value !== targetVersion) {
-        pair.value.value = targetVersion
-        changed = true
-      }
-    }
+  if (pkg.context.hasChanged()) {
+    await writeYaml(pkg, pkg.context)
   }
+}
+
+export function writeYaml(pkg: PnpmWorkspaceMeta, document: PnpmWorkspaceYaml) {
+  return writeFile(pkg.filepath, document.toString(), 'utf8')
 }
