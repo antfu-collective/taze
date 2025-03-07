@@ -1,6 +1,6 @@
 import type { CheckOptions, PnpmWorkspaceMeta } from '../src'
 import process from 'node:process'
-import { parsePnpmWorkspaceYaml } from 'pnpm-catalogs-utils'
+import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import { afterEach, beforeEach, describe, expect, it, vi, vitest } from 'vitest'
 import { CheckPackages } from '../src'
 import * as pnpmWorkspaces from '../src/io/pnpmWorkspaces'

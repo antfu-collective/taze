@@ -1,8 +1,8 @@
-import type { PnpmWorkspaceYaml } from 'pnpm-catalogs-utils'
+import type { PnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
 import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'pathe'
-import { parsePnpmWorkspaceYaml } from 'pnpm-catalogs-utils'
+import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
 
 export async function loadPnpmWorkspace(
