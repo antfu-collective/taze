@@ -20,5 +20,5 @@ export default defineBuildConfig({
     },
   },
   clean: true,
-  declaration: true,
+  declaration: 'node16',
 })
