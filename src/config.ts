@@ -8,10 +8,10 @@ import { DEFAULT_CHECK_OPTIONS } from './constants'
 
 const debug = _debug('taze:config')
 
-function normalizeConfig<T extends CommonOptions>(options: T) {
+function normalizeConfig(options: CommonOptions) {
   // interop
   if ('default' in options)
-    options = options.default as T
+    options = options.default as CommonOptions
 
   options.ignorePaths = toArray(options.ignorePaths)
   options.exclude = toArray(options.exclude)
@@ -23,9 +23,9 @@ function normalizeConfig<T extends CommonOptions>(options: T) {
   return options
 }
 
-export async function resolveConfig<T extends CommonOptions>(
-  options: T,
-): Promise<T> {
+export async function resolveConfig(
+  options: CommonOptions,
+): Promise<CommonOptions> {
   const defaults = DEFAULT_CHECK_OPTIONS
   options = normalizeConfig(options)
 

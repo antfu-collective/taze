@@ -35,7 +35,8 @@ cli
   .option('--include-locked, -l', 'include locked dependencies & devDependencies')
   .option('--timediff', 'show time difference between the current and the updated version')
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
-    if (mode && !MODE_CHOICES.includes(mode)) {
+    mode ||= 'default'
+    if (!MODE_CHOICES.includes(mode)) {
       console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join('|')}`)
       process.exit(1)
     }
