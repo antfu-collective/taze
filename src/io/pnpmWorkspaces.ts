@@ -17,12 +17,12 @@ export async function loadPnpmWorkspace(
 
   const catalogs: PnpmWorkspaceMeta[] = []
 
-  function createCatalogFromKeyValue(catalogName: string, map: Record<string, string>): PnpmWorkspaceMeta {
+  function createPnpmWorkspaceEntry(name: string, map: Record<string, string>): PnpmWorkspaceMeta {
     const deps: RawDep[] = Object.entries(map)
-      .map(([name, version]) => parseDependency(name, version, 'pnpm:catalog', shouldUpdate))
+      .map(([pkg, version]) => parseDependency(pkg, version, 'pnpm-workspace', shouldUpdate))
 
     return {
-      name: `catalog:${catalogName}`,
+      name,
       private: true,
       version: '',
       type: 'pnpm-workspace.yaml',
@@ -37,16 +37,22 @@ export async function loadPnpmWorkspace(
 
   if (raw.catalog) {
     catalogs.push(
-      createCatalogFromKeyValue('default', raw.catalog),
+      createPnpmWorkspaceEntry('pnpm-catalog:default', raw.catalog),
     )
   }
 
   if (raw.catalogs) {
     for (const key of Object.keys(raw.catalogs)) {
       catalogs.push(
-        createCatalogFromKeyValue(key, raw.catalogs[key]),
+        createPnpmWorkspaceEntry(`pnpm-catalog:${key}`, raw.catalogs[key]),
       )
     }
+  }
+
+  if (raw.overrides) {
+    catalogs.push(
+      createPnpmWorkspaceEntry('pnpm-workspace:overrides', raw.overrides),
+    )
   }
 
   return catalogs
@@ -56,15 +62,22 @@ export async function writePnpmWorkspace(
   pkg: PnpmWorkspaceMeta,
   _options: CommonOptions,
 ) {
-  const versions = dumpDependencies(pkg.resolved, 'pnpm:catalog')
+  const versions = dumpDependencies(pkg.resolved, 'pnpm-workspace')
 
   if (!Object.keys(versions).length)
     return
 
-  const catalogName = pkg.name.replace('catalog:', '')
-
-  for (const [key, targetVersion] of Object.entries(versions)) {
-    pkg.context.setPackage(catalogName, key, targetVersion)
+  if (pkg.name.startsWith('pnpm-catalog:')) {
+    const catalogName = pkg.name.replace('pnpm-catalog:', '')
+    for (const [key, targetVersion] of Object.entries(versions)) {
+      pkg.context.setPackage(catalogName, key, targetVersion)
+    }
+  }
+  else {
+    const paths = pkg.name.replace('pnpm-workspace:', '').split(/\./g)
+    for (const [key, targetVersion] of Object.entries(versions)) {
+      pkg.context.setPath([...paths, key], targetVersion)
+    }
   }
 
   if (pkg.context.hasChanged()) {

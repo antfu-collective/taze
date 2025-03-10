@@ -14,7 +14,7 @@ export type DepType =
   | 'pnpm.overrides'
   | 'resolutions'
   | 'overrides'
-  | 'pnpm:catalog'
+  | 'pnpm-workspace'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -25,7 +25,7 @@ export const DependenciesTypeShortMap = {
   'resolutions': 'resolutions',
   'overrides': 'overrides',
   'pnpm.overrides': 'pnpm-overrides',
-  'pnpm:catalog': 'catalog',
+  'pnpm-workspace': 'pnpm-workspace',
 }
 
 export interface RawDep {

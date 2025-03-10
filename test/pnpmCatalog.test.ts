@@ -33,9 +33,10 @@ it('pnpm catalog', async () => {
 
   expect(result.packages.map(p => p.name)).toMatchInlineSnapshot(`
     [
-      "catalog:default",
-      "catalog:react17",
-      "catalog:react18",
+      "pnpm-catalog:default",
+      "pnpm-catalog:react17",
+      "pnpm-catalog:react18",
+      "pnpm-workspace:overrides",
       "@taze/monorepo-example",
     ]
   `)
@@ -48,7 +49,7 @@ it('pnpm catalog', async () => {
   ).toMatchInlineSnapshot(`
     [
       {
-        "name": "catalog:default",
+        "name": "pnpm-catalog:default",
         "packages": [
           [
             "react",
@@ -61,7 +62,7 @@ it('pnpm catalog', async () => {
         ],
       },
       {
-        "name": "catalog:react17",
+        "name": "pnpm-catalog:react17",
         "packages": [
           [
             "react",
@@ -74,7 +75,7 @@ it('pnpm catalog', async () => {
         ],
       },
       {
-        "name": "catalog:react18",
+        "name": "pnpm-catalog:react18",
         "packages": [
           [
             "react",
@@ -83,6 +84,15 @@ it('pnpm catalog', async () => {
           [
             "react-dom",
             "^18.2.0",
+          ],
+        ],
+      },
+      {
+        "name": "pnpm-workspace:overrides",
+        "packages": [
+          [
+            "vue",
+            "~3.3.0",
           ],
         ],
       },
@@ -133,12 +143,12 @@ describe('pnpm catalog update w/ yaml anchors and aliases', () => {
     const context = parsePnpmWorkspaceYaml(workspaceYamlContents)
     const pkg: PnpmWorkspaceMeta = {
       type: 'pnpm-workspace.yaml',
-      name: 'catalog:default',
+      name: 'pnpm-catalog:default',
       resolved: [
         // testing purpose
-        { name: 'react', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
+        { name: 'react', targetVersion: '^18.3.1', source: 'pnpm-workspace', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
         // testing purpose
-        { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
+        { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm-workspace', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
       ],
       raw: context.toJSON(),
       context,
@@ -151,10 +161,11 @@ describe('pnpm catalog update w/ yaml anchors and aliases', () => {
     await pnpmWorkspaces.writePnpmWorkspace(pkg, {})
 
     expect(output).toMatchInlineSnapshot(`
-    "catalog:
-      react: &foo ^18.3.1
-      react-dom: *foo
-    "`)
+      "catalog:
+        react: &foo ^18.3.1
+        react-dom: *foo
+      "
+    `)
   })
 
   it('should preserve yaml anchors and aliases with single string value, when anchor is defined in a separate field', async () => {
@@ -168,12 +179,12 @@ describe('pnpm catalog update w/ yaml anchors and aliases', () => {
       `
     const context = parsePnpmWorkspaceYaml(workspaceYamlContents)
     const pkg: PnpmWorkspaceMeta = {
-      name: 'catalog:default',
+      name: 'pnpm-catalog:default',
       resolved: [
         // testing purpose
-        { name: 'react', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
+        { name: 'react', targetVersion: '^18.3.1', source: 'pnpm-workspace', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
         // testing purpose
-        { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm:catalog', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
+        { name: 'react-dom', targetVersion: '^18.3.1', source: 'pnpm-workspace', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
       ],
       raw: context.toJSON(),
       context,
@@ -186,12 +197,13 @@ describe('pnpm catalog update w/ yaml anchors and aliases', () => {
     }
     await pnpmWorkspaces.writePnpmWorkspace(pkg, {})
     expect(output).toMatchInlineSnapshot(`
-    "defines:
-      - &react ^18.3.1
+      "defines:
+        - &react ^18.3.1
 
-    catalog:
-      react: *react
-      react-dom: *react
-    "`)
+      catalog:
+        react: *react
+        react-dom: *react
+      "
+    `)
   })
 })
