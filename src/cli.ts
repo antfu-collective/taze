@@ -1,10 +1,8 @@
-import type { Argv } from 'yargs'
-import type { CommonOptions } from './types'
+import type { CAC } from 'cac'
+import type { CheckOptions, RangeMode } from './types'
 import process from 'node:process'
-import c from 'ansis'
+import { cac } from 'cac'
 import restoreCursor from 'restore-cursor'
-import yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
 import pkgJson from '../package.json'
 import { check } from './commands/check'
 import { checkGlobal } from './commands/check/checkGlobal'
@@ -12,137 +10,47 @@ import { resolveConfig } from './config'
 import { LOG_LEVELS, MODE_CHOICES } from './constants'
 import { SORT_CHOICES } from './utils/sort'
 
-function commonOptions(args: Argv<object>): Argv<CommonOptions> {
-  return args
-    .option('cwd', {
-      alias: 'C',
-      type: 'string',
-      describe: 'specify the current working directory',
-    })
-    .option('loglevel', {
-      type: 'string',
-      describe: 'log level',
-      choices: LOG_LEVELS,
-    })
-    .option('failOnOutdated', {
-      type: 'boolean',
-      describe: 'exit with code 1 if outdated dependencies are found',
-    })
-    .option('silent', {
-      alias: 's',
-      type: 'boolean',
-      describe: 'complete silent',
-    })
-    .option('recursive', {
-      alias: 'r',
-      type: 'boolean',
-      describe: 'recursively search for package.json in subdirectories',
-    })
-    .option('force', {
-      alias: 'f',
-      type: 'boolean',
-      describe: 'force fetching from server, bypass cache',
-    })
-    .option('ignore-paths', {
-      type: 'string',
-      describe: 'ignore paths for search package.json',
-    })
-    .option('ignore-other-workspaces', {
-      type: 'boolean',
-      default: true,
-      describe: 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)',
-    })
-    .option('include', {
-      alias: 'n',
-      type: 'string',
-      describe: 'only included dependencies will be checked for updates',
-    })
-    .option('exclude', {
-      alias: 'x',
-      type: 'string',
-      describe: 'exclude dependencies to be checked, will override --include options',
-    })
-}
+const cli: CAC = cac('taze')
 
-// eslint-disable-next-line ts/no-unused-expressions
-yargs(hideBin(process.argv))
-  .scriptName('taze')
-  .usage('$0 [args]')
-  .command(
-    '* [mode]',
-    'Keeps your deps fresh',
-    (args) => {
-      return commonOptions(args)
-        .positional('mode', {
-          type: 'string',
-          describe: 'the mode how version range resolves, can be "default", "major", "minor", "latest" or "newest"',
-          choices: MODE_CHOICES,
-        })
-        .option('write', {
-          alias: 'w',
-          type: 'boolean',
-          describe: 'write to package.json',
-        })
-        .option('global', {
-          alias: 'g',
-          type: 'boolean',
-          describe: 'update global packages',
-        })
-        .option('interactive', {
-          alias: 'I',
-          type: 'boolean',
-          describe: 'interactive mode',
-        })
-        .option('install', {
-          alias: 'i',
-          type: 'boolean',
-          describe: 'install directly after bumping',
-        })
-        .option('update', {
-          alias: 'u',
-          type: 'boolean',
-          describe: 'update directly after bumping',
-        })
-        .option('all', {
-          alias: 'a',
-          type: 'boolean',
-          describe: 'show all packages up to date info',
-        })
-        .option('sort', {
-          type: 'string',
-          choices: SORT_CHOICES,
-          describe: 'sort by most outdated absolute or relative to dependency',
-        })
-        .option('group', {
-          type: 'boolean',
-          describe: 'group dependencies by source on display',
-        })
-        .option('includeLocked', {
-          alias: 'l',
-          type: 'boolean',
-          describe: 'include locked dependencies & devDependencies',
-        })
-        .option('timediff', {
-          type: 'boolean',
-          describe: 'show time difference between the current and the updated version',
-        })
-        .help()
-    },
-    async (args) => {
-      let exitCode
-      if (args.global)
-        exitCode = await checkGlobal(await resolveConfig(args))
-      else
-        exitCode = await check(await resolveConfig(args))
+cli
+  .command('[mode]', 'Keeps your deps fresh')
+  .option('--cwd, -C <cwd>', 'specify the current working directory')
+  .option('--loglevel <level>', `log level (${LOG_LEVELS.join('|')})`)
+  .option('--fail-on-outdated', 'exit with code 1 if outdated dependencies are found')
+  .option('--silent, -s', 'complete silent')
+  .option('--recursive, -r', 'recursively search for package.json in subdirectories')
+  .option('--force, -f', 'force fetching from server, bypass cache')
+  .option('--ignore-paths <paths>', 'ignore paths for search package.json')
+  .option('--ignore-other-workspaces', 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)', { default: true })
+  .option('--include, -n <deps>', 'only included dependencies will be checked for updates')
+  .option('--exclude, -x <deps>', 'exclude dependencies to be checked, will override --include options')
+  .option('--write, -w', 'write to package.json')
+  .option('--global, -g', 'update global packages')
+  .option('--interactive, -I', 'interactive mode')
+  .option('--install, -i', 'install directly after bumping')
+  .option('--update, -u', 'update directly after bumping')
+  .option('--all, -a', 'show all packages up to date info')
+  .option('--sort <type>', `sort by most outdated absolute or relative to dependency (${SORT_CHOICES.join('|')})`)
+  .option('--group', 'group dependencies by source on display')
+  .option('--include-locked, -l', 'include locked dependencies & devDependencies')
+  .option('--timediff', 'show time difference between the current and the updated version')
+  .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
+    if (mode && !MODE_CHOICES.includes(mode)) {
+      console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join('|')}`)
+      process.exit(1)
+    }
+    let exitCode
+    if (options.global)
+      exitCode = await checkGlobal(await resolveConfig({ ...options, mode } as CheckOptions))
+    else
+      exitCode = await check(await resolveConfig({ ...options, mode } as CheckOptions))
 
-      process.exit(exitCode)
-    },
-  )
-  .showHelpOnFail(false)
-  .alias('h', 'help')
-  .version('version', pkgJson.version)
-  .alias('v', 'version')
-  .help()
-  .argv
+    process.exit(exitCode)
+  })
+
+cli.help()
+cli.version(pkgJson.version)
+
+cli.parse()
 
 restoreCursor()

@@ -6,8 +6,8 @@ import type {
   PackageMeta,
 } from '../../types'
 import { detect, parseNi, parseNu, run } from '@antfu/ni'
+import prompts from '@posva/prompts'
 import c from 'ansis'
-import prompts from 'prompts'
 import { builtinAddons } from '../../addons'
 import { CheckPackages } from '../../api/check'
 import { writePackage } from '../../io/packages'
