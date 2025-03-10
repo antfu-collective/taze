@@ -8,7 +8,6 @@ import { hideBin } from 'yargs/helpers'
 import pkgJson from '../package.json'
 import { check } from './commands/check'
 import { checkGlobal } from './commands/check/checkGlobal'
-import { usage } from './commands/usage'
 import { resolveConfig } from './config'
 import { LOG_LEVELS, MODE_CHOICES } from './constants'
 import { SORT_CHOICES } from './utils/sort'
@@ -69,21 +68,6 @@ function commonOptions(args: Argv<object>): Argv<CommonOptions> {
 yargs(hideBin(process.argv))
   .scriptName('taze')
   .usage('$0 [args]')
-  .command(
-    'usage',
-    'List dependencies versions usage across packages',
-    (args) => {
-      return commonOptions(args)
-        .option('detail', {
-          alias: 'a',
-          type: 'boolean',
-          describe: 'show more info',
-        })
-        .help()
-        .demandOption('recursive', c.yellow('Please add -r to analysis usages'))
-    },
-    async args => usage(await resolveConfig({ ...args, recursive: true })),
-  )
   .command(
     '* [mode]',
     'Keeps your deps fresh',

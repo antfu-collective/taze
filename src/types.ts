@@ -90,11 +90,6 @@ export interface CommonOptions {
   addons?: Addon[]
 }
 
-export interface UsageOptions extends CommonOptions {
-  detail?: boolean
-  recursive?: true
-}
-
 export type DepFieldOptions = Partial<Record<DepType, boolean>>
 
 export interface CheckOptions extends CommonOptions {

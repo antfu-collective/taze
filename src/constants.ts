@@ -1,4 +1,4 @@
-import type { CheckOptions, CommonOptions, UsageOptions } from './types'
+import type { CheckOptions, CommonOptions } from './types'
 
 export const LOG_LEVELS = ['debug', 'info', 'warn', 'error', 'silent'] as const
 
@@ -24,12 +24,6 @@ export const DEFAULT_COMMON_OPTIONS: CommonOptions = {
   include: '',
   exclude: '',
   depFields: {},
-}
-
-export const DEFAULT_USAGE_OPTIONS: UsageOptions = {
-  ...DEFAULT_COMMON_OPTIONS,
-  detail: false,
-  recursive: true,
 }
 
 export const DEFAULT_CHECK_OPTIONS: CheckOptions = {

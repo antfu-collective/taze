@@ -3,7 +3,7 @@ import process from 'node:process'
 import _debug from 'debug'
 import deepmerge from 'deepmerge'
 import { createConfigLoader } from 'unconfig'
-import { DEFAULT_CHECK_OPTIONS, DEFAULT_USAGE_OPTIONS } from './constants'
+import { DEFAULT_CHECK_OPTIONS } from './constants'
 import { toArray } from './utils/toArray'
 
 const debug = _debug('taze:config')
@@ -24,9 +24,9 @@ function normalizeConfig<T extends CommonOptions>(options: T) {
 }
 
 export async function resolveConfig<T extends CommonOptions>(
-  options: T & { _?: (string | number)[] },
+  options: T,
 ): Promise<T> {
-  const defaults = options?._?.[0] === 'usage' ? DEFAULT_USAGE_OPTIONS : DEFAULT_CHECK_OPTIONS
+  const defaults = DEFAULT_CHECK_OPTIONS
   options = normalizeConfig(options)
 
   const loader = createConfigLoader<CommonOptions>({
