@@ -50,10 +50,10 @@ export async function resolveConfig(
   const config = await loader.load()
 
   if (!config.sources.length)
-    return deepmerge(defaults, options as T) as T
+    return deepmerge(defaults, options)
 
   debug(`config file found ${config.sources[0]}`)
   const configOptions = normalizeConfig(config.config)
 
-  return deepmerge(deepmerge(defaults, configOptions), options as T) as T
+  return deepmerge(deepmerge(defaults, configOptions), options)
 }

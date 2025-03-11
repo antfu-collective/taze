@@ -35,16 +35,20 @@ cli
   .option('--include-locked, -l', 'include locked dependencies & devDependencies')
   .option('--timediff', 'show time difference between the current and the updated version')
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
-    mode ||= 'default'
-    if (!MODE_CHOICES.includes(mode)) {
-      console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join('|')}`)
-      process.exit(1)
+    if (mode) {
+      if (!MODE_CHOICES.includes(mode)) {
+        console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join('|')}`)
+        process.exit(1)
+      }
+      options.mode = mode
     }
+    const resolved = await resolveConfig(options)
+
     let exitCode
     if (options.global)
-      exitCode = await checkGlobal(await resolveConfig({ ...options, mode } as CheckOptions))
+      exitCode = await checkGlobal(resolved)
     else
-      exitCode = await check(await resolveConfig({ ...options, mode } as CheckOptions))
+      exitCode = await check(resolved)
 
     process.exit(exitCode)
   })
