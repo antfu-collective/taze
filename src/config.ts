@@ -1,17 +1,17 @@
 import type { CommonOptions } from './types'
 import process from 'node:process'
+import { toArray } from '@antfu/utils'
 import _debug from 'debug'
 import deepmerge from 'deepmerge'
 import { createConfigLoader } from 'unconfig'
-import { DEFAULT_CHECK_OPTIONS, DEFAULT_USAGE_OPTIONS } from './constants'
-import { toArray } from './utils/toArray'
+import { DEFAULT_CHECK_OPTIONS } from './constants'
 
 const debug = _debug('taze:config')
 
-function normalizeConfig<T extends CommonOptions>(options: T) {
+function normalizeConfig(options: CommonOptions) {
   // interop
   if ('default' in options)
-    options = options.default as T
+    options = options.default as CommonOptions
 
   options.ignorePaths = toArray(options.ignorePaths)
   options.exclude = toArray(options.exclude)
@@ -23,10 +23,10 @@ function normalizeConfig<T extends CommonOptions>(options: T) {
   return options
 }
 
-export async function resolveConfig<T extends CommonOptions>(
-  options: T & { _?: (string | number)[] },
-): Promise<T> {
-  const defaults = options?._?.[0] === 'usage' ? DEFAULT_USAGE_OPTIONS : DEFAULT_CHECK_OPTIONS
+export async function resolveConfig(
+  options: CommonOptions,
+): Promise<CommonOptions> {
+  const defaults = DEFAULT_CHECK_OPTIONS
   options = normalizeConfig(options)
 
   const loader = createConfigLoader<CommonOptions>({
@@ -50,10 +50,10 @@ export async function resolveConfig<T extends CommonOptions>(
   const config = await loader.load()
 
   if (!config.sources.length)
-    return deepmerge(defaults, options as T) as T
+    return deepmerge(defaults, options)
 
   debug(`config file found ${config.sources[0]}`)
   const configOptions = normalizeConfig(config.config)
 
-  return deepmerge(deepmerge(defaults, configOptions), options as T) as T
+  return deepmerge(deepmerge(defaults, configOptions), options)
 }

@@ -1,5 +1,5 @@
 import type { Agent } from 'package-manager-detector'
-import type { Document } from 'yaml'
+import type { PnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import type { MODE_CHOICES } from './constants'
 import type { SortOption } from './utils/sort'
 
@@ -14,7 +14,7 @@ export type DepType =
   | 'pnpm.overrides'
   | 'resolutions'
   | 'overrides'
-  | 'pnpm:catalog'
+  | 'pnpm-workspace'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -25,7 +25,7 @@ export const DependenciesTypeShortMap = {
   'resolutions': 'resolutions',
   'overrides': 'overrides',
   'pnpm.overrides': 'pnpm-overrides',
-  'pnpm:catalog': 'catalog',
+  'pnpm-workspace': 'pnpm-workspace',
 }
 
 export interface RawDep {
@@ -90,11 +90,6 @@ export interface CommonOptions {
    * @default builtin addons
    */
   addons?: Addon[]
-}
-
-export interface UsageOptions extends CommonOptions {
-  detail?: boolean
-  recursive?: true
 }
 
 export type DepFieldOptions = Partial<Record<DepType, boolean>>
@@ -192,7 +187,7 @@ export interface GlobalPackageMeta extends BasePackageMeta {
 export interface PnpmWorkspaceMeta extends BasePackageMeta {
   type: 'pnpm-workspace.yaml'
   raw: any
-  document: Document
+  context: PnpmWorkspaceYaml
 }
 
 export type PackageMeta =

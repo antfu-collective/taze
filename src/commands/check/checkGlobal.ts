@@ -1,8 +1,8 @@
 import type { CheckOptions, GlobalPackageMeta, RawDep } from '../../types'
 /* eslint-disable no-console */
 import { getCommand } from '@antfu/ni'
+import prompts from '@posva/prompts'
 import c from 'ansis'
-import prompts from 'prompts'
 import { exec } from 'tinyexec'
 import { dumpDependencies } from '../../io/dependencies'
 import { resolvePackage } from '../../io/resolves'

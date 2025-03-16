@@ -1,4 +1,4 @@
-import { toArray } from './toArray'
+import { toArray } from '@antfu/utils'
 
 function escapeRegExp(str: string) {
   return str.replace(/[.+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
