@@ -40,7 +40,7 @@
     "ofetch": "^1.4.1",
     "package-manager-detector": "^1.1.0",
     "pathe": "^2.0.3",
-    "pnpm-workspace-yaml": "^0.3.1",
+    "pnpm-workspace-yaml": "^0.2.0",
     "restore-cursor": "^5.1.0",
     "tinyexec": "^1.0.1",
     "tinyglobby": "^0.2.12",

@@ -27,8 +27,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       pnpm-workspace-yaml:
-        specifier: ^0.3.1
-        version: 0.3.1
+        specifier: ^0.2.0
+        version: 0.2.0
       restore-cursor:
         specifier: ^5.1.0
         version: 5.1.0
@@ -2441,6 +2441,9 @@ packages:
   pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
+
+  pnpm-workspace-yaml@0.2.0:
+    resolution: {integrity: sha512-LWDk/rDoTPfW9GSsP26VSGlmnY8xel5/VNINmSh7h8svszptWWwzuLS16YT8Pb19Mw1qq7JlSKhgfb+4Pq0lxw==}
 
   pnpm-workspace-yaml@0.3.1:
     resolution: {integrity: sha512-3nW5RLmREmZ8Pm8MbPsO2RM+99RRjYd25ynj3NV0cFsN7CcEl4sDFzgoFmSyduFwxFQ2Qbu3y2UdCh6HlyUOeA==}
@@ -5638,6 +5641,10 @@ snapshots:
       pathe: 2.0.3
 
   pluralize@8.0.0: {}
+
+  pnpm-workspace-yaml@0.2.0:
+    dependencies:
+      yaml: 2.7.0
 
   pnpm-workspace-yaml@0.3.1:
     dependencies:
