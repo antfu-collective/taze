@@ -13,7 +13,7 @@ export async function loadPnpmWorkspace(
   const filepath = resolve(options.cwd ?? '', relative)
   const rawText = await readFile(filepath, 'utf-8')
   const context = parsePnpmWorkspaceYaml(rawText)
-  const raw = context.document.toJSON()
+  const raw = context.getDocument().toJSON()
 
   const catalogs: PnpmWorkspaceMeta[] = []
 
