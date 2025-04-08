@@ -74,6 +74,17 @@ taze --include /react/ --exclude react-dom # regex is also supported
 
 Locked (fixed version without `^` or `~`) packages are skipped by default, use `taze --include-locked` or `taze -l` to show them.
 
+### Peer Dependencies
+
+`taze` now supports updating `peerDependencies` alongside `dependencies` and `devDependencies`. Use the `-P` or `--peer` option to include `peerDependencies` in the update process.
+
+```bash
+# Include peerDependencies in the update
+npx taze -P
+```
+
+This ensures that `peerDependencies` are kept in sync with the updated versions of `devDependencies` and `dependencies`.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.

@@ -7,6 +7,7 @@ import { readJSON, writeJSON } from './packages'
 const depsFields = [
   'dependencies',
   'devDependencies',
+  'peerDependencies', // Added peerDependencies
   'optionalDependencies',
   'packageManager',
   'pnpm.overrides',
