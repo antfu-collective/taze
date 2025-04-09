@@ -76,7 +76,7 @@ Locked (fixed version without `^` or `~`) packages are skipped by default, use `
 
 ### Peer Dependencies
 
-`taze` now supports updating `peerDependencies` alongside `dependencies` and `devDependencies`. Use the `-P` or `--peer` option to include `peerDependencies` in the update process.
+Bumping version in `peerDependencies` is not enabled by default. Use the `-P` or `--peer` option to include them in the update process.
 
 ```bash
 # Include peerDependencies in the update
