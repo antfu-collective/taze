@@ -13,7 +13,7 @@ export async function loadPnpmWorkspace(
   const filepath = resolve(options.cwd ?? '', relative)
   const rawText = await readFile(filepath, 'utf-8')
   const context = parsePnpmWorkspaceYaml(rawText)
-  const raw = context.document.toJSON()
+  const raw = context.getDocument().toJSON()
 
   const catalogs: PnpmWorkspaceMeta[] = []
 
@@ -35,13 +35,13 @@ export async function loadPnpmWorkspace(
     } satisfies PnpmWorkspaceMeta
   }
 
-  if (raw.catalog) {
+  if (raw?.catalog) {
     catalogs.push(
       createPnpmWorkspaceEntry('pnpm-catalog:default', raw.catalog),
     )
   }
 
-  if (raw.catalogs) {
+  if (raw?.catalogs) {
     for (const key of Object.keys(raw.catalogs)) {
       catalogs.push(
         createPnpmWorkspaceEntry(`pnpm-catalog:${key}`, raw.catalogs[key]),
@@ -49,7 +49,7 @@ export async function loadPnpmWorkspace(
     }
   }
 
-  if (raw.overrides) {
+  if (raw?.overrides) {
     catalogs.push(
       createPnpmWorkspaceEntry('pnpm-workspace:overrides', raw.overrides),
     )

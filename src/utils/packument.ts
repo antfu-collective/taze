@@ -51,6 +51,11 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
         (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
       ),
     ])
+
+    if ('error' in data) {
+      throw new Error(`Failed to fetch package "${spec}": ${data.error}`)
+    }
+
     return {
       tags: data.distTags,
       versions: Object.keys(data.versionsMeta),
