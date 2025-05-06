@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseDependencies } from '../src/io/dependencies'
+import { isLocalPackage, isUrlPackage } from '../src/io/resolves'
 
 describe('parseDependencies', () => {
   it('parse package `dependencies`', () => {
@@ -60,6 +61,90 @@ describe('parseDependencies', () => {
           },
         ]
       `)
+  })
+
+  it('parse package `dependencies` should exclude URL version', () => {
+    const myPackage = {
+      name: '@taze/package1',
+      private: true,
+      dependencies: {
+        '@taze/not-exists': '^4.13.19',
+        '@typescript/lib-dom': 'npm:@types/web@^0.0.80',
+        'my-lib1': 'https://example.com/packages/my-lib1-1.0.0.tgz',
+        'my-lib2': 'git+https://github.com/user/my-lib2.git',
+        'my-lib3': 'github:user/my-lib3#v1.2.3',
+        'my-lib4': 'file:../my-lib4',
+      },
+    }
+    const result = parseDependencies(myPackage, 'dependencies', () => true)
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "currentVersion": "^4.13.19",
+          "name": "@taze/not-exists",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@types/web@^0.0.80",
+          "name": "@typescript/lib-dom",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "https://example.com/packages/my-lib1-1.0.0.tgz",
+          "name": "my-lib1",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "git+https://github.com/user/my-lib2.git",
+          "name": "my-lib2",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "github:user/my-lib3#v1.2.3",
+          "name": "my-lib3",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "file:../my-lib4",
+          "name": "my-lib4",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+      ]
+    `)
+
+    expect(
+      result
+        .filter(i => !isUrlPackage(i.currentVersion) && !isLocalPackage(i.currentVersion)),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "currentVersion": "^4.13.19",
+          "name": "@taze/not-exists",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@types/web@^0.0.80",
+          "name": "@typescript/lib-dom",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+      ]
+    `)
   })
 
   it('parse package `pnpm.overrides`', () => {

@@ -27,8 +27,13 @@ export function setByPath(obj: any, path: string, value: any) {
   target[lastKey] = value
 }
 
-export function parseDependencies(pkg: any, type: DepType, shouldUpdate: (name: string) => boolean): RawDep[] {
-  return Object.entries(getByPath(pkg, type) || {}).map(([name, { version, parents }]) => parseDependency(name, version, type, shouldUpdate, parents))
+export function parseDependencies(
+  pkg: any,
+  type: DepType,
+  shouldUpdate: (name: string) => boolean,
+): RawDep[] {
+  return Object.entries(getByPath(pkg, type) || {})
+    .map(([name, { version, parents }]) => parseDependency(name, version, type, shouldUpdate, parents))
 }
 
 export function parseDependency(name: string, version: string, type: DepType, shouldUpdate: (name: string) => boolean, parents?: string[]): RawDep {
