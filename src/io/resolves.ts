@@ -65,7 +65,9 @@ export async function getPackageData(name: string): Promise<PackageData> {
       debug.cache(`cache hit for ${name}`)
       return cache[name].data
     }
-    else { delete cache[name] }
+    else {
+      delete cache[name]
+    }
   }
 
   try {
@@ -75,9 +77,7 @@ export async function getPackageData(name: string): Promise<PackageData> {
 
     if (data) {
       cache[name] = { data, cacheTime: now() }
-
       cacheChanged = true
-
       return data
     }
   }

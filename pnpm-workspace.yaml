@@ -2,3 +2,4 @@ packages:
   - '!**/test/**'
 onlyBuiltDependencies:
   - esbuild
+  - unrs-resolver

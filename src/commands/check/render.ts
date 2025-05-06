@@ -27,6 +27,7 @@ export function renderChange(
   interactive?: InteractiveContext,
   grouped = false,
   timediff = true,
+  nodecompat = true,
 ) {
   const update = change.update && (!interactive || interactive.isChecked(change))
   const pre = interactive
@@ -55,22 +56,10 @@ export function renderChange(
     (change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
       ? c.dim.magenta`(${change.latestVersionAvailable} available)`
       : '',
+    nodecompat
+      ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
+      : '',
   ]
-}
-
-export function renderAppendedChanges(
-  change: ResolvedDepChange,
-  nodeCompat = true,
-) {
-  const appendedChanges: string[] = []
-  if (nodeCompat) {
-    appendedChanges.push(
-      change.nodeCompatibleVersion
-        ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
-        : c.yellow(`NA`),
-    )
-  }
-  return appendedChanges
 }
 
 export function renderChanges(
@@ -89,7 +78,6 @@ export function renderChanges(
   const {
     sort = 'diff-asc',
     group = true,
-    nodecompat = true,
   } = options
 
   if (changes.length) {
@@ -124,8 +112,14 @@ export function renderChanges(
     )
 
     const table = formatTable(
-      changes.map(c => renderChange(c, interactive, group, options.timediff ?? true)),
-      'LLRRRRRL',
+      changes.map(c => renderChange(
+        c,
+        interactive,
+        group,
+        options.timediff ?? true,
+        options.nodecompat ?? true,
+      )),
+      'LLRRRRRLL',
     )
 
     const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))
@@ -138,28 +132,19 @@ export function renderChanges(
           groups.set(key, [])
         groups.get(key)!.push(change)
       }
-
-      const groupsTable: string[] = []
       // Use predefined order
       for (const key of Object.keys(DependenciesTypeShortMap)) {
         const group = groups.get(key)
         if (!group)
           continue
-        if (groupsTable.at(-1) !== '')
-          groupsTable.push('')
-        const groupTable: string[][] = []
-        groupTable.push([`  ${c.blue(key)}`, 'Node compatibility'])
-        groupTable.push(...group.map(change => [`  ${changeToTable.get(change)!}`, ...renderAppendedChanges(change, nodecompat)]))
-        groupsTable.push(...formatTable(groupTable, 'LL'))
+        if (lines.at(-1) !== '')
+          lines.push('')
+        lines.push(`  ${c.blue(key)}`)
+        lines.push(...group.map(change => `  ${changeToTable.get(change)!}`))
       }
-      lines.push(...groupsTable)
     }
     else {
-      const fullTable = formatTable([
-        ['', c.blue('Node compatibility')],
-        ...changes.map(change => [`  ${changeToTable.get(change)!}`, ...renderAppendedChanges(change, nodecompat)]),
-      ], 'LL')
-      lines.push(...fullTable)
+      lines.push(...table)
     }
 
     lines.push('')
