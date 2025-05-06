@@ -1,19 +1,27 @@
-import type { CommonOptions, PackageMeta, RawDep } from '../types'
+import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
 import { resolve } from 'pathe'
 import { builtinAddons } from '../addons'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
 import { readJSON, writeJSON } from './packages'
 
-const depsFields = [
+const allDepsFields = [
   'dependencies',
   'devDependencies',
-  'peerDependencies', // Added peerDependencies
+  'peerDependencies',
   'optionalDependencies',
   'packageManager',
   'pnpm.overrides',
   'resolutions',
   'overrides',
-] as const
+] as const satisfies DepType[]
+
+function isDepFieldEnabled(key: DepType, options: CommonOptions): boolean {
+  if (options.depFields?.[key] === false)
+    return false
+  if (key === 'peerDependencies')
+    return !!options.peer
+  return true
+}
 
 export async function loadPackageJSON(
   relative: string,
@@ -24,18 +32,19 @@ export async function loadPackageJSON(
   const raw = await readJSON(filepath)
   const deps: RawDep[] = []
 
-  for (const key of depsFields) {
-    if (options.depFields?.[key] !== false) {
-      if (key === 'packageManager') {
-        if (raw.packageManager) {
-          const [name, version] = raw.packageManager.split('@')
-          // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
-          deps.push(parseDependency(name, `^${version.split('+')[0]}`, 'packageManager', shouldUpdate))
-        }
+  for (const key of allDepsFields) {
+    if (!isDepFieldEnabled(key, options))
+      continue
+
+    if (key === 'packageManager') {
+      if (raw.packageManager) {
+        const [name, version] = raw.packageManager.split('@')
+        // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
+        deps.push(parseDependency(name, `^${version.split('+')[0]}`, 'packageManager', shouldUpdate))
       }
-      else {
-        deps.push(...parseDependencies(raw, key, shouldUpdate))
-      }
+    }
+    else {
+      deps.push(...parseDependencies(raw, key, shouldUpdate))
     }
   }
 
@@ -60,9 +69,10 @@ export async function writePackageJSON(
 ) {
   let changed = false
 
-  depsFields.forEach((key) => {
-    if (options.depFields?.[key] === false)
-      return
+  for (const key of allDepsFields) {
+    if (!isDepFieldEnabled(key, options))
+      continue
+
     if (key === 'packageManager') {
       const value = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))[0]
       if (value) {
@@ -76,7 +86,7 @@ export async function writePackageJSON(
         changed = true
       }
     }
-  })
+  }
 
   if (changed) {
     for (const addon of (options.addons || builtinAddons)) {

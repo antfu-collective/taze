@@ -70,20 +70,17 @@ taze --include lodash,webpack
 taze --include /react/ --exclude react-dom # regex is also supported
 ```
 
-### Lockedversion
+### Locked Versions
 
 Locked (fixed version without `^` or `~`) packages are skipped by default, use `taze --include-locked` or `taze -l` to show them.
 
 ### Peer Dependencies
 
-Bumping version in `peerDependencies` is not enabled by default. Use the `-P` or `--peer` option to include them in the update process.
+Bumping version in `peerDependencies` is not enabled by default. Pass `--peer` option to include them in the update process.
 
 ```bash
-# Include peerDependencies in the update
-npx taze -P
+taze --peer
 ```
-
-This ensures that `peerDependencies` are kept in sync with the updated versions of `devDependencies` and `dependencies`.
 
 ### Config file
 
