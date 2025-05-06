@@ -181,7 +181,7 @@ export async function resolveDependency(
         ? optionMode
         : optionMode === 'default' ? configMode : 'ignore'
     : optionMode
-  if (isLocalPackage(raw.currentVersion) || !raw.update || !await Promise.resolve(filter(raw)) || mergeMode === 'ignore') {
+  if (isLocalPackage(raw.currentVersion) || isUrlPackage(raw.currentVersion) || !raw.update || !await Promise.resolve(filter(raw)) || mergeMode === 'ignore') {
     return {
       ...raw,
       diff: null,
@@ -292,17 +292,15 @@ export async function resolvePackage(pkg: PackageMeta, options: CheckOptions, fi
   return pkg
 }
 
-function isLocalPackage(currentVersion: string) {
-  const localPackagePrefix = [
-    'link:',
-    'file:',
-    'workspace:',
-    'catalog:',
-  ]
-  return localPackagePrefix.some(prefix => currentVersion.startsWith(prefix))
+export function isUrlPackage(currentVersion: string) {
+  return /^(?:https?:|git\+|github:)/.test(currentVersion)
 }
 
-function isAliasedPackage(currentVersion: string) {
+export function isLocalPackage(currentVersion: string) {
+  return /^(?:link|file|workspace|catalog):/.test(currentVersion)
+}
+
+export function isAliasedPackage(currentVersion: string) {
   return currentVersion.startsWith('npm:')
 }
 
