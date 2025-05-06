@@ -34,6 +34,7 @@ cli
   .option('--group', 'group dependencies by source on display')
   .option('--include-locked, -l', 'include locked dependencies & devDependencies')
   .option('--timediff', 'show time difference between the current and the updated version')
+  .option('--nodecompat', 'show package compatibility with current node version')
   .option('--peer', 'Include peerDependencies in the update process')
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
     if (mode) {

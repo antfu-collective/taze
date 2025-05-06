@@ -1,3 +1,4 @@
+import type { PackageVersionsInfoWithMetadata } from 'fast-npm-meta'
 import type { PackageData } from '../types'
 import process from 'node:process'
 import { getVersions, pickRegistry } from 'fast-npm-meta'
@@ -45,12 +46,13 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
       getVersions(spec, {
         force,
         fetch,
+        throw: false,
         metadata: true,
       }),
       new Promise<ReturnType<typeof getVersions>>(
         (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
       ),
-    ])
+    ]) as PackageVersionsInfoWithMetadata
 
     if ('error' in data) {
       throw new Error(`Failed to fetch package "${spec}": ${data.error}`)
@@ -67,6 +69,11 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
         created: data.timeCreated,
         modified: data.timeModified,
       },
+      nodeSemver: { ...Object.fromEntries(
+        Object.entries(data.versionsMeta)
+          .map(([version, meta]) => [version, meta.engines?.node])
+          .filter(([_, node]) => node),
+      ) },
     }
   }
 

@@ -1,6 +1,7 @@
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
+import process from 'node:process'
 import _debug from 'debug'
 import pLimit from 'p-limit'
 import { resolve } from 'pathe'
@@ -64,7 +65,9 @@ export async function getPackageData(name: string): Promise<PackageData> {
       debug.cache(`cache hit for ${name}`)
       return cache[name].data
     }
-    else { delete cache[name] }
+    else {
+      delete cache[name]
+    }
   }
 
   try {
@@ -74,9 +77,7 @@ export async function getPackageData(name: string): Promise<PackageData> {
 
     if (data) {
       cache[name] = { data, cacheTime: now() }
-
       cacheChanged = true
-
       return data
     }
   }
@@ -247,6 +248,20 @@ export async function resolveDependency(
     const targetVersion = semver.minVersion(target || dep.targetVersion)
     if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
       dep.latestVersionAvailable = tags.latest
+
+    const { nodecompat = true } = options
+    if (nodecompat) {
+      const currentNodeVersion = process.version
+      const { nodeSemver } = dep.pkgData
+      if (nodeSemver
+        && targetVersion?.version
+        && targetVersion?.version in nodeSemver) {
+        dep.nodeCompatibleVersion = {
+          compatible: semver.satisfies(currentNodeVersion, nodeSemver[targetVersion?.version]),
+          semver: nodeSemver[targetVersion?.version],
+        }
+      }
+    }
   }
   catch {}
 

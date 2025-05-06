@@ -7,7 +7,15 @@ import type {
 } from '../../types'
 import c from 'ansis'
 import semver from 'semver'
-import { colorizeVersionDiff, FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, formatTable } from '../../render'
+import {
+  colorizeNodeCompatibility,
+  colorizeVersionDiff,
+  FIG_CHECK,
+  FIG_NO_POINTER,
+  FIG_POINTER,
+  FIG_UNCHECK,
+  formatTable,
+} from '../../render'
 import { DependenciesTypeShortMap } from '../../types'
 import { DiffColorMap } from '../../utils/diff'
 import { sortDepChanges } from '../../utils/sort'
@@ -19,6 +27,7 @@ export function renderChange(
   interactive?: InteractiveContext,
   grouped = false,
   timediff = true,
+  nodecompat = true,
 ) {
   const update = change.update && (!interactive || interactive.isChecked(change))
   const pre = interactive
@@ -46,6 +55,9 @@ export function renderChange(
       : '',
     (change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
       ? c.dim.magenta`(${change.latestVersionAvailable} available)`
+      : '',
+    nodecompat
+      ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
       : '',
   ]
 }
@@ -100,8 +112,14 @@ export function renderChanges(
     )
 
     const table = formatTable(
-      changes.map(c => renderChange(c, interactive, group, options.timediff ?? true)),
-      'LLRRRRRL',
+      changes.map(c => renderChange(
+        c,
+        interactive,
+        group,
+        options.timediff ?? true,
+        options.nodecompat ?? true,
+      )),
+      'LLRRRRRLL',
     )
 
     const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))
