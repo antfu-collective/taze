@@ -79,6 +79,10 @@ export interface CommonOptions {
    */
   force?: boolean
   /**
+   * Include peerDependencies in the update process
+   */
+  peer?: boolean
+  /**
    * Override bumping mode for specific dependencies
    */
   packageMode?: { [name: string]: PackageMode }

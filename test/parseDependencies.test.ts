@@ -279,4 +279,34 @@ describe('parseDependencies', () => {
         ]
       `)
   })
+
+  it('parse package `peerDependencies`', () => {
+    const myPackage = {
+      name: '@taze/package1',
+      private: true,
+      peerDependencies: {
+        '@taze/not-exists': '^4.13.19',
+        '@typescript/lib-dom': 'npm:@types/web@^0.0.80',
+      },
+    }
+    const result = parseDependencies(myPackage, 'peerDependencies', () => true)
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "currentVersion": "^4.13.19",
+          "name": "@taze/not-exists",
+          "parents": [],
+          "source": "peerDependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@types/web@^0.0.80",
+          "name": "@typescript/lib-dom",
+          "parents": [],
+          "source": "peerDependencies",
+          "update": true,
+        },
+      ]
+    `)
+  })
 })
