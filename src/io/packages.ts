@@ -10,6 +10,20 @@ import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
 import { loadPnpmWorkspace, writePnpmWorkspace } from './pnpmWorkspaces'
 
+export function detectLineEnding(content: string): 'crlf' | 'lf' {
+  const crlfCount = (content.match(/\r\n/g) || []).length
+  const lfCount = (content.match(/(?<!\r)\n/g) || []).length
+
+  // If CRLF is more common or equal, use CRLF; otherwise use LF
+  return crlfCount >= lfCount ? 'crlf' : 'lf'
+}
+
+export function normalizeLineEnding(content: string, lineEnding: 'crlf' | 'lf'): string {
+  // First normalize to LF, then convert to target
+  const normalized = content.replace(/\r\n/g, '\n')
+  return lineEnding === 'crlf' ? normalized.replace(/\n/g, '\r\n') : normalized
+}
+
 export async function readJSON(filepath: string) {
   return JSON.parse(await fs.readFile(filepath, 'utf-8'))
 }
@@ -17,8 +31,12 @@ export async function readJSON(filepath: string) {
 export async function writeJSON(filepath: string, data: any) {
   const actualContent = await fs.readFile(filepath, 'utf-8')
   const fileIndent = detectIndent(actualContent).indent || '  '
+  const lineEnding = detectLineEnding(actualContent)
 
-  return await fs.writeFile(filepath, `${JSON.stringify(data, null, fileIndent)}\n`, 'utf-8')
+  const jsonContent = `${JSON.stringify(data, null, fileIndent)}\n`
+  const contentWithCorrectLineEndings = normalizeLineEnding(jsonContent, lineEnding)
+
+  return await fs.writeFile(filepath, contentWithCorrectLineEndings, 'utf-8')
 }
 
 export async function writePackage(
