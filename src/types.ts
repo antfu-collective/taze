@@ -15,6 +15,7 @@ export type DepType =
   | 'resolutions'
   | 'overrides'
   | 'pnpm-workspace'
+  | 'bun-workspace'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -26,6 +27,7 @@ export const DependenciesTypeShortMap = {
   'overrides': 'overrides',
   'pnpm.overrides': 'pnpm-overrides',
   'pnpm-workspace': 'pnpm-workspace',
+  'bun-workspace': 'bun-workspace',
 }
 
 export interface RawDep {
@@ -194,10 +196,16 @@ export interface PnpmWorkspaceMeta extends BasePackageMeta {
   context: PnpmWorkspaceYaml
 }
 
+export interface BunWorkspaceMeta extends BasePackageMeta {
+  type: 'bun-workspace'
+  raw: any
+}
+
 export type PackageMeta =
   | PackageJsonMeta
   | GlobalPackageMeta
   | PnpmWorkspaceMeta
+  | BunWorkspaceMeta
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void
