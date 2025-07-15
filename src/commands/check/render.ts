@@ -102,9 +102,11 @@ export function renderChanges(
 
     const displayName = pkg.name?.startsWith('pnpm-catalog:')
       ? c.dim('pnpm-catalog:') + c.yellow(pkg.name.slice('pnpm-catalog:'.length))
-      : pkg.name
-        ? c.cyan(pkg.name)
-        : c.red('›') + c.dim(` ${filepath || ''}`.trimEnd())
+      : pkg.name?.startsWith('bun-catalog:')
+        ? c.dim('bun-catalog:') + c.yellow(pkg.name.slice('bun-catalog:'.length))
+        : pkg.name
+          ? c.cyan(pkg.name)
+          : c.red('›') + c.dim(` ${filepath || ''}`.trimEnd())
 
     lines.push(
       `${displayName} ${c.dim('-')} ${diffEntries}`,

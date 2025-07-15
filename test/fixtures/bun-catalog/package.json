@@ -1,0 +1,23 @@
+{
+  "name": "test-bun-catalog",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "catalog": {
+      "react": "^19.1.0",
+      "react-dom": "^19.1.0"
+    },
+    "catalogs": {
+      "testing": {
+        "jest": "^30.0.4",
+        "vitest": "^3.2.4"
+      },
+      "react17": {
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0"
+      }
+    }
+  }
+}

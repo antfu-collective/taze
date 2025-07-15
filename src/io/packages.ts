@@ -7,6 +7,7 @@ import { dirname, join, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
+import { loadBunWorkspace, writeBunWorkspace } from './bunWorkspaces'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
 import { loadPnpmWorkspace, writePnpmWorkspace } from './pnpmWorkspaces'
 
@@ -30,6 +31,8 @@ export async function writePackage(
       return writePackageJSON(pkg, options)
     case 'pnpm-workspace.yaml':
       return writePnpmWorkspace(pkg, options)
+    case 'bun-workspace':
+      return writeBunWorkspace(pkg, options)
     default:
       throw new Error(`Unsupported package type: ${pkg.type}`)
   }
@@ -42,6 +45,21 @@ export async function loadPackage(
 ): Promise<PackageMeta[]> {
   if (relative.endsWith('pnpm-workspace.yaml'))
     return loadPnpmWorkspace(relative, options, shouldUpdate)
+  if (relative === 'package.json' && options.cwd) {
+    // Check if this is a bun workspace root by looking for bun.lockb
+    const bunLockPath = join(options.cwd, 'bun.lockb')
+    if (existsSync(bunLockPath)) {
+      const packageJsonPath = join(options.cwd, 'package.json')
+      if (existsSync(packageJsonPath)) {
+        const packageJson = await readJSON(packageJsonPath)
+        if (packageJson?.workspaces?.catalog || packageJson?.workspaces?.catalogs) {
+          const bunWorkspaces = await loadBunWorkspace(relative, options, shouldUpdate)
+          const regularPackage = await loadPackageJSON(relative, options, shouldUpdate)
+          return [...bunWorkspaces, ...regularPackage]
+        }
+      }
+    }
+  }
   return loadPackageJSON(relative, options, shouldUpdate)
 }
 
