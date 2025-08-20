@@ -5,7 +5,7 @@ import type {
   CheckOptions,
   PackageMeta,
 } from '../../types'
-import { detect, parseNi, parseNu, run } from '@antfu/ni'
+import { detect, parseNi, parseNup, run } from '@antfu/ni'
 import prompts from '@posva/prompts'
 import c from 'ansis'
 import { builtinAddons } from '../../addons'
@@ -158,7 +158,7 @@ export async function check(options: CheckOptions) {
       console.log(c.magenta('updating...'))
       console.log()
 
-      await run(parseNu, [
+      await run(parseNup, [
         options.recursive && '-r',
         packageManager === 'pnpm' && '--no-save',
       ].filter(Boolean) as string[])
