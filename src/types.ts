@@ -5,16 +5,16 @@ import type { SortOption } from './utils/sort'
 
 export type RangeMode = typeof MODE_CHOICES[number]
 export type PackageMode = Exclude<RangeMode, 'default'> | 'ignore'
-export type DepType =
-  | 'dependencies'
-  | 'devDependencies'
-  | 'peerDependencies'
-  | 'optionalDependencies'
-  | 'packageManager'
-  | 'pnpm.overrides'
-  | 'resolutions'
-  | 'overrides'
-  | 'pnpm-workspace'
+export type DepType
+  = | 'dependencies'
+    | 'devDependencies'
+    | 'peerDependencies'
+    | 'optionalDependencies'
+    | 'packageManager'
+    | 'pnpm.overrides'
+    | 'resolutions'
+    | 'overrides'
+    | 'pnpm-workspace'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -194,10 +194,10 @@ export interface PnpmWorkspaceMeta extends BasePackageMeta {
   context: PnpmWorkspaceYaml
 }
 
-export type PackageMeta =
-  | PackageJsonMeta
-  | GlobalPackageMeta
-  | PnpmWorkspaceMeta
+export type PackageMeta
+  = | PackageJsonMeta
+    | GlobalPackageMeta
+    | PnpmWorkspaceMeta
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void
