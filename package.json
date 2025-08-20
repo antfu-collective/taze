@@ -6,13 +6,13 @@
   "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
-  "homepage": "https://github.com/antfu/taze#readme",
+  "homepage": "https://github.com/antfu-collective/taze#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/antfu/taze.git"
+    "url": "git+https://github.com/antfu-collective/taze.git"
   },
   "bugs": {
-    "url": "https://github.com/antfu/taze/issues"
+    "url": "https://github.com/antfu-collective/taze/issues"
   },
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -30,7 +30,7 @@
     "build": "unbuild",
     "typecheck": "tsc",
     "prepublishOnly": "nr build",
-    "release": "bumpp && pnpm publish --no-git-checks",
+    "release": "bumpp",
     "test": "unbuild && vitest"
   },
   "dependencies": {
