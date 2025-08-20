@@ -8,6 +8,7 @@ async function _getNpmConfig() {
   const { default: NpmCliConfig } = await import('@npmcli/config')
   const npmcliConfig = new NpmCliConfig({
     definitions: {},
+    shorthands: [],
     npmPath: dirname(process.cwd()),
     flatten: (current, total) => {
       Object.assign(total, current)
