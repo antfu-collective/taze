@@ -3,6 +3,7 @@ declare module '@npmcli/config' {
 
   export interface NpmcliConfigOptions {
     definitions: Recordable
+    shorthands: string[]
     npmPath: string
     flatten: (current: Recordable, total: Recordable) => void
   }
