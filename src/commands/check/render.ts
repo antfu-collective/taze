@@ -59,7 +59,14 @@ export function renderChange(
     nodecompat
       ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
       : '',
+    change.provenanceDowngraded
+      ? `⚠️  Provenance downgraded: ${c.bold.green(formatProvenance(change.currentProvenance))} ${c.dim.gray`→`} ${c.bold.red(formatProvenance(change.targetProvenance))}`
+      : '',
   ]
+}
+
+function formatProvenance(value: boolean | 'trustedPublisher' | undefined) {
+  return value === 'trustedPublisher' ? 'trusted publisher' : value ? 'provenance' : 'untrusted'
 }
 
 export function renderChanges(
