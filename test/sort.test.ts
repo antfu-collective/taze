@@ -18,6 +18,7 @@ describe('sort resolvedDepChanges', () => {
     targetVersionTime: '2022-08-25T23:05:19.632Z',
     currentVersionTime: '2022-06-17T18:21:36.833Z',
     diff: 'minor',
+    provenanceDowngraded: false,
   }
   const pkgSemver: ResolvedDepChange = {
     name: '@types/semver',
@@ -29,6 +30,7 @@ describe('sort resolvedDepChanges', () => {
     targetVersionTime: '2022-08-11T21:32:18.856Z',
     currentVersionTime: '2022-06-15T15:31:45.821Z',
     diff: 'patch',
+    provenanceDowngraded: false,
   }
   const pkgYargs: ResolvedDepChange = {
     name: '@types/yargs',
@@ -40,6 +42,7 @@ describe('sort resolvedDepChanges', () => {
     targetVersionTime: '2022-08-29T23:35:23.067Z',
     currentVersionTime: '2022-03-17T22:32:10.747Z',
     diff: 'patch',
+    provenanceDowngraded: false,
   }
   const pkgUnbuild: ResolvedDepChange = {
     name: 'unbuild',
@@ -52,6 +55,7 @@ describe('sort resolvedDepChanges', () => {
     currentVersionTime: '2022-04-13T18:40:08.452Z',
     diff: 'patch',
     latestVersionAvailable: '0.8.10',
+    provenanceDowngraded: false,
   }
 
   const input = Object.freeze([pkgTypescript, pkgSemver, pkgYargs, pkgUnbuild])
