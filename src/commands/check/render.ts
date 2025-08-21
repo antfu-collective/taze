@@ -42,7 +42,7 @@ export function renderChange(
     name = c.dim`${change.aliasName} ← ` + change.name
 
   return [
-    `${pre} ${update ? name : c.gray(name)}`,
+    `${pre} ${update ? change.provenanceDowngraded ? c.bgRed(name) : name : c.gray(name)}`,
     grouped ? '' : c.gray(DependenciesTypeShortMap[change.source]),
     timediff ? timeDifference(change.currentVersionTime) : '',
     c.gray(change.currentVersion),
@@ -60,13 +60,13 @@ export function renderChange(
       ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
       : '',
     change.provenanceDowngraded
-      ? `⚠️  Provenance downgraded: ${c.bold.green(formatProvenance(change.currentProvenance))} ${c.dim.gray`→`} ${c.bold.red(formatProvenance(change.targetProvenance))}`
+      ? `🦠 ${c.bold.green(formatProvenance(change.currentProvenance))} ${c.dim.gray`→`} ${c.bold.red(formatProvenance(change.targetProvenance))}`
       : '',
   ]
 }
 
 function formatProvenance(value: boolean | 'trustedPublisher' | undefined) {
-  return value === 'trustedPublisher' ? 'trusted publisher' : value ? 'provenance' : 'untrusted'
+  return value === 'trustedPublisher' ? 'trusted' : value ? 'provenance' : 'untrusted'
 }
 
 export function renderChanges(
@@ -152,6 +152,10 @@ export function renderChanges(
     }
     else {
       lines.push(...table)
+    }
+
+    if (changes.some(c => c.provenanceDowngraded)) {
+      lines.push(c.yellow.bold`\n🦠 The package provenance has been downgraded, which may indicate a risk of malicious publishing. Please carefully review the package contents and check community feedback.`)
     }
 
     lines.push('')
