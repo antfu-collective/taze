@@ -114,6 +114,11 @@ export function updateTargetVersion(
 
   dep.targetVersion = getPrefixedVersion(dep.currentVersion, version) || dep.currentVersion
   dep.targetVersionTime = dep.pkgData.time?.[version]
+  dep.currentProvenance = dep.pkgData.provenance?.[dep.currentVersion]
+  dep.targetProvenance = dep.pkgData.provenance?.[dep.targetVersion]
+  dep.provenanceDowngraded
+  = !!(dep.currentProvenance && !dep.targetProvenance) // trusted -> none, provenance -> none
+    || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
 
   if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion)) {
     // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)

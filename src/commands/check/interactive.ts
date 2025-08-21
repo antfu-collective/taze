@@ -23,7 +23,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
   pkgs.forEach((pkg) => {
     pkg.resolved.forEach((dep) => {
-      if (dep.update) {
+      if (dep.update && !dep.provenanceDowngraded) {
         checked.add(dep)
       }
       else if (dep.latestVersionAvailable) {

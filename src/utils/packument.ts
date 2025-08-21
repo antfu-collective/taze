@@ -7,13 +7,22 @@ import { joinURL } from 'ufo'
 
 // @types/pacote uses "import = require()" syntax which is not supported by unbuild
 // So instead of using @types/pacote, we declare the type definition with only fields we need
-interface Packument {
+export interface PackumentVersion {
+  name: string
+  dist: {
+    attestations: {
+      provenance?: { predicateType: string }
+    }
+  }
+}
+
+export interface Packument {
   'name': string
   /**
    * An object where each key is a version, and each value is the manifest for
    * that version.
    */
-  'versions': Record<string, Omit<Packument, 'versions'>>
+  'versions': Record<string, PackumentVersion>
   /**
    * An object mapping dist-tags to version numbers. This is how `foo@latest`
    * gets turned into `foo@1.2.3`.
@@ -74,6 +83,11 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
           .map(([version, meta]) => [version, meta.engines?.node])
           .filter(([_, node]) => node),
       ) },
+      provenance: { ...Object.fromEntries(
+        Object.entries(data.versionsMeta)
+          .map(([version, meta]) => [version, meta.provenance])
+          .filter(([_, provenance]) => provenance),
+      ) },
     }
   }
 
@@ -99,5 +113,11 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
     ...packument,
     tags: packument['dist-tags'],
     versions: Object.keys(packument.versions),
+    provenance: Object.fromEntries(
+      Object.entries(packument.versions)
+        // cannot detect trusted publisher since `_npmUser` is omitted
+        .map(([version, meta]) => [version, !!meta.dist?.attestations?.provenance])
+        .filter(([_, provenance]) => provenance),
+    ),
   }
 }

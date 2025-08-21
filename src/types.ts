@@ -45,6 +45,7 @@ export interface PackageData {
   nodeSemver?: Record<string, string>
   // raw?: Packument
   error?: Error | string
+  provenance?: Record<string, boolean | 'trustedPublisher'>
 }
 
 export interface ResolvedDepChange extends RawDep {
@@ -52,6 +53,9 @@ export interface ResolvedDepChange extends RawDep {
   targetVersion: string
   targetVersionTime?: string
   currentVersionTime?: string
+  targetProvenance?: boolean | 'trustedPublisher'
+  currentProvenance?: boolean | 'trustedPublisher'
+  provenanceDowngraded: boolean
   diff: DiffType
   pkgData: PackageData
   resolveError?: Error | string | null
