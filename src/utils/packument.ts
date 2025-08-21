@@ -9,26 +9,9 @@ import { joinURL } from 'ufo'
 // So instead of using @types/pacote, we declare the type definition with only fields we need
 export interface PackumentVersion {
   name: string
-  /**
-   * An object where each key is a version, and each value is the engines for
-   * that version.
-   */
-  engines: Record<string, string>
-  /**
-   * Deprecated message for the package.
-   */
-  deprecated?: string
   dist: {
     attestations: {
       provenance?: { predicateType: string }
-    }
-  }
-  _npmUser: {
-    email: string
-    name: string
-    trustedPublisher?: {
-      id: string
-      oidcConfigId: string
     }
   }
 }
