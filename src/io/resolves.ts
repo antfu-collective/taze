@@ -11,7 +11,7 @@ import { getPackageMode } from '../utils/config'
 import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchPackage } from '../utils/packument'
-import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
+import { getMaxSatisfying, getPrefixedVersion, filterDeprecatedVersions } from '../utils/versions'
 
 const debug = {
   cache: _debug('taze:cache'),
@@ -89,12 +89,22 @@ export async function getPackageData(name: string): Promise<PackageData> {
     tags: {},
     versions: [],
     error: error?.statusCode?.toString() || error,
+    deprecated: {},
   }
 }
 
 export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
-  const { versions, tags } = dep.pkgData
-  return getMaxSatisfying(versions, dep.currentVersion, range, tags)
+  const { versions, tags, deprecated } = dep.pkgData
+  
+  const nonDeprecatedVersions = deprecated 
+    ? filterDeprecatedVersions(versions, deprecated)
+    : versions
+    
+  if (nonDeprecatedVersions.length === 0) {
+    return undefined
+  }
+    
+  return getMaxSatisfying(nonDeprecatedVersions, dep.currentVersion, range, tags)
 }
 
 export function updateTargetVersion(
@@ -222,14 +232,46 @@ export async function resolveDependency(
   }
 
   const pkgData = await getPackageData(resolvedName)
-  const { tags, error } = pkgData
+  const { tags, error, deprecated } = pkgData
   dep.pkgData = pkgData
   let err: Error | string | null = null
   let target: string | undefined
 
   if (error == null) {
     try {
+      if (deprecated && deprecated[dep.currentVersion]) {
+        dep.diff = null
+        dep.targetVersion = dep.currentVersion
+        dep.update = false
+        return dep
+      }
+
+      if (deprecated && Object.keys(deprecated).length > 0) {
+        const currentVersionRange = dep.currentVersion
+        const hasDeprecatedVersionsInRange = Object.keys(deprecated).some(deprecatedVersion => {
+          try {
+            return semver.satisfies(deprecatedVersion, currentVersionRange)
+          } catch {
+            return false
+          }
+        })
+        
+        if (hasDeprecatedVersionsInRange) {
+          dep.diff = null
+          dep.targetVersion = dep.currentVersion
+          dep.update = false
+          return dep
+        }
+      }
+
       target = getVersionOfRange(dep, mergeMode as RangeMode)
+
+      if (!target) {
+        dep.diff = null
+        dep.targetVersion = dep.currentVersion
+        dep.update = false
+        return dep
+      }
     }
     catch (e: any) {
       err = e.message || e
