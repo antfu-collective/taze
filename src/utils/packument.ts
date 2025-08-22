@@ -96,7 +96,7 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
           .map(([version, meta]) => [version, meta.provenance])
           .filter(([_, provenance]) => provenance),
       ) },
-      deprecated,
+      deprecated: Object.keys(deprecated).length > 0 ? deprecated : undefined,
     }
   }
 
@@ -135,6 +135,6 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
         .map(([version, meta]) => [version, !!meta.dist?.attestations?.provenance])
         .filter(([_, provenance]) => provenance),
     ),
-    deprecated,
+    deprecated: Object.keys(deprecated).length > 0 ? deprecated : undefined,
   }
 }

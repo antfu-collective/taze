@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { getPackageData } from '../src/io/resolves'
-import { getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
+import { getMaxSatisfying, getVersionRangePrefix, filterDeprecatedVersions } from '../src/utils/versions'
 
 it('getVersionRange', () => {
   expect('~').toBe(getVersionRangePrefix('~1.2.3'))
@@ -115,3 +115,17 @@ it('getMaxSatisfying', async () => {
     experimental: '0.0.0-experimental-4508873393-20240430',
   }))
 }, 10_000)
+
+it('deprecated filter', () => {
+  const versions = ['1.0.0', '1.1.0', '1.2.0', '2.0.0']
+  const deprecated = {
+    '1.1.0': 'Security vulnerability',
+    '2.0.0': 'Breaking changes'
+  }
+  
+  const filtered = filterDeprecatedVersions(versions, deprecated)
+  expect(filtered).toEqual(['1.0.0', '1.2.0'])
+  
+  const noDeprecated = filterDeprecatedVersions(versions, {})
+  expect(noDeprecated).toEqual(versions)
+})

@@ -96,7 +96,7 @@ export async function getPackageData(name: string): Promise<PackageData> {
 export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
   const { versions, tags, deprecated } = dep.pkgData
   
-  const nonDeprecatedVersions = deprecated 
+  const nonDeprecatedVersions = deprecated && Object.keys(deprecated).length > 0
     ? filterDeprecatedVersions(versions, deprecated)
     : versions
     
@@ -239,29 +239,11 @@ export async function resolveDependency(
 
   if (error == null) {
     try {
-      if (deprecated && deprecated[dep.currentVersion]) {
+      if (!!(deprecated && deprecated[dep.currentVersion])) {
         dep.diff = null
         dep.targetVersion = dep.currentVersion
         dep.update = false
         return dep
-      }
-
-      if (deprecated && Object.keys(deprecated).length > 0) {
-        const currentVersionRange = dep.currentVersion
-        const hasDeprecatedVersionsInRange = Object.keys(deprecated).some(deprecatedVersion => {
-          try {
-            return semver.satisfies(deprecatedVersion, currentVersionRange)
-          } catch {
-            return false
-          }
-        })
-        
-        if (hasDeprecatedVersionsInRange) {
-          dep.diff = null
-          dep.targetVersion = dep.currentVersion
-          dep.update = false
-          return dep
-        }
       }
 
       target = getVersionOfRange(dep, mergeMode as RangeMode)
