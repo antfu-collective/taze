@@ -11,7 +11,7 @@ import { getPackageMode } from '../utils/config'
 import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchPackage } from '../utils/packument'
-import { getMaxSatisfying, getPrefixedVersion, filterDeprecatedVersions } from '../utils/versions'
+import { filterDeprecatedVersions, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
 const debug = {
   cache: _debug('taze:cache'),
@@ -95,15 +95,15 @@ export async function getPackageData(name: string): Promise<PackageData> {
 
 export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
   const { versions, tags, deprecated } = dep.pkgData
-  
+
   const nonDeprecatedVersions = deprecated && Object.keys(deprecated).length > 0
     ? filterDeprecatedVersions(versions, deprecated)
     : versions
-    
+
   if (nonDeprecatedVersions.length === 0) {
     return undefined
   }
-    
+
   return getMaxSatisfying(nonDeprecatedVersions, dep.currentVersion, range, tags)
 }
 
@@ -239,7 +239,7 @@ export async function resolveDependency(
 
   if (error == null) {
     try {
-      if (!!(deprecated && deprecated[dep.currentVersion])) {
+      if (deprecated && deprecated[dep.currentVersion]) {
         dep.diff = null
         dep.targetVersion = dep.currentVersion
         dep.update = false
