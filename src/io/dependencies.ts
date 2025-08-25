@@ -62,10 +62,13 @@ export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
         return tree[parent]
       }, data)
 
-      if (i.aliasName === undefined)
+      if (i.aliasName === undefined) {
         targetLeaf[i.name] = version
-      else
-        targetLeaf[i.aliasName] = `npm:${i.name}${version ? `@${version}` : ''}`
+      }
+      else {
+        const protocol = i.protocol ? `${i.protocol}:` : ''
+        targetLeaf[i.aliasName] = `${protocol}${i.name}${version ? `@${version}` : ''}`
+      }
     })
 
   return data

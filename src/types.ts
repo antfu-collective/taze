@@ -28,12 +28,15 @@ export const DependenciesTypeShortMap = {
   'pnpm-workspace': 'pnpm-workspace',
 }
 
+export type Protocol = 'npm' | 'jsr'
+
 export interface RawDep {
   name: string
   currentVersion: string
   source: DepType
   update: boolean
   parents?: string[]
+  protocol?: Protocol
 }
 
 export type DiffType = 'major' | 'minor' | 'patch' | 'error' | null

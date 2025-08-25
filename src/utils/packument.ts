@@ -1,5 +1,5 @@
 import type { PackageVersionsInfoWithMetadata } from 'fast-npm-meta'
-import type { PackageData } from '../types'
+import type { PackageData, Protocol } from '../types'
 import process from 'node:process'
 import { getVersions, pickRegistry } from 'fast-npm-meta'
 import { fetch } from 'ofetch'
@@ -40,15 +40,18 @@ export interface Packument {
 
 const TIMEOUT = 5000
 const NPM_REGISTRY = 'https://registry.npmjs.org/'
+const JSR_REGISTRY = 'https://npm.jsr.io/'
 
-export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>, force = false): Promise<PackageData> {
+export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>, force = false, protocol: Protocol = 'npm'): Promise<PackageData> {
   const { default: npa } = await import('npm-package-arg')
   const { name, scope } = npa(spec)
 
   if (!name)
     throw new Error(`Invalid package name: ${name}`)
 
-  const registry = pickRegistry(scope, npmConfigs)
+  const registry = protocol === 'jsr'
+    ? JSR_REGISTRY
+    : pickRegistry(scope, npmConfigs)
 
   if (registry === NPM_REGISTRY) {
     const data = await Promise.race([
@@ -93,7 +96,7 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
 
   const npmRegistryFetch = await import('npm-registry-fetch')
 
-  const url = joinURL(npmRegistryFetch.pickRegistry(spec, npmConfigs), name)
+  const url = joinURL(registry, name)
   const packument = await Promise.race([
     npmRegistryFetch.json(url, {
       ...npmConfigs,

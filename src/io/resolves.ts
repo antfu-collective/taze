@@ -1,4 +1,4 @@
-import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, Protocol, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
 import process from 'node:process'
@@ -57,26 +57,27 @@ export async function dumpCache() {
   }
 }
 
-export async function getPackageData(name: string): Promise<PackageData> {
+export async function getPackageData(name: string, protocol: Protocol = 'npm'): Promise<PackageData> {
   let error: any
+  const cacheName = `${protocol}:${name}`
 
-  if (cache[name]) {
-    if (ttl(cache[name].cacheTime) < cacheTTL) {
-      debug.cache(`cache hit for ${name}`)
-      return cache[name].data
+  if (cache[cacheName]) {
+    if (ttl(cache[cacheName].cacheTime) < cacheTTL) {
+      debug.cache(`cache hit for ${cacheName}`)
+      return cache[cacheName].data
     }
     else {
-      delete cache[name]
+      delete cache[cacheName]
     }
   }
 
   try {
-    debug.resolve(`resolving ${name}`)
+    debug.resolve(`resolving ${cacheName}`)
     const npmConfig = await getNpmConfig()
-    const data = await fetchPackage(name, npmConfig)
+    const data = await fetchPackage(name, npmConfig, false, protocol)
 
     if (data) {
-      cache[name] = { data, cacheTime: now() }
+      cache[cacheName] = { data, cacheTime: now() }
       cacheChanged = true
       return data
     }
@@ -196,10 +197,11 @@ export async function resolveDependency(
     } as ResolvedDepChange
   }
   if (isAliasedPackage(raw.currentVersion)) {
-    const { name, version } = parseAliasedPackage(raw.currentVersion)
+    const { name, version, protocol } = parseAliasedPackage(raw.currentVersion)
     dep.name = name
     dep.currentVersion = version
     dep.aliasName = raw.name
+    dep.protocol = protocol
     if (!version) {
       dep.diff = null
       dep.targetVersion = version
@@ -221,7 +223,7 @@ export async function resolveDependency(
     resolvedName = packages.pop() ?? dep.name
   }
 
-  const pkgData = await getPackageData(resolvedName)
+  const pkgData = await getPackageData(resolvedName, dep.protocol)
   const { tags, error } = pkgData
   dep.pkgData = pkgData
   let err: Error | string | null = null
@@ -316,18 +318,22 @@ export function isUrlPackage(currentVersion: string) {
   return /^(?:https?:|git\+|github:)/.test(currentVersion)
 }
 
-export function isLocalPackage(currentVersion: string) {
+export function isLocalPackage(currentVersion:string) {
   return /^(?:link|file|workspace|catalog):/.test(currentVersion)
 }
 
 export function isAliasedPackage(currentVersion: string) {
-  return currentVersion.startsWith('npm:')
+  return /^(npm|jsr):/.test(currentVersion)
 }
 
 function parseAliasedPackage(currentVersion: string) {
-  const m = currentVersion.match(/^npm:(@?[^@]+)(?:@(.+))?$/)
+  const m = currentVersion.match(/^(npm|jsr):(@?[^@]+)(?:@(.+))?$/)
   if (!m)
-    return { name: '', version: '' }
+    return { name: '', version: '', protocol: undefined }
 
-  return { name: m[1], version: m[2] ?? '' }
+  const protocol = m[1] as Protocol
+  const name = m[2]
+  const version = m[3] ?? ''
+
+  return { name, version, protocol }
 }
