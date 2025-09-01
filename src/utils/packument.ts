@@ -9,6 +9,7 @@ import { joinURL } from 'ufo'
 // So instead of using @types/pacote, we declare the type definition with only fields we need
 export interface PackumentVersion {
   name: string
+  deprecated?: string | boolean
   dist: {
     attestations: {
       provenance?: { predicateType: string }
@@ -67,6 +68,13 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
       throw new Error(`Failed to fetch package "${spec}": ${data.error}`)
     }
 
+    const deprecated: Record<string, string | boolean> = {}
+    Object.entries(data.versionsMeta).forEach(([version, meta]) => {
+      if (meta.deprecated) {
+        deprecated[version] = meta.deprecated
+      }
+    })
+
     return {
       tags: data.distTags,
       versions: Object.keys(data.versionsMeta),
@@ -88,6 +96,7 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
           .map(([version, meta]) => [version, meta.provenance])
           .filter(([_, provenance]) => provenance),
       ) },
+      deprecated: Object.keys(deprecated).length > 0 ? deprecated : undefined,
     }
   }
 
@@ -109,6 +118,13 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
     ),
   ])
 
+  const deprecated: Record<string, string | boolean> = {}
+  Object.entries(packument.versions).forEach(([version, meta]) => {
+    if (meta.deprecated) {
+      deprecated[version] = meta.deprecated
+    }
+  })
+
   return {
     ...packument,
     tags: packument['dist-tags'],
@@ -119,5 +135,6 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
         .map(([version, meta]) => [version, !!meta.dist?.attestations?.provenance])
         .filter(([_, provenance]) => provenance),
     ),
+    deprecated: Object.keys(deprecated).length > 0 ? deprecated : undefined,
   }
 }
