@@ -141,7 +141,7 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
 }
 
 export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
-  return Promise.race([
+  const meta = await Promise.race([
     fetch(joinURL(JSR_API_REGISTRY, name, 'meta.json'), {
       headers: {
         'user-agent': `taze@npm node/${process.version}`,
@@ -151,5 +151,10 @@ export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
     new Promise<JsrPackageMeta>(
       (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${name}"`)), TIMEOUT),
     ),
-  ]) as Promise<PackageData>
+  ]) as JsrPackageMeta
+
+  return {
+    versions: Object.keys(meta.versions),
+    tags: { latest: meta.latest },
+  }
 }

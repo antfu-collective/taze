@@ -233,7 +233,6 @@ export async function resolveDependency(
     resolvedName = packages.pop() ?? dep.name
   }
 
-
   const pkgData = await getPackageData(resolvedName, dep.protocol)
   const { tags, error, deprecated } = pkgData
 
