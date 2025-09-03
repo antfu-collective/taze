@@ -201,7 +201,7 @@ export async function resolveDependency(
     dep.name = name || dep.name
     dep.currentVersion = version
     dep.aliasName = raw.name
-    dep.protocol = protocol as Protocol
+    dep.protocol = protocol
     if (!version) {
       dep.diff = null
       dep.targetVersion = version
