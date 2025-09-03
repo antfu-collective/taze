@@ -67,9 +67,14 @@ export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
       }
       else {
         const protocol = i.protocol ? `${i.protocol}:` : ''
-        targetLeaf[i.aliasName] = `${protocol}${i.name}${version ? `@${version}` : ''}`
+        targetLeaf[i.aliasName] = `${protocol}${i.protocol === 'jsr' ? version : buildNpmTargetPackage(i, version)}`
       }
     })
 
   return data
+}
+
+function buildNpmTargetPackage(dep: ResolvedDepChange, version: string) {
+  const versionPart = version ? `@${version}` : ''
+  return `${dep.name}${versionPart}`
 }
