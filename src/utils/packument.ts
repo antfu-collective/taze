@@ -103,7 +103,7 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
 
   const npmRegistryFetch = await import('npm-registry-fetch')
 
-  const url = joinURL(registry, name)
+  const url = joinURL(npmRegistryFetch.pickRegistry(spec, npmConfigs), name)
   const packument = await Promise.race([
     npmRegistryFetch.json(url, {
       ...npmConfigs,
