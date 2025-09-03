@@ -100,3 +100,7 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
 
   return version
 }
+
+export function filterDeprecatedVersions(versions: string[], deprecated: Record<string, string | boolean>): string[] {
+  return versions.filter(version => !deprecated[version])
+}

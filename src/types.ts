@@ -49,6 +49,7 @@ export interface PackageData {
   // raw?: Packument
   error?: Error | string
   provenance?: Record<string, boolean | 'trustedPublisher'>
+  deprecated?: Record<string, string | boolean>
 }
 
 export interface JsrPackageMeta {
