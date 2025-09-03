@@ -1,5 +1,5 @@
 import type { PackageVersionsInfoWithMetadata } from 'fast-npm-meta'
-import type { PackageData, Protocol } from '../types'
+import type { JsrPackageMeta, PackageData } from '../types'
 import process from 'node:process'
 import { getVersions, pickRegistry } from 'fast-npm-meta'
 import { fetch } from 'ofetch'
@@ -40,18 +40,16 @@ export interface Packument {
 
 const TIMEOUT = 5000
 const NPM_REGISTRY = 'https://registry.npmjs.org/'
-const JSR_REGISTRY = 'https://npm.jsr.io/'
+const JSR_API_REGISTRY = 'https://jsr.io/'
 
-export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>, force = false, protocol: Protocol = 'npm'): Promise<PackageData> {
+export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>, force = false): Promise<PackageData> {
   const { default: npa } = await import('npm-package-arg')
   const { name, scope } = npa(spec)
 
   if (!name)
     throw new Error(`Invalid package name: ${name}`)
 
-  const registry = protocol === 'jsr'
-    ? JSR_REGISTRY
-    : pickRegistry(scope, npmConfigs)
+  const registry = pickRegistry(scope, npmConfigs)
 
   if (registry === NPM_REGISTRY) {
     const data = await Promise.race([
@@ -123,4 +121,18 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
         .filter(([_, provenance]) => provenance),
     ),
   }
+}
+
+export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
+  return Promise.race([
+    fetch(joinURL(JSR_API_REGISTRY, name, 'meta.json'), {
+      headers: {
+        'user-agent': `taze@npm node/${process.version}`,
+        'accept': 'application/json',
+      },
+    }).then(r => r.json()),
+    new Promise<JsrPackageMeta>(
+      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${name}"`)), TIMEOUT),
+    ),
+  ]) as Promise<PackageData>
 }

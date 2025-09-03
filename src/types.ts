@@ -51,6 +51,17 @@ export interface PackageData {
   provenance?: Record<string, boolean | 'trustedPublisher'>
 }
 
+export interface JsrPackageMeta {
+  scope: string
+  name: string
+  latest: string
+  versions: Record<string, JsrPackageVersionMeta>
+}
+
+export interface JsrPackageVersionMeta {
+  yanked?: boolean
+}
+
 export interface ResolvedDepChange extends RawDep {
   latestVersionAvailable?: string
   targetVersion: string

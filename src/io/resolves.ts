@@ -10,7 +10,7 @@ import { diffSorter } from '../filters/diff-sorter'
 import { getPackageMode } from '../utils/config'
 import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
-import { fetchPackage } from '../utils/packument'
+import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
 import { getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
 const debug = {
@@ -74,7 +74,7 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm'): 
   try {
     debug.resolve(`resolving ${cacheName}`)
     const npmConfig = await getNpmConfig()
-    const data = await fetchPackage(name, npmConfig, false, protocol)
+    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, npmConfig, false)
 
     if (data) {
       cache[cacheName] = { data, cacheTime: now() }
@@ -198,10 +198,10 @@ export async function resolveDependency(
   }
   if (isAliasedPackage(raw.currentVersion)) {
     const { name, version, protocol } = parseAliasedPackage(raw.currentVersion)
-    dep.name = name
+    dep.name = name || dep.name
     dep.currentVersion = version
     dep.aliasName = raw.name
-    dep.protocol = protocol
+    dep.protocol = protocol as Protocol
     if (!version) {
       dep.diff = null
       dep.targetVersion = version
@@ -318,22 +318,36 @@ export function isUrlPackage(currentVersion: string) {
   return /^(?:https?:|git\+|github:)/.test(currentVersion)
 }
 
-export function isLocalPackage(currentVersion:string) {
+export function isLocalPackage(currentVersion: string) {
   return /^(?:link|file|workspace|catalog):/.test(currentVersion)
 }
 
 export function isAliasedPackage(currentVersion: string) {
-  return /^(npm|jsr):/.test(currentVersion)
+  return /^(?:npm|jsr):/.test(currentVersion)
 }
 
-function parseAliasedPackage(currentVersion: string) {
-  const m = currentVersion.match(/^(npm|jsr):(@?[^@]+)(?:@(.+))?$/)
-  if (!m)
-    return { name: '', version: '', protocol: undefined }
+function parseAliasedPackage(currentVersion: string): { protocol: Protocol, name: string, version: string } {
+  const [protocol, rest] = currentVersion.split(':', 2) as [Protocol, string]
 
-  const protocol = m[1] as Protocol
-  const name = m[2]
-  const version = m[3] ?? ''
+  if (protocol === 'npm') {
+    const lastAtIndex = rest.lastIndexOf('@')
+    if (lastAtIndex > 0) {
+      return {
+        protocol,
+        name: rest.substring(0, lastAtIndex),
+        version: rest.substring(lastAtIndex + 1),
+      }
+    }
+    return {
+      protocol,
+      name: rest,
+      version: '',
+    }
+  }
 
-  return { name, version, protocol }
+  return {
+    protocol,
+    name: '',
+    version: rest,
+  }
 }
