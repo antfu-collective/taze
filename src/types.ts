@@ -28,12 +28,15 @@ export const DependenciesTypeShortMap = {
   'pnpm-workspace': 'pnpm-workspace',
 }
 
+export type Protocol = 'npm' | 'jsr'
+
 export interface RawDep {
   name: string
   currentVersion: string
   source: DepType
   update: boolean
   parents?: string[]
+  protocol?: Protocol
 }
 
 export type DiffType = 'major' | 'minor' | 'patch' | 'error' | null
@@ -47,6 +50,17 @@ export interface PackageData {
   error?: Error | string
   provenance?: Record<string, boolean | 'trustedPublisher'>
   deprecated?: Record<string, string | boolean>
+}
+
+export interface JsrPackageMeta {
+  scope: string
+  name: string
+  latest: string
+  versions: Record<string, JsrPackageVersionMeta>
+}
+
+export interface JsrPackageVersionMeta {
+  yanked?: boolean
 }
 
 export interface ResolvedDepChange extends RawDep {
