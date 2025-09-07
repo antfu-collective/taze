@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { getPackageData } from '../src/io/resolves'
-import { filterDeprecatedVersions, getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
+import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
 
 it('getVersionRange', () => {
   expect('~').toBe(getVersionRangePrefix('~1.2.3'))
@@ -128,4 +128,25 @@ it('deprecated filter', () => {
 
   const noDeprecated = filterDeprecatedVersions(versions, {})
   expect(noDeprecated).toEqual(versions)
+})
+
+it('maturity period filter', () => {
+  const now = new Date()
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  const eightDaysAgo = new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000)
+
+  const versions = ['1.0.0', '1.1.0', '2.0.0']
+  const time = {
+    '1.0.0': eightDaysAgo.toISOString(),
+    '1.1.0': oneDayAgo.toISOString(),
+    '2.0.0': now.toISOString(),
+  }
+
+  // Test with 7 days - should filter out recent versions
+  const filtered = filterVersionsByMaturityPeriod(versions, time, 7)
+  expect(filtered).toEqual(['1.0.0'])
+
+  // Test with 0 days - should return all versions
+  const noFilter = filterVersionsByMaturityPeriod(versions, time, 0)
+  expect(noFilter).toEqual(versions)
 })
