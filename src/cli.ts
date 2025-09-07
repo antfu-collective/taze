@@ -46,12 +46,10 @@ cli
       options.mode = mode
     }
 
-    console.log('hello options', options)
     if ('maturityPeriod' in options && typeof options.maturityPeriod !== 'number') {
       options.maturityPeriod = 7
     }
 
-    console.log('hello options 2', options)
 
     const resolved = await resolveConfig(options)
 

@@ -117,19 +117,14 @@ export function filterVersionsByMaturityPeriod(
   const now = new Date()
   const cutoffDate = new Date(now.getTime() - (maturityPeriodDays * 24 * 60 * 60 * 1000))
 
-  console.log(`[DEBUG] Filtering versions older than ${maturityPeriodDays} days (before ${cutoffDate.toISOString()})`)
-
   return versions.filter(version => {
     const versionTime = time[version]
     if (!versionTime) {
-      console.log(`[DEBUG] No time info for version ${version}, keeping it`)
       return true
     }
 
     const releaseDate = new Date(versionTime)
     const isMature = releaseDate < cutoffDate
-    
-    console.log(`[DEBUG] Version ${version} released at ${versionTime} (${releaseDate.toISOString()}) - ${isMature ? 'KEEP' : 'FILTER OUT'}`)
     
     return isMature
   })
