@@ -1,4 +1,4 @@
-import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, Protocol, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
 import process from 'node:process'
@@ -12,6 +12,8 @@ import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchPackage } from '../utils/packument'
 import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
+import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
+import { filterDeprecatedVersions, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
 const debug = {
   cache: _debug('taze:cache'),
@@ -57,26 +59,27 @@ export async function dumpCache() {
   }
 }
 
-export async function getPackageData(name: string): Promise<PackageData> {
+export async function getPackageData(name: string, protocol: Protocol = 'npm'): Promise<PackageData> {
   let error: any
+  const cacheName = `${protocol}:${name}`
 
-  if (cache[name]) {
-    if (ttl(cache[name].cacheTime) < cacheTTL) {
-      debug.cache(`cache hit for ${name}`)
-      return cache[name].data
+  if (cache[cacheName]) {
+    if (ttl(cache[cacheName].cacheTime) < cacheTTL) {
+      debug.cache(`cache hit for ${cacheName}`)
+      return cache[cacheName].data
     }
     else {
-      delete cache[name]
+      delete cache[cacheName]
     }
   }
 
   try {
-    debug.resolve(`resolving ${name}`)
+    debug.resolve(`resolving ${cacheName}`)
     const npmConfig = await getNpmConfig()
-    const data = await fetchPackage(name, npmConfig)
+    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, npmConfig, false)
 
     if (data) {
-      cache[name] = { data, cacheTime: now() }
+      cache[cacheName] = { data, cacheTime: now() }
       cacheChanged = true
       return data
     }
@@ -133,8 +136,8 @@ export function updateTargetVersion(
   dep.currentProvenance = dep.pkgData.provenance?.[dep.currentVersion]
   dep.targetProvenance = dep.pkgData.provenance?.[dep.targetVersion]
   dep.provenanceDowngraded
-  = !!(dep.currentProvenance && !dep.targetProvenance) // trusted -> none, provenance -> none
-    || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
+    = !!(dep.currentProvenance && !dep.targetProvenance) // trusted -> none, provenance -> none
+      || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
 
   if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion)) {
     // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
@@ -212,10 +215,11 @@ export async function resolveDependency(
     } as ResolvedDepChange
   }
   if (isAliasedPackage(raw.currentVersion)) {
-    const { name, version } = parseAliasedPackage(raw.currentVersion)
-    dep.name = name
+    const { name, version, protocol } = parseAliasedPackage(raw.currentVersion)
+    dep.name = name || dep.name
     dep.currentVersion = version
     dep.aliasName = raw.name
+    dep.protocol = protocol
     if (!version) {
       dep.diff = null
       dep.targetVersion = version
@@ -237,8 +241,9 @@ export async function resolveDependency(
     resolvedName = packages.pop() ?? dep.name
   }
 
-  const pkgData = await getPackageData(resolvedName)
+  const pkgData = await getPackageData(resolvedName, dep.protocol)
   const { tags, error, deprecated } = pkgData
+
   dep.pkgData = pkgData
   let err: Error | string | null = null
   let target: string | undefined
@@ -351,13 +356,31 @@ export function isLocalPackage(currentVersion: string) {
 }
 
 export function isAliasedPackage(currentVersion: string) {
-  return currentVersion.startsWith('npm:')
+  return /^(?:npm|jsr):/.test(currentVersion)
 }
 
-function parseAliasedPackage(currentVersion: string) {
-  const m = currentVersion.match(/^npm:(@?[^@]+)(?:@(.+))?$/)
-  if (!m)
-    return { name: '', version: '' }
+function parseAliasedPackage(currentVersion: string): { protocol: Protocol, name: string, version: string } {
+  const [protocol, rest] = currentVersion.split(':', 2) as [Protocol, string]
 
-  return { name: m[1], version: m[2] ?? '' }
+  if (protocol === 'npm') {
+    const lastAtIndex = rest.lastIndexOf('@')
+    if (lastAtIndex > 0) {
+      return {
+        protocol,
+        name: rest.substring(0, lastAtIndex),
+        version: rest.substring(lastAtIndex + 1),
+      }
+    }
+    return {
+      protocol,
+      name: rest,
+      version: '',
+    }
+  }
+
+  return {
+    protocol,
+    name: '',
+    version: rest,
+  }
 }

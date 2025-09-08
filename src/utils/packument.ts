@@ -1,5 +1,5 @@
 import type { PackageVersionsInfoWithMetadata } from 'fast-npm-meta'
-import type { PackageData } from '../types'
+import type { JsrPackageMeta, PackageData } from '../types'
 import process from 'node:process'
 import { getVersions, pickRegistry } from 'fast-npm-meta'
 import { fetch } from 'ofetch'
@@ -41,6 +41,7 @@ export interface Packument {
 
 const TIMEOUT = 5000
 const NPM_REGISTRY = 'https://registry.npmjs.org/'
+const JSR_API_REGISTRY = 'https://jsr.io/'
 
 export async function fetchPackage(spec: string, npmConfigs: Record<string, unknown>, force = false): Promise<PackageData> {
   const { default: npa } = await import('npm-package-arg')
@@ -136,5 +137,24 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
         .filter(([_, provenance]) => provenance),
     ),
     deprecated: Object.keys(deprecated).length > 0 ? deprecated : undefined,
+  }
+}
+
+export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
+  const meta = await Promise.race([
+    fetch(joinURL(JSR_API_REGISTRY, name, 'meta.json'), {
+      headers: {
+        'user-agent': `taze@npm node/${process.version}`,
+        'accept': 'application/json',
+      },
+    }).then(r => r.json()),
+    new Promise<JsrPackageMeta>(
+      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${name}"`)), TIMEOUT),
+    ),
+  ]) as JsrPackageMeta
+
+  return {
+    versions: Object.keys(meta.versions),
+    tags: { latest: meta.latest },
   }
 }
