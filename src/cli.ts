@@ -50,7 +50,6 @@ cli
       options.maturityPeriod = 7
     }
 
-
     const resolved = await resolveConfig(options)
 
     let exitCode

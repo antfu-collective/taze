@@ -10,10 +10,8 @@ import { diffSorter } from '../filters/diff-sorter'
 import { getPackageMode } from '../utils/config'
 import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
-import { fetchPackage } from '../utils/packument'
-import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
-import { filterDeprecatedVersions, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
+import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
 const debug = {
   cache: _debug('taze:cache'),

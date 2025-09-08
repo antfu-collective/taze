@@ -106,9 +106,9 @@ export function filterDeprecatedVersions(versions: string[], deprecated: Record<
 }
 
 export function filterVersionsByMaturityPeriod(
-  versions: string[], 
-  time: Record<string, string> | undefined, 
-  maturityPeriodDays: number
+  versions: string[],
+  time: Record<string, string> | undefined,
+  maturityPeriodDays: number,
 ): string[] {
   if (!time || maturityPeriodDays <= 0) {
     return versions
@@ -117,7 +117,7 @@ export function filterVersionsByMaturityPeriod(
   const now = new Date()
   const cutoffDate = new Date(now.getTime() - (maturityPeriodDays * 24 * 60 * 60 * 1000))
 
-  return versions.filter(version => {
+  return versions.filter((version) => {
     const versionTime = time[version]
     if (!versionTime) {
       return true
@@ -125,7 +125,7 @@ export function filterVersionsByMaturityPeriod(
 
     const releaseDate = new Date(versionTime)
     const isMature = releaseDate < cutoffDate
-    
+
     return isMature
   })
 }
