@@ -36,6 +36,7 @@ cli
   .option('--timediff', 'show time difference between the current and the updated version')
   .option('--nodecompat', 'show package compatibility with current node version')
   .option('--peer', 'Include peerDependencies in the update process')
+  .option('--maturity-period [days]', 'wait period in days before upgrading to newly released packages (default: 7 when flag is used, 0 when not used)')
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
@@ -44,6 +45,11 @@ cli
       }
       options.mode = mode
     }
+
+    if ('maturityPeriod' in options && typeof options.maturityPeriod !== 'number') {
+      options.maturityPeriod = 7
+    }
+
     const resolved = await resolveConfig(options)
 
     let exitCode

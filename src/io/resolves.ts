@@ -11,7 +11,7 @@ import { getPackageMode } from '../utils/config'
 import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
-import { filterDeprecatedVersions, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
+import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
 const debug = {
   cache: _debug('taze:cache'),
@@ -94,18 +94,24 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm'): 
   }
 }
 
-export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
-  const { versions, tags, deprecated } = dep.pkgData
+export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, options: CheckOptions) {
+  const { versions, tags, deprecated, time } = dep.pkgData
 
-  const nonDeprecatedVersions = deprecated && Object.keys(deprecated).length > 0
-    ? filterDeprecatedVersions(versions, deprecated)
-    : versions
+  let filteredVersions = versions
 
-  if (nonDeprecatedVersions.length === 0) {
+  if (deprecated && Object.keys(deprecated).length > 0) {
+    filteredVersions = filterDeprecatedVersions(filteredVersions, deprecated)
+  }
+
+  if (options.maturityPeriod && options.maturityPeriod > 0) {
+    filteredVersions = filterVersionsByMaturityPeriod(filteredVersions, time, options.maturityPeriod)
+  }
+
+  if (filteredVersions.length === 0) {
     return undefined
   }
 
-  return getMaxSatisfying(nonDeprecatedVersions, dep.currentVersion, range, tags)
+  return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
 }
 
 export function updateTargetVersion(
@@ -249,7 +255,7 @@ export async function resolveDependency(
         return dep
       }
 
-      target = getVersionOfRange(dep, mergeMode as RangeMode)
+      target = getVersionOfRange(dep, mergeMode as RangeMode, options)
 
       if (!target) {
         dep.diff = null

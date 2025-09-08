@@ -142,8 +142,8 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     dep: ResolvedDepChange,
   ): InteractiveRenderer {
     const versions = Object.entries({
-      minor: getVersionOfRange(dep, 'minor'),
-      patch: getVersionOfRange(dep, 'patch'),
+      minor: getVersionOfRange(dep, 'minor', options),
+      patch: getVersionOfRange(dep, 'patch', options),
       ...dep.pkgData.tags,
     })
       .map(([name, version]) => {

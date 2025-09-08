@@ -104,3 +104,28 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
 export function filterDeprecatedVersions(versions: string[], deprecated: Record<string, string | boolean>): string[] {
   return versions.filter(version => !deprecated[version])
 }
+
+export function filterVersionsByMaturityPeriod(
+  versions: string[],
+  time: Record<string, string> | undefined,
+  maturityPeriodDays: number,
+): string[] {
+  if (!time || maturityPeriodDays <= 0) {
+    return versions
+  }
+
+  const now = new Date()
+  const cutoffDate = new Date(now.getTime() - (maturityPeriodDays * 24 * 60 * 60 * 1000))
+
+  return versions.filter((version) => {
+    const versionTime = time[version]
+    if (!versionTime) {
+      return true
+    }
+
+    const releaseDate = new Date(versionTime)
+    const isMature = releaseDate < cutoffDate
+
+    return isMature
+  })
+}

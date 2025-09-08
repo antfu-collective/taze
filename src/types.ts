@@ -157,6 +157,13 @@ export interface CheckOptions extends CommonOptions {
    * @default true
    */
   nodecompat?: boolean
+  /**
+   * Wait period in days before upgrading to newly released packages
+   * This helps avoid potentially malicious packages released recently
+   *
+   * @default 0 (no waiting period)
+   */
+  maturityPeriod?: number
 }
 
 interface BasePackageMeta {
