@@ -119,6 +119,7 @@ export function updateTargetVersion(
   version: string,
   forgiving = true,
   includeLocked = false,
+  strictLockedMode = false,
 ) {
   const versionLocked = /^\d+/.test(dep.currentVersion)
   if (versionLocked && !includeLocked) {
@@ -137,7 +138,7 @@ export function updateTargetVersion(
     = !!(dep.currentProvenance && !dep.targetProvenance) // trusted -> none, provenance -> none
       || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
 
-  if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion)) {
+  if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion) && !strictLockedMode) {
     // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
     // - but this mode will always ignore the locked pkgs
     // - so we need to reset the target
@@ -273,7 +274,7 @@ export async function resolveDependency(
   }
 
   if (target)
-    updateTargetVersion(dep, target, undefined, options.includeLocked)
+    updateTargetVersion(dep, target, undefined, options.includeLocked, options.strictLockedMode)
   else
     dep.targetVersion = dep.currentVersion
 

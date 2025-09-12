@@ -39,6 +39,7 @@ export const DEFAULT_CHECK_OPTIONS: CheckOptions = {
   sort: 'diff-asc',
   group: true,
   includeLocked: false,
+  strictLockedMode: false,
   nodecompat: true,
   maturityPeriod: 0,
 }

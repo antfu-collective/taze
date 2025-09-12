@@ -30,7 +30,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         // Set `update` flag to true to render option in the list,
         // but don't check it by default.
         dep.update = true
-        updateTargetVersion(dep, dep.latestVersionAvailable, undefined, options.includeLocked)
+        updateTargetVersion(dep, dep.latestVersionAvailable, undefined, options.includeLocked, options.strictLockedMode)
       }
     })
   })
@@ -200,7 +200,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           case 'right':
           case 'h':
           case 'l':
-            updateTargetVersion(dep, versions[index].version, undefined, options.includeLocked)
+            updateTargetVersion(dep, versions[index].version, undefined, options.includeLocked, options.strictLockedMode)
 
             // Order may have changed so we need to sort to keep navigation
             // in sync with the rendering.

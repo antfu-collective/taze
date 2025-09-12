@@ -145,6 +145,12 @@ export interface CheckOptions extends CommonOptions {
    */
   includeLocked?: boolean
   /**
+   * Strictly enforce the configured mode for locked dependencies
+   * When true, disables fallback to higher update levels (e.g., no minor fallback when mode is 'patch')
+   * @default false
+   */
+  strictLockedMode?: boolean
+  /**
    * Show time difference between the current and the updated version
    *
    * @default true
