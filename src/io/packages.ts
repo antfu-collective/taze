@@ -7,6 +7,7 @@ import { dirname, join, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
+import { loadBunWorkspace, writeBunWorkspace } from './bunWorkspaces'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
 import { loadPnpmWorkspace, writePnpmWorkspace } from './pnpmWorkspaces'
 
@@ -14,7 +15,7 @@ export async function readJSON(filepath: string) {
   return JSON.parse(await fs.readFile(filepath, 'utf-8'))
 }
 
-export async function writeJSON(filepath: string, data: any) {
+export async function writeJSON(filepath: string, data: Record<string, unknown>) {
   const actualContent = await fs.readFile(filepath, 'utf-8')
   const fileIndent = detectIndent(actualContent).indent || '  '
 
@@ -30,6 +31,8 @@ export async function writePackage(
       return writePackageJSON(pkg, options)
     case 'pnpm-workspace.yaml':
       return writePnpmWorkspace(pkg, options)
+    case 'bun-workspace':
+      return writeBunWorkspace(pkg, options)
     default:
       throw new Error(`Unsupported package type: ${pkg.type}`)
   }
@@ -42,6 +45,31 @@ export async function loadPackage(
 ): Promise<PackageMeta[]> {
   if (relative.endsWith('pnpm-workspace.yaml'))
     return loadPnpmWorkspace(relative, options, shouldUpdate)
+
+  // Check if this package.json contains Bun workspaces with catalogs
+  if (relative.endsWith('package.json')) {
+    const filepath = resolve(options.cwd ?? '', relative)
+    try {
+      const packageJsonRaw = await readJSON(filepath)
+      const workspaces = packageJsonRaw?.workspaces
+
+      // Only process Bun catalogs if we detect Bun is being used
+      if (workspaces && (workspaces.catalog || workspaces.catalogs)) {
+        const cwd = resolve(options.cwd || process.cwd())
+        const hasBunLock = existsSync(join(cwd, 'bun.lockb')) || existsSync(join(cwd, 'bun.lock'))
+
+        if (hasBunLock) {
+          const bunWorkspaces = await loadBunWorkspace(relative, options, shouldUpdate)
+          const packageJson = await loadPackageJSON(relative, options, shouldUpdate)
+          return [...bunWorkspaces, ...packageJson]
+        }
+      }
+    }
+    catch {
+      // Safe guard: If we can't read the file, fall back to normal package.json loading
+    }
+  }
+
   return loadPackageJSON(relative, options, shouldUpdate)
 }
 
