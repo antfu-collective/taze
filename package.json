@@ -44,8 +44,7 @@
     "restore-cursor": "^5.1.0",
     "tinyexec": "^1.0.1",
     "tinyglobby": "^0.2.14",
-    "unconfig": "^7.3.3",
-    "yaml": "^2.8.1"
+    "unconfig": "^7.3.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.2.2",
@@ -65,7 +64,6 @@
     "deepmerge": "^4.3.1",
     "detect-indent": "^7.0.1",
     "eslint": "^9.34.0",
-    "fast-glob": "^3.3.3",
     "fast-npm-meta": "^0.4.6",
     "npm-package-arg": "^13.0.0",
     "npm-registry-fetch": "^19.0.0",
