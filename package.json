@@ -1,7 +1,7 @@
 {
   "name": "taze",
   "type": "module",
-  "version": "19.6.0",
+  "version": "19.7.0",
   "packageManager": "pnpm@10.17.0",
   "description": "A modern cli tool that keeps your deps fresh",
   "license": "MIT",
