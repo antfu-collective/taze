@@ -31,7 +31,7 @@ vitest.mock('../src/utils/npm.ts', () => ({
 vitest.mock('../src/io/resolves.ts', async (importOriginal) => {
   const actual = await importOriginal()
   return {
-    ...actual,
+    ...actual as any,
     resolveDependency: vitest.fn().mockResolvedValue({
       name: 'react',
       currentVersion: '^18.2.0',

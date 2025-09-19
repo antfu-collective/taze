@@ -218,13 +218,13 @@ export interface GlobalPackageMeta extends BasePackageMeta {
 
 export interface PnpmWorkspaceMeta extends BasePackageMeta {
   type: 'pnpm-workspace.yaml'
-  raw: Record<string, unknown>
+  raw: Record<string, any>
   context: PnpmWorkspaceYaml
 }
 
 export interface BunWorkspaceMeta extends BasePackageMeta {
   type: 'bun-workspace'
-  raw: Record<string, unknown>
+  raw: Record<string, any>
 }
 
 export type PackageMeta

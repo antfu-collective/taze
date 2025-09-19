@@ -76,6 +76,7 @@ export async function writePackageJSON(
     if (key === 'packageManager') {
       const value = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))[0]
       if (value) {
+        pkg.raw ||= {}
         pkg.raw.packageManager = `${value[0]}@${value[1].replace('^', '')}`
         changed = true
       }
@@ -92,6 +93,6 @@ export async function writePackageJSON(
     for (const addon of (options.addons || builtinAddons)) {
       await addon.beforeWrite?.(pkg, options)
     }
-    await writeJSON(pkg.filepath, pkg.raw)
+    await writeJSON(pkg.filepath, pkg.raw || {})
   }
 }
