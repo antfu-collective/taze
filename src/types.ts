@@ -5,6 +5,7 @@ import type { SortOption } from './utils/sort'
 
 export type RangeMode = typeof MODE_CHOICES[number]
 export type PackageMode = Exclude<RangeMode, 'default'> | 'ignore'
+export type LockedUpgradeMode = 'auto' | 'strict'
 export type DepType
   = | 'dependencies'
     | 'devDependencies'
@@ -146,6 +147,14 @@ export interface CheckOptions extends CommonOptions {
    * @description exclude the locked deps/devDeps by default
    */
   includeLocked?: boolean
+  /**
+   * Controls how locked dependencies upgrade when the configured mode cannot find an update
+   * `auto` (default) falls back to a wider range (e.g. minor when patch has no candidates)
+   * `strict` keeps locked deps strictly aligned with the selected mode
+   *
+   * @default 'auto'
+   */
+  lockedUpgradeMode?: LockedUpgradeMode
   /**
    * Show time difference between the current and the updated version
    *

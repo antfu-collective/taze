@@ -72,7 +72,7 @@ taze --include /react/ --exclude react-dom # regex is also supported
 
 ### Locked Versions
 
-Locked (fixed version without `^` or `~`) packages are skipped by default, use `taze --include-locked` or `taze -l` to show them.
+Locked (fixed version without `^` or `~`) packages are skipped by default, use `taze --include-locked` or `taze -l` to show them. You can further control their upgrade behaviour with `--locked-upgrade-mode auto|strict` (defaults to `auto`); switch to `strict` when you want locked packages to respect the selected mode without falling back to a wider range.
 
 ### Peer Dependencies
 
