@@ -1,4 +1,4 @@
-import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, Protocol, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, LockedUpgradeMode, PackageData, PackageMeta, Protocol, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
 import process from 'node:process'
@@ -119,7 +119,7 @@ export function updateTargetVersion(
   version: string,
   forgiving = true,
   includeLocked = false,
-  strictLockedMode = false,
+  lockedUpgradeMode: LockedUpgradeMode = 'auto',
 ) {
   const versionLocked = /^\d+/.test(dep.currentVersion)
   if (versionLocked && !includeLocked) {
@@ -138,10 +138,9 @@ export function updateTargetVersion(
     = !!(dep.currentProvenance && !dep.targetProvenance) // trusted -> none, provenance -> none
       || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
 
-  if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion) && !strictLockedMode) {
-    // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
-    // - but this mode will always ignore the locked pkgs
-    // - so we need to reset the target
+  if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion) && lockedUpgradeMode !== 'strict') {
+    // auto mode mirrors the original behaviour: when patch-level lookup finds nothing for locked deps,
+    // fall back to minor so they still surface an upgrade suggestion
     const { versions, time = {}, tags } = dep.pkgData
     const targetVersion = getMaxSatisfying(versions, dep.currentVersion, 'minor', tags)
     if (targetVersion) {
@@ -274,7 +273,7 @@ export async function resolveDependency(
   }
 
   if (target)
-    updateTargetVersion(dep, target, undefined, options.includeLocked, options.strictLockedMode)
+    updateTargetVersion(dep, target, undefined, options.includeLocked, options.lockedUpgradeMode)
   else
     dep.targetVersion = dep.currentVersion
 

@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import type { CheckOptions, RangeMode } from './types'
+import type { CheckOptions, LockedUpgradeMode, RangeMode } from './types'
 import process from 'node:process'
 import { cac } from 'cac'
 import restoreCursor from 'restore-cursor'
@@ -7,7 +7,7 @@ import pkgJson from '../package.json'
 import { check } from './commands/check'
 import { checkGlobal } from './commands/check/checkGlobal'
 import { resolveConfig } from './config'
-import { LOG_LEVELS, MODE_CHOICES } from './constants'
+import { LOCKED_UPGRADE_MODE_CHOICES, LOG_LEVELS, MODE_CHOICES } from './constants'
 import { SORT_CHOICES } from './utils/sort'
 
 const cli: CAC = cac('taze')
@@ -33,6 +33,7 @@ cli
   .option('--sort <type>', `sort by most outdated absolute or relative to dependency (${SORT_CHOICES.join('|')})`)
   .option('--group', 'group dependencies by source on display')
   .option('--include-locked, -l', 'include locked dependencies & devDependencies')
+  .option('--locked-upgrade-mode <mode>', `control fallback behavior for locked dependencies (${LOCKED_UPGRADE_MODE_CHOICES.join('|')})`)
   .option('--timediff', 'show time difference between the current and the updated version')
   .option('--nodecompat', 'show package compatibility with current node version')
   .option('--peer', 'Include peerDependencies in the update process')
@@ -44,6 +45,15 @@ cli
         process.exit(1)
       }
       options.mode = mode
+    }
+
+    if (options.lockedUpgradeMode) {
+      const lockedMode = options.lockedUpgradeMode as string
+      if (!LOCKED_UPGRADE_MODE_CHOICES.includes(lockedMode as LockedUpgradeMode)) {
+        console.error(`Invalid locked upgrade mode: ${lockedMode}. Please use one of the following: ${LOCKED_UPGRADE_MODE_CHOICES.join('|')}`)
+        process.exit(1)
+      }
+      options.lockedUpgradeMode = lockedMode as LockedUpgradeMode
     }
 
     if ('maturityPeriod' in options && typeof options.maturityPeriod !== 'number') {

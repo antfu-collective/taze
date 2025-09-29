@@ -87,6 +87,19 @@ it('resolveDependency', async () => {
   expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
+  // patch includeLocked lockedUpgradeMode
+  options.includeLocked = true
+
+  expect(true).toBe((await resolveDependency(makePkg('4.0.2'), options, filter)).update)
+
+  options.lockedUpgradeMode = 'strict'
+
+  expect(false).toBe((await resolveDependency(makePkg('4.0.2'), options, filter)).update)
+
+  options.lockedUpgradeMode = 'auto'
+
+  options.includeLocked = false
+
   options.mode = 'latest'
   // latest
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
@@ -102,10 +115,6 @@ it('resolveDependency', async () => {
   expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
-
-  // include locked
-  options.includeLocked = true
-  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
 
   expect((await resolveDependency(makePkg(''), options, filter)).targetVersion)
     .toMatch('')
