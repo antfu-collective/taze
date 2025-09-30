@@ -27,6 +27,22 @@ it('getVersionRange', () => {
   expect('*').toBe(getVersionRangePrefix('x'))
 })
 
+it('getMaxSatisfying with unsorted versions', () => {
+  const unsortedVersions = [
+    '1.0.0',
+    '2.8.0',
+    '2.8.1',
+    '2.4.5',
+    '2.4.0',
+    '2.4.1',
+  ]
+
+  const tags = { latest: '2.8.1' }
+
+  const result = getMaxSatisfying(unsortedVersions, '^2.0.0', 'default', tags)
+  expect(result).toBe('2.8.1')
+})
+
 it('getMaxSatisfying', async () => {
   const { versions, tags } = await getPackageData('typescript')
   const latest = tags.latest
