@@ -27,22 +27,6 @@ it('getVersionRange', () => {
   expect('*').toBe(getVersionRangePrefix('x'))
 })
 
-it('getMaxSatisfying with unsorted versions', () => {
-  const unsortedVersions = [
-    '1.0.0',
-    '2.8.0',
-    '2.8.1',
-    '2.4.5',
-    '2.4.0',
-    '2.4.1',
-  ]
-
-  const tags = { latest: '2.8.1' }
-
-  const result = getMaxSatisfying(unsortedVersions, '^2.0.0', 'default', tags)
-  expect(result).toBe('2.8.1')
-})
-
 it('getMaxSatisfying', async () => {
   const { versions, tags } = await getPackageData('typescript')
   const latest = tags.latest
@@ -129,6 +113,19 @@ it('getMaxSatisfying', async () => {
     next: '5.1.0-beta-4508873393-20240430',
     rc: '4.2.1-rc.3',
     experimental: '0.0.0-experimental-4508873393-20240430',
+  }))
+
+  // should handle unsorted version arrays
+  // fixes bug where Object.keys() returns versions in arbitrary order
+  expect('2.8.1').toBe(getMaxSatisfying([
+    '1.0.0',
+    '2.8.0',
+    '2.8.1',
+    '2.4.5',
+    '2.4.0',
+    '2.4.1',  // This appears after 2.8.1 in the array
+  ], '^2.0.0', 'default', {
+    latest: '2.8.1',
   }))
 }, 10_000)
 
