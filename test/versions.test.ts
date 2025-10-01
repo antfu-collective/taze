@@ -127,6 +127,9 @@ it('getMaxSatisfying', async () => {
   ], '^2.0.0', 'default', {
     latest: '2.8.1',
   }))
+
+  // newest mode should return the actual newest version, not the last in array
+  expect('3.0.0').toBe(getMaxSatisfying(['1.0.0', '3.0.0', '2.0.0'], '', 'newest', {}))
 }, 10_000)
 
 it('deprecated filter', () => {

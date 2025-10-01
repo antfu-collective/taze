@@ -70,7 +70,10 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
     version = tags.latest
   }
   else if (mode === 'newest') {
-    version = versions[versions.length - 1]
+    versions.forEach((ver) => {
+      if (!version || semver.gt(ver, version))
+        version = ver
+    })
   }
   else if (mode === 'next') {
     version = tags.next
