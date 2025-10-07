@@ -1,7 +1,7 @@
 import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
-import { readFile, writeFile } from 'node:fs/promises'
+import * as fs from 'node:fs/promises'
 import { resolve } from 'pathe'
-import { load, dump } from 'js-yaml'
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 import detectIndent from 'detect-indent'
 import { builtinAddons } from '../addons'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
@@ -26,15 +26,22 @@ function isDepFieldEnabled(key: DepType, options: CommonOptions): boolean {
 }
 
 export async function readYAML(filepath: string): Promise<Record<string, unknown>> {
-  const content = await readFile(filepath, 'utf-8')
-  return load(content) as Record<string, unknown>
+  const content = await fs.readFile(filepath, 'utf-8')
+  if (!content)
+    return {}
+
+  const parsed = parseYaml(content)
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+    throw new TypeError(`Invalid package.yaml structure in ${filepath}`)
+  return parsed as Record<string, unknown>
 }
 
 export async function writeYAML(filepath: string, data: Record<string, unknown>) {
   let fileIndent = '  ' // default indent
   
   try {
-    const actualContent = await readFile(filepath, 'utf-8')
+    const actualContent = await fs.readFile(filepath, 'utf-8')
     fileIndent = detectIndent(actualContent).indent || '  '
   } catch {
     // File doesn't exist, use default indent
@@ -43,14 +50,13 @@ export async function writeYAML(filepath: string, data: Record<string, unknown>)
   // Convert indent to spaces for YAML
   const indentSize = fileIndent === '\t' ? 2 : fileIndent.length || 2
   
-  const yamlContent = dump(data, {
+  const yamlContent = stringifyYaml(data, {
     indent: indentSize,
-    noRefs: true,
-    sortKeys: false,
-    lineWidth: -1, // Disable line wrapping
-  })
+    aliasDuplicateObjects: false,
+    lineWidth: 0,
+  }).replace(/^(\s*)"(@[^":]+)":/gm, `$1'$2':`)
   
-  return writeFile(filepath, yamlContent, 'utf-8')
+  return fs.writeFile(filepath, yamlContent, 'utf-8')
 }
 
 export async function loadPackageYAML(
