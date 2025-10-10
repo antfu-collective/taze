@@ -10,6 +10,7 @@ import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { loadBunWorkspace, writeBunWorkspace } from './bunWorkspaces'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
 import { loadPnpmWorkspace, writePnpmWorkspace } from './pnpmWorkspaces'
+import { loadYarnWorkspace, writeYarnWorkspace } from './yarnWorkspaces'
 
 export async function readJSON(filepath: string) {
   return JSON.parse(await fs.readFile(filepath, 'utf-8'))
@@ -33,6 +34,8 @@ export async function writePackage(
       return writePnpmWorkspace(pkg, options)
     case 'bun-workspace':
       return writeBunWorkspace(pkg, options)
+    case '.yarnrc.yml':
+      return writeYarnWorkspace(pkg, options)
     default:
       throw new Error(`Unsupported package type: ${pkg.type}`)
   }
@@ -45,6 +48,9 @@ export async function loadPackage(
 ): Promise<PackageMeta[]> {
   if (relative.endsWith('pnpm-workspace.yaml'))
     return loadPnpmWorkspace(relative, options, shouldUpdate)
+
+  if (relative.endsWith('.yarnrc.yml'))
+    return loadYarnWorkspace(relative, options, shouldUpdate)
 
   // Check if this package.json contains Bun workspaces with catalogs
   if (relative.endsWith('package.json')) {
@@ -106,6 +112,9 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
         const pnpmWorkspace = await findUp('pnpm-workspace.yaml', { cwd: absolute, stopAt: cwd })
         if (pnpmWorkspace && dirname(pnpmWorkspace) !== cwd)
           return []
+        const yarnWorkspace = await findUp('.yarnrc.yml', { cwd: absolute, stopAt: cwd })
+        if (yarnWorkspace && dirname(yarnWorkspace) !== cwd)
+          return []
         return [packagePath]
       }),
     )).flat()
@@ -113,6 +122,10 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
 
   if (existsSync(join(cwd, 'pnpm-workspace.yaml'))) {
     packagesNames.unshift('pnpm-workspace.yaml')
+  }
+
+  if (existsSync(join(cwd, '.yarnrc.yml'))) {
+    packagesNames.unshift('.yarnrc.yml')
   }
 
   const packages = (await Promise.all(

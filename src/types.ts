@@ -16,6 +16,7 @@ export type DepType
     | 'overrides'
     | 'pnpm-workspace'
     | 'bun-workspace'
+    | 'yarn-workspace'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -28,6 +29,7 @@ export const DependenciesTypeShortMap = {
   'pnpm.overrides': 'pnpm-overrides',
   'pnpm-workspace': 'pnpm-workspace',
   'bun-workspace': 'bun-workspace',
+  'yarn-workspace': 'yarn-workspace',
 }
 
 export type Protocol = 'npm' | 'jsr'
@@ -227,11 +229,18 @@ export interface BunWorkspaceMeta extends BasePackageMeta {
   raw: Record<string, any>
 }
 
+export interface YarnWorkspaceMeta extends BasePackageMeta {
+  type: '.yarnrc.yml'
+  raw: Record<string, any>
+  context: PnpmWorkspaceYaml
+}
+
 export type PackageMeta
   = | PackageJsonMeta
     | GlobalPackageMeta
     | PnpmWorkspaceMeta
     | BunWorkspaceMeta
+    | YarnWorkspaceMeta
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void
