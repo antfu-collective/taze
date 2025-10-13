@@ -105,6 +105,29 @@ it('resolveDependency', async () => {
 
   // include locked
   options.includeLocked = true
+
+  options.mode = 'default'
+
+  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+
+  options.mode = 'major'
+
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+
+  options.mode = 'minor'
+
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+
+  options.mode = 'patch'
+
+  expect(false).toBe((await resolveDependency(makePkg('4.0.3'), options, filter)).update)
+
+  options.mode = 'latest'
+
+  expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+
+  options.mode = 'newest'
+
   expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
 
   expect((await resolveDependency(makePkg(''), options, filter)).targetVersion)
