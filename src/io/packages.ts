@@ -93,7 +93,7 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
       dot: false,
       expandDirectories: false,
     })
-    packagesNames.sort((a, b) => a.localeCompare(b))
+    packagesNames = packagesNames.sort((a, b) => a.localeCompare(b))
   }
   else {
     packagesNames = ['package.json']
