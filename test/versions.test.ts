@@ -114,6 +114,22 @@ it('getMaxSatisfying', async () => {
     rc: '4.2.1-rc.3',
     experimental: '0.0.0-experimental-4508873393-20240430',
   }))
+
+  // should handle unsorted version arrays
+  // fixes bug where Object.keys() returns versions in arbitrary order
+  expect('2.8.1').toBe(getMaxSatisfying([
+    '1.0.0',
+    '2.8.0',
+    '2.8.1',
+    '2.4.5',
+    '2.4.0',
+    '2.4.1',  // This appears after 2.8.1 in the array
+  ], '^2.0.0', 'default', {
+    latest: '2.8.1',
+  }))
+
+  // newest mode should return the actual newest version, not the last in array
+  expect('3.0.0').toBe(getMaxSatisfying(['1.0.0', '3.0.0', '2.0.0'], '', 'newest', {}))
 }, 10_000)
 
 it('deprecated filter', () => {
