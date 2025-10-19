@@ -37,6 +37,7 @@ cli
   .option('--nodecompat', 'show package compatibility with current node version')
   .option('--peer', 'Include peerDependencies in the update process')
   .option('--maturity-period [days]', 'wait period in days before upgrading to newly released packages (default: 7 when flag is used, 0 when not used)')
+  .option('--concurrency', 'number of concurrent requests when resolving dependencies', { default: 10 })
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
