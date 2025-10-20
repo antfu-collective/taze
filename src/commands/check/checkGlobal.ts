@@ -156,14 +156,17 @@ async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackag
   const npmOut = JSON.parse(stdout) as NpmOut
   const filter = createDependenciesFilter(options.include, options.exclude)
 
-  const deps: RawDep[] = Object.entries(npmOut.dependencies)
-    .filter(([_name, i]) => i?.version)
-    .map(([name, i]) => ({
-      name,
-      currentVersion: `^${i.version}`,
-      update: filter(name),
-      source: 'dependencies',
-    }))
+  let deps: RawDep[] = []
+  if ('dependencies' in npmOut) {
+    deps = Object.entries(npmOut.dependencies)
+      .filter(([_name, i]) => i?.version)
+      .map(([name, i]) => ({
+        name,
+        currentVersion: `^${i.version}`,
+        update: filter(name),
+        source: 'dependencies',
+      }))
+  }
 
   return {
     agent: 'npm',
