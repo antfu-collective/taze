@@ -1,8 +1,8 @@
 import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
 import * as fs from 'node:fs/promises'
+import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
-import detectIndent from 'detect-indent'
 import { builtinAddons } from '../addons'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
 
@@ -17,8 +17,9 @@ const allDepsFields = [
   'overrides',
 ] as const satisfies DepType[]
 
-const isDepFieldEnabled = (key: DepType, options: CommonOptions): boolean =>
-  key === 'peerDependencies' ? !!options.peer : options.depFields?.[key] !== false
+function isDepFieldEnabled(key: DepType, options: CommonOptions): boolean {
+  return key === 'peerDependencies' ? !!options.peer : options.depFields?.[key] !== false
+}
 
 export async function readYAML(filepath: string): Promise<Record<string, unknown>> {
   const content = await fs.readFile(filepath, 'utf-8')
@@ -46,7 +47,7 @@ export async function writeYAML(filepath: string, data: Record<string, unknown>)
     aliasDuplicateObjects: false,
     lineWidth: 0,
   }).replace(/^(\s*)"(@[^":]+)":/gm, `$1'$2':`)
-  
+
   return fs.writeFile(filepath, yamlContent, 'utf-8')
 }
 
