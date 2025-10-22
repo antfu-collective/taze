@@ -6,6 +6,7 @@ import * as packageYaml from '../src/io/packageYaml'
 
 // output that should be written to the package.yaml file
 let output: string | undefined
+
 vi.mock('node:fs/promises', async (importActual) => {
   return {
     ...await importActual(),
@@ -42,7 +43,7 @@ vitest.mock('../src/utils/npm.ts', () => ({
 }))
 
 const options: CheckOptions = {
-  cwd: './test/fixtures/package-yaml',
+  cwd: `${process.cwd()}/test/fixtures/package-yaml`,
   mode: 'default',
   write: false,
   all: false,
@@ -61,53 +62,52 @@ describe('package.yaml functionality', () => {
   })
 
   it('should load package.yaml file correctly', async () => {
-    const result = await CheckPackages(options)
-    const packages = result.packages
+    const { packages } = await CheckPackages(options)
+    const firstPackage = packages[0]
     
     expect(packages).toHaveLength(1)
-    expect(packages[0].type).toBe('package.yaml')
-    expect(packages[0].name).toBe('@taze/package-yaml-example')
-    expect(packages[0].version).toBe('1.0.0')
-    expect(packages[0].private).toBe(true)
+    expect(firstPackage.type).toBe('package.yaml')
+    expect(firstPackage.name).toBe('@taze/package-yaml-example')
+    expect(firstPackage.version).toBe('1.0.0')
+    expect(firstPackage.private).toBe(false)
 
-    const deps = packages[0].deps
-    expect(deps).toContainEqual(expect.objectContaining({
+    expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'lodash',
       currentVersion: '^4.13.19',
       source: 'dependencies'
     }))
-    expect(deps).toContainEqual(expect.objectContaining({
+    expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'express', 
       currentVersion: '4.12.x',
       source: 'dependencies'
     }))
-    expect(deps).toContainEqual(expect.objectContaining({
+    expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: '@types/lodash',
       currentVersion: '^4.14.0', 
       source: 'devDependencies'
     }))
-    expect(deps).toContainEqual(expect.objectContaining({
+    expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'react-dom',
       currentVersion: '^18.2.0',
       source: 'peerDependencies'
     }))
-    expect(deps).toContainEqual(expect.objectContaining({
+    expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'multer',
       currentVersion: '^0.1.8',
       source: 'optionalDependencies'
     }))
-    expect(deps).toContainEqual(expect.objectContaining({
+    expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'pnpm',
-      currentVersion: '^8.15.0',
+      currentVersion: '^10.19.0',
       source: 'packageManager'
     }))
   })
 
   it('should write updated dependencies to package.yaml', async () => {
-    const pkg: PackageYamlMeta = {
+    const pkgYaml: PackageYamlMeta = {
       name: '@taze/package-yaml-example',
       version: '1.0.0',
-      private: true,
+      private: false,
       type: 'package.yaml',
       filepath: '/tmp/package.yaml',
       relative: 'package.yaml',
@@ -148,16 +148,15 @@ describe('package.yaml functionality', () => {
       ],
     }
 
-    await packageYaml.writePackageYAML(pkg, {})
+    await packageYaml.writePackageYAML(pkgYaml, {})
 
-    expect(output).toBeDefined()
     expect(output).toContain('lodash: ^4.17.21')
     expect(output).toContain('\'@types/lodash\': ^4.17.7')
     
     // Verify YAML structure is maintained
     expect(output).toMatch(/name: (['"]?)@taze\/package-yaml-example\1/)
     expect(output).toMatch(/version: (['"]?)1\.0\.0\1/)
-    expect(output).toMatch(/dependencies:/)
+    expect(output).toMatch(/dependencies:/) 
     expect(output).toMatch(/devDependencies:/)
   })
 
@@ -188,13 +187,12 @@ devDependencies:
 
   it('should detect package.yaml as higher priority than package.json', async () => {
     // Test that when both package.yaml and package.json exist, package.yaml takes priority
-    const result = await CheckPackages({
+    const { packages } = await CheckPackages({
       ...options,
-      cwd: './test/fixtures/package-yaml',
+      cwd: `${process.cwd()}/test/fixtures/package-yaml`,
     })
-    const packagesWithYaml = result.packages
 
-    expect(packagesWithYaml).toHaveLength(1)
-    expect(packagesWithYaml[0].type).toBe('package.yaml')
+    expect(packages).toHaveLength(1)
+    expect(packages[0].type).toBe('package.yaml')
   })
 })

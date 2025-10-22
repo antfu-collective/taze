@@ -40,7 +40,7 @@ export async function writeYAML(filepath: string, data: Record<string, unknown>)
     .then(detectIndent)
     .catch(Object.create)
 
-  const indent = (type === 'tab' ? 2 : amount) ?? 1
+  const indent = (type === 'tab' ? 2 : amount) ?? 2
 
   const yamlContent = stringifyYaml(data, {
     indent,
