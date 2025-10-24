@@ -118,7 +118,14 @@ export async function check(options: CheckOptions) {
       if (options.failOnOutdated)
         exitCode = 1
 
-      console.log(`Add ${c.green('-w')} to write to package.json`)
+      // Determine the most common package file type for the message
+      const fileTypes = resolvePkgs
+        .filter(pkg => pkg.resolved.some(dep => dep.update))
+        .map(pkg => pkg.type)
+      const hasPackageYaml = fileTypes.includes('package.yaml')
+      const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
+
+      console.log(`Add ${c.green('-w')} to write to ${fileTypeName}`)
     }
 
     console.log()
@@ -127,13 +134,29 @@ export async function check(options: CheckOptions) {
     let packageManager: Agent | undefined
     if (!options.install && !options.update && !options.interactive) {
       packageManager = await detect()
+
+      // Determine the most common package file type for the message
+      const fileTypes = resolvePkgs
+        .filter(pkg => pkg.resolved.some(dep => dep.update))
+        .map(pkg => pkg.type)
+      const hasPackageYaml = fileTypes.includes('package.yaml')
+      const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
+
       console.log(
-        c.yellow`ℹ changes written to package.json, run ${c.cyan`${packageManager} i`} to install updates.`,
+        c.yellow`ℹ changes written to ${fileTypeName}, run ${c.cyan`${packageManager} i`} to install updates.`,
       )
     }
 
-    if (options.install || options.update || options.interactive)
-      console.log(c.yellow('ℹ changes written to package.json'))
+    if (options.install || options.update || options.interactive) {
+      // Determine the most common package file type for the message
+      const fileTypes = resolvePkgs
+        .filter(pkg => pkg.resolved.some(dep => dep.update))
+        .map(pkg => pkg.type)
+      const hasPackageYaml = fileTypes.includes('package.yaml')
+      const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
+
+      console.log(c.yellow(`ℹ changes written to ${fileTypeName}`))
+    }
 
     if (options.interactive && !options.install) {
       options.install = await prompts([

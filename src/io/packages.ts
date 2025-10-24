@@ -9,6 +9,7 @@ import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { loadBunWorkspace, writeBunWorkspace } from './bunWorkspaces'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
+import { loadPackageYAML, writePackageYAML } from './packageYaml'
 import { loadPnpmWorkspace, writePnpmWorkspace } from './pnpmWorkspaces'
 import { loadYarnWorkspace, writeYarnWorkspace } from './yarnWorkspaces'
 
@@ -30,6 +31,8 @@ export async function writePackage(
   switch (pkg.type) {
     case 'package.json':
       return writePackageJSON(pkg, options)
+    case 'package.yaml':
+      return writePackageYAML(pkg, options)
     case 'pnpm-workspace.yaml':
       return writePnpmWorkspace(pkg, options)
     case 'bun-workspace':
@@ -51,6 +54,9 @@ export async function loadPackage(
 
   if (relative.endsWith('.yarnrc.yml'))
     return loadYarnWorkspace(relative, options, shouldUpdate)
+
+  if (relative.endsWith('package.yaml'))
+    return loadPackageYAML(relative, options, shouldUpdate)
 
   // Check if this package.json contains Bun workspaces with catalogs
   if (relative.endsWith('package.json')) {
@@ -86,17 +92,45 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
   const filter = createDependenciesFilter(options.include, options.exclude)
 
   if (options.recursive) {
-    packagesNames = await glob('**/package.json', {
+    // Look for both package.yaml and package.json files
+    const yamlPackages = await glob('**/package.yaml', {
       ignore: DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || []),
       cwd: options.cwd,
       onlyFiles: true,
       dot: false,
       expandDirectories: false,
     })
+
+    const jsonPackages = await glob('**/package.json', {
+      ignore: DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || []),
+      cwd: options.cwd,
+      onlyFiles: true,
+      dot: false,
+      expandDirectories: false,
+    })
+
+    // Prioritize package.yaml over package.json in the same directory
+    const packageDirs = new Set<string>()
+
+    // Add all package.yaml files first (higher priority)
+    for (const yamlPkg of yamlPackages) {
+      packagesNames.push(yamlPkg)
+      const dir = dirname(yamlPkg)
+      packageDirs.add(dir)
+    }
+
+    // Add package.json files only if no package.yaml exists in the same directory
+    for (const jsonPkg of jsonPackages) {
+      const dir = dirname(jsonPkg)
+      if (!packageDirs.has(dir)) {
+        packagesNames.push(jsonPkg)
+      }
+    }
+
     packagesNames = packagesNames.sort((a, b) => a.localeCompare(b))
   }
   else {
-    packagesNames = ['package.json']
+    packagesNames = await Array.fromAsync(await glob('package.{yaml,json}', { cwd }))
   }
 
   if (options.ignoreOtherWorkspaces) {

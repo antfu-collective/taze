@@ -3,7 +3,7 @@
   "type": "module",
   "version": "19.8.1",
   "packageManager": "pnpm@10.18.3",
-  "description": "A modern cli tool that keeps your deps fresh",
+  "description": "A modern CLI tool that keeps your dependencies fresh in any repo and monorepo",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
   "homepage": "https://github.com/antfu-collective/taze#readme",
@@ -44,7 +44,8 @@
     "restore-cursor": "^5.1.0",
     "tinyexec": "^1.0.1",
     "tinyglobby": "^0.2.15",
-    "unconfig": "^7.3.3"
+    "unconfig": "^7.3.3",
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.0.0",

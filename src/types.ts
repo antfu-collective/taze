@@ -235,12 +235,24 @@ export interface YarnWorkspaceMeta extends BasePackageMeta {
   context: PnpmWorkspaceYaml
 }
 
+export interface PackageYamlMeta extends BasePackageMeta {
+  /**
+   * Package type
+   */
+  type: 'package.yaml'
+  /**
+   * Raw package.yaml Object
+   */
+  raw: Record<string, unknown>
+}
+
 export type PackageMeta
   = | PackageJsonMeta
     | GlobalPackageMeta
     | PnpmWorkspaceMeta
     | BunWorkspaceMeta
     | YarnWorkspaceMeta
+    | PackageYamlMeta
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void
