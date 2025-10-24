@@ -134,14 +134,14 @@ export async function check(options: CheckOptions) {
     let packageManager: Agent | undefined
     if (!options.install && !options.update && !options.interactive) {
       packageManager = await detect()
-      
+
       // Determine the most common package file type for the message
       const fileTypes = resolvePkgs
         .filter(pkg => pkg.resolved.some(dep => dep.update))
         .map(pkg => pkg.type)
       const hasPackageYaml = fileTypes.includes('package.yaml')
       const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
-      
+
       console.log(
         c.yellow`ℹ changes written to ${fileTypeName}, run ${c.cyan`${packageManager} i`} to install updates.`,
       )
@@ -154,7 +154,7 @@ export async function check(options: CheckOptions) {
         .map(pkg => pkg.type)
       const hasPackageYaml = fileTypes.includes('package.yaml')
       const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
-      
+
       console.log(c.yellow(`ℹ changes written to ${fileTypeName}`))
     }
 

@@ -34,7 +34,6 @@ export async function readYAML(filepath: string): Promise<Record<string, unknown
   return parsed as Record<string, unknown>
 }
 
-
 export async function writeYAML(filepath: string, data: Record<string, unknown>) {
   const { amount, type } = await fs.readFile(filepath, 'utf-8')
     .then(detectIndent)

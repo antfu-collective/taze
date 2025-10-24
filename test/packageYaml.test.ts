@@ -64,7 +64,7 @@ describe('package.yaml functionality', () => {
   it('should load package.yaml file correctly', async () => {
     const { packages } = await CheckPackages(options)
     const firstPackage = packages[0]
-    
+
     expect(packages).toHaveLength(1)
     expect(firstPackage.type).toBe('package.yaml')
     expect(firstPackage.name).toBe('@taze/package-yaml-example')
@@ -74,32 +74,32 @@ describe('package.yaml functionality', () => {
     expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'lodash',
       currentVersion: '^4.13.19',
-      source: 'dependencies'
+      source: 'dependencies',
     }))
     expect(firstPackage.deps).toContainEqual(expect.objectContaining({
-      name: 'express', 
+      name: 'express',
       currentVersion: '4.12.x',
-      source: 'dependencies'
+      source: 'dependencies',
     }))
     expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: '@types/lodash',
-      currentVersion: '^4.14.0', 
-      source: 'devDependencies'
+      currentVersion: '^4.14.0',
+      source: 'devDependencies',
     }))
     expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'react-dom',
       currentVersion: '^18.2.0',
-      source: 'peerDependencies'
+      source: 'peerDependencies',
     }))
     expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'multer',
       currentVersion: '^0.1.8',
-      source: 'optionalDependencies'
+      source: 'optionalDependencies',
     }))
     expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'pnpm',
       currentVersion: '^10.19.0',
-      source: 'packageManager'
+      source: 'packageManager',
     }))
   })
 
@@ -120,7 +120,7 @@ describe('package.yaml functionality', () => {
         },
         devDependencies: {
           '@types/lodash': '^4.14.0',
-          typescript: '3.5',
+          'typescript': '3.5',
         },
       },
       deps: [],
@@ -136,7 +136,7 @@ describe('package.yaml functionality', () => {
           provenanceDowngraded: false,
         },
         {
-          name: '@types/lodash', 
+          name: '@types/lodash',
           currentVersion: '^4.14.0',
           targetVersion: '^4.17.7',
           source: 'devDependencies',
@@ -152,11 +152,11 @@ describe('package.yaml functionality', () => {
 
     expect(output).toContain('lodash: ^4.17.21')
     expect(output).toContain('\'@types/lodash\': ^4.17.7')
-    
+
     // Verify YAML structure is maintained
     expect(output).toMatch(/name: (['"]?)@taze\/package-yaml-example\1/)
     expect(output).toMatch(/version: (['"]?)1\.0\.0\1/)
-    expect(output).toMatch(/dependencies:/) 
+    expect(output).toMatch(/dependencies:/)
     expect(output).toMatch(/devDependencies:/)
   })
 
@@ -173,10 +173,10 @@ devDependencies:
 `
 
     const filepath = '/tmp/package.yaml'
-    
+
     // Mock readFile to return our YAML content
     vi.mocked(await import('node:fs/promises')).readFile = vi.fn().mockResolvedValue(yamlContent)
-    
+
     const raw = await packageYaml.readYAML(filepath)
     expect(raw.name).toBe('@taze/test')
     expect(raw.dependencies).toEqual({
