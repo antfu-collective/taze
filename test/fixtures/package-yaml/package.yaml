@@ -1,0 +1,17 @@
+name: '@taze/package-yaml-example'
+version: 1.0.0
+description: Test package.yaml for taze
+private: false
+dependencies:
+  express: 4.12.x
+  lodash: ^4.13.19
+  react: ^19.1.1
+devDependencies:
+  '@types/lodash': ^4.14.0
+  typescript: '3.5'
+  webpack: ~5.101.3
+peerDependencies:
+  react-dom: ^18.2.0
+optionalDependencies:
+  multer: ^0.1.8
+packageManager: pnpm@10.19.0
