@@ -31,7 +31,8 @@
     "typecheck": "tsc",
     "prepublishOnly": "nr build",
     "release": "bumpp",
-    "test": "unbuild && vitest"
+    "test": "unbuild && vitest",
+    "watch": "unbuild --watch"
   },
   "dependencies": {
     "@antfu/ni": "^27.0.1",
