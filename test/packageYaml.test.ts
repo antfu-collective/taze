@@ -1,4 +1,5 @@
 import type { CheckOptions, PackageYamlMeta } from '../src/types'
+import { type Document as DocumentType, Document } from 'yaml'
 import process from 'node:process'
 import { afterEach, beforeEach, describe, expect, it, vi, vitest } from 'vitest'
 import { CheckPackages } from '../src'
@@ -111,7 +112,7 @@ describe('package.yaml functionality', () => {
       type: 'package.yaml',
       filepath: '/tmp/package.yaml',
       relative: 'package.yaml',
-      raw: {
+      raw: new Document({
         name: '@taze/package-yaml-example',
         version: '1.0.0',
         dependencies: {
@@ -122,7 +123,7 @@ describe('package.yaml functionality', () => {
           '@types/lodash': '^4.14.0',
           'typescript': '3.5',
         },
-      },
+      }),
       deps: [],
       resolved: [
         {
@@ -165,8 +166,8 @@ describe('package.yaml functionality', () => {
 version: "1.0.0"
 # This is a comment
 dependencies:
-  lodash: "^4.13.19"  # inline comment
-  express: "4.12.x"
+  lodash: ^4.13.19 # inline comment
+  express: 4.12.x
 
 devDependencies:
   typescript: "3.5"
@@ -177,12 +178,43 @@ devDependencies:
     // Mock readFile to return our YAML content
     vi.mocked(await import('node:fs/promises')).readFile = vi.fn().mockResolvedValue(yamlContent)
 
-    const raw = await packageYaml.readYAML(filepath)
+    const doc: DocumentType = await packageYaml.readYAML(filepath)
+    const raw = doc.toJS()
+
     expect(raw.name).toBe('@taze/test')
     expect(raw.dependencies).toEqual({
       lodash: '^4.13.19',
       express: '4.12.x',
     })
+
+    const pkgYaml: PackageYamlMeta = {
+      name: raw.name,
+      version: raw.version,
+      private: false,
+      type: 'package.yaml',
+      filepath: '/tmp/package.yaml',
+      relative: 'package.yaml',
+      raw: doc,
+      deps: [],
+      resolved: [
+        {
+          name: 'lodash',
+          currentVersion: '^4.13.19',
+          targetVersion: '^4.17.21',
+          source: 'dependencies',
+          update: true,
+          diff: 'minor',
+          pkgData: { tags: { latest: '4.17.21' }, versions: ['4.17.21'] },
+          provenanceDowngraded: false,
+        },
+      ],
+    }
+
+    await packageYaml.writePackageYAML(pkgYaml, {})
+
+    expect(output).toContain('# This is a comment')
+    expect(output).toContain('# inline comment')
+    expect(output).toBe(yamlContent.replace('4.13.19', '4.17.21'))
   })
 
   it('should detect package.yaml as higher priority than package.json', async () => {
