@@ -1,10 +1,8 @@
 import type { CommonOptions, PackageMeta } from '../types'
 import { existsSync, promises as fs } from 'node:fs'
-import process from 'node:process'
 import detectIndent from 'detect-indent'
 import { findUp } from 'find-up-simple'
 import { dirname, join, resolve } from 'pathe'
-import { glob } from 'tinyglobby'
 import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { loadBunWorkspace, writeBunWorkspace } from './bunWorkspaces'
@@ -93,44 +91,40 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
 
   if (options.recursive) {
     // Look for both package.yaml and package.json files
-    const yamlPackages = await glob('**/package.yaml', {
-      ignore: DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || []),
-      cwd: options.cwd,
-      onlyFiles: true,
-      dot: false,
-      expandDirectories: false,
-    })
+    const yamlPackages = await Array.fromAsync(fs.glob('**/package.yaml', {
+      exclude: DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || []),
+      cwd,
+      withFileTypes: true,
+    }))
 
-    const jsonPackages = await glob('**/package.json', {
-      ignore: DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || []),
-      cwd: options.cwd,
-      onlyFiles: true,
-      dot: false,
-      expandDirectories: false,
-    })
+    const jsonPackages = await Array.fromAsync(fs.glob('**/package.json', {
+      exclude: DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || []),
+      cwd,
+      withFileTypes: true,
+    }))
 
     // Prioritize package.yaml over package.json in the same directory
     const packageDirs = new Set<string>()
 
     // Add all package.yaml files first (higher priority)
-    for (const yamlPkg of yamlPackages) {
-      packagesNames.push(yamlPkg)
-      const dir = dirname(yamlPkg)
+    for (const yamlPkg of yamlPackages.filter(dirent => dirent.isFile())) {
+      packagesNames.push(`${yamlPkg}`)
+      const dir = dirname(`${yamlPkg}`)
       packageDirs.add(dir)
     }
 
     // Add package.json files only if no package.yaml exists in the same directory
-    for (const jsonPkg of jsonPackages) {
-      const dir = dirname(jsonPkg)
+    for (const jsonPkg of jsonPackages.filter(dirent => dirent.isFile())) {
+      const dir = dirname(`${jsonPkg}`)
       if (!packageDirs.has(dir)) {
-        packagesNames.push(jsonPkg)
+        packagesNames.push(`${jsonPkg}`)
       }
     }
 
     packagesNames = packagesNames.sort((a, b) => a.localeCompare(b))
   }
   else {
-    packagesNames = await Array.fromAsync(await glob('package.{yaml,json}', { cwd }))
+    packagesNames = await Array.fromAsync(fs.glob('package.{yaml,json}', { cwd }))
   }
 
   if (options.ignoreOtherWorkspaces) {
