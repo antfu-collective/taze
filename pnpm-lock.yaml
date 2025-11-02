@@ -35,9 +35,6 @@ importers:
       tinyexec:
         specifier: ^1.0.1
         version: 1.0.1
-      tinyglobby:
-        specifier: ^0.2.15
-        version: 0.2.15
       unconfig:
         specifier: ^7.3.3
         version: 7.3.3
