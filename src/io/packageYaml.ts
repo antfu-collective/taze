@@ -1,10 +1,11 @@
+import type { Document as DocumentType } from 'yaml'
 import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
 import * as fs from 'node:fs/promises'
 import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
-import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
+import { Document, parseDocument as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { builtinAddons } from '../addons'
-import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
+import { dumpDependencies, getByPath, parseDependencies, parseDependency } from './dependencies'
 
 const allDepsFields = [
   'dependencies',
@@ -21,20 +22,21 @@ function isDepFieldEnabled(key: DepType, options: CommonOptions): boolean {
   return key === 'peerDependencies' ? !!options.peer : options.depFields?.[key] !== false
 }
 
-export async function readYAML(filepath: string): Promise<Record<string, unknown>> {
+export async function readYAML(filepath: string): Promise<DocumentType> {
   const content = await fs.readFile(filepath, 'utf-8')
   if (!content)
-    return {}
+    return new Document({})
 
-  const parsed = parseYaml(content)
+  const document = parseYaml(content, { merge: true })
+  const parsed = document.toJS()
 
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+  if (document.errors.length || typeof parsed !== 'object' || Array.isArray(parsed))
     throw new TypeError(`Invalid package.yaml structure in ${filepath}`)
 
-  return parsed as Record<string, unknown>
+  return document
 }
 
-export async function writeYAML(filepath: string, data: Record<string, unknown>) {
+export async function writeYAML(filepath: string, data: DocumentType | Record<string, unknown>) {
   const { amount, type } = await fs.readFile(filepath, 'utf-8')
     .then(detectIndent)
     .catch(Object.create)
@@ -64,22 +66,23 @@ export async function loadPackageYAML(
       continue
 
     if (key === 'packageManager') {
-      if (raw.packageManager && typeof raw.packageManager === 'string') {
-        const [name, version] = raw.packageManager.split('@')
+      const packageManager = raw.get(key)
+      if (typeof packageManager === 'string') {
+        const [name, version] = packageManager.split('@')
         // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
         deps.push(parseDependency(name, `^${version.split('+')[0]}`, 'packageManager', shouldUpdate))
       }
     }
     else {
-      deps.push(...parseDependencies(raw, key, shouldUpdate))
+      deps.push(...parseDependencies(raw.toJS(), key, shouldUpdate))
     }
   }
 
   return [
     {
-      name: typeof raw.name === 'string' ? raw.name : '',
-      private: !!raw.private,
-      version: typeof raw.version === 'string' ? raw.version : '',
+      name: raw.get('name') as string ?? '',
+      private: !!raw.get('private'),
+      version: raw.get('version') as string ?? '',
       type: 'package.yaml',
       relative,
       filepath,
@@ -101,16 +104,18 @@ export async function writePackageYAML(
       continue
 
     if (key === 'packageManager') {
-      const value = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))[0]
+      const [value] = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))
       if (value) {
-        pkg.raw ||= {}
-        pkg.raw.packageManager = `${value[0]}@${value[1].replace('^', '')}`
+        pkg.raw ??= new Document({})
+        pkg.raw.set('packageManager', `${value[0]}@${value[1].replace('^', '')}`)
         changed = true
       }
     }
     else {
-      if (getByPath(pkg.raw, key)) {
-        setByPath(pkg.raw, key, dumpDependencies(pkg.resolved, key))
+      if (getByPath(pkg.raw?.toJS?.(), key)) {
+        const values = Object.entries(dumpDependencies(pkg.resolved, key))
+        values.forEach(([lastKey, value]) =>
+          pkg.raw?.setIn([...key.split('.'), lastKey], value))
         changed = true
       }
     }

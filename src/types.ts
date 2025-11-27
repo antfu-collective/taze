@@ -1,5 +1,6 @@
 import type { Agent } from 'package-manager-detector'
 import type { PnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
+import type { Document } from 'yaml'
 import type { MODE_CHOICES } from './constants'
 import type { SortOption } from './utils/sort'
 
@@ -241,9 +242,9 @@ export interface PackageYamlMeta extends BasePackageMeta {
    */
   type: 'package.yaml'
   /**
-   * Raw package.yaml Object
+   * Raw package.yaml Document
    */
-  raw: Record<string, unknown>
+  raw: Document
 }
 
 export type PackageMeta
