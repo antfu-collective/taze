@@ -242,9 +242,13 @@ export interface PackageYamlMeta extends BasePackageMeta {
    */
   type: 'package.yaml'
   /**
+   * Raw package.yaml Object
+   */
+  raw: Record<string, unknown>
+  /**
    * Raw package.yaml Document
    */
-  raw: Document
+  yamlDocument: Document
 }
 
 export type PackageMeta

@@ -58,7 +58,7 @@ export async function loadPackageYAML(
   shouldUpdate: (name: string) => boolean,
 ): Promise<PackageMeta[]> {
   const filepath = resolve(options.cwd ?? '', relative)
-  const raw = await readYAML(filepath)
+  const doc = await readYAML(filepath)
   const deps: RawDep[] = []
 
   for (const key of allDepsFields) {
@@ -66,7 +66,7 @@ export async function loadPackageYAML(
       continue
 
     if (key === 'packageManager') {
-      const packageManager = raw.get(key)
+      const packageManager = doc.get(key)
       if (typeof packageManager === 'string') {
         const [name, version] = packageManager.split('@')
         // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
@@ -74,20 +74,23 @@ export async function loadPackageYAML(
       }
     }
     else {
-      deps.push(...parseDependencies(raw.toJS(), key, shouldUpdate))
+      deps.push(...parseDependencies(doc.toJS(), key, shouldUpdate))
     }
   }
 
   return [
     {
-      name: raw.get('name') as string ?? '',
-      private: !!raw.get('private'),
-      version: raw.get('version') as string ?? '',
+      name: doc.get('name') as string ?? '',
+      private: !!doc.get('private'),
+      version: doc.get('version') as string ?? '',
       type: 'package.yaml',
       relative,
       filepath,
-      raw,
+      get raw() {
+        return doc.toJS()
+      },
       deps,
+      yamlDocument: doc,
       resolved: [],
     },
   ]
@@ -99,6 +102,12 @@ export async function writePackageYAML(
 ) {
   let changed = false
 
+  if (pkg.type !== 'package.yaml') {
+    throw new Error('Package type is not supported')
+  }
+
+  const doc = pkg.yamlDocument || new Document(pkg.raw)
+
   for (const key of allDepsFields) {
     if (!isDepFieldEnabled(key, options))
       continue
@@ -106,16 +115,15 @@ export async function writePackageYAML(
     if (key === 'packageManager') {
       const [value] = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))
       if (value) {
-        pkg.raw ??= new Document({})
-        pkg.raw.set('packageManager', `${value[0]}@${value[1].replace('^', '')}`)
+        doc.set('packageManager', `${value[0]}@${value[1].replace('^', '')}`)
         changed = true
       }
     }
     else {
-      if (getByPath(pkg.raw?.toJS?.(), key)) {
+      if (getByPath(doc.toJS(), key)) {
         const values = Object.entries(dumpDependencies(pkg.resolved, key))
         values.forEach(([lastKey, value]) =>
-          pkg.raw?.setIn([...key.split('.'), lastKey], value))
+          doc.setIn([...key.split('.'), lastKey], value))
         changed = true
       }
     }
@@ -125,6 +133,6 @@ export async function writePackageYAML(
     for (const addon of (options.addons || builtinAddons)) {
       await addon.beforeWrite?.(pkg, options)
     }
-    await writeYAML(pkg.filepath, pkg.raw || {})
+    await writeYAML(pkg.filepath, doc)
   }
 }

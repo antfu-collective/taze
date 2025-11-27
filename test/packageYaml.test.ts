@@ -106,6 +106,18 @@ describe('package.yaml functionality', () => {
   })
 
   it('should write updated dependencies to package.yaml', async () => {
+    const doc = new Document({
+      name: '@taze/package-yaml-example',
+      version: '1.0.0',
+      dependencies: {
+        lodash: '^4.13.19',
+        express: '4.12.x',
+      },
+      devDependencies: {
+        '@types/lodash': '^4.14.0',
+        'typescript': '3.5',
+      },
+    })
     const pkgYaml: PackageYamlMeta = {
       name: '@taze/package-yaml-example',
       version: '1.0.0',
@@ -113,18 +125,8 @@ describe('package.yaml functionality', () => {
       type: 'package.yaml',
       filepath: '/tmp/package.yaml',
       relative: 'package.yaml',
-      raw: new Document({
-        name: '@taze/package-yaml-example',
-        version: '1.0.0',
-        dependencies: {
-          lodash: '^4.13.19',
-          express: '4.12.x',
-        },
-        devDependencies: {
-          '@types/lodash': '^4.14.0',
-          'typescript': '3.5',
-        },
-      }),
+      raw: doc.toJS(),
+      yamlDocument: doc,
       deps: [],
       resolved: [
         {
@@ -195,7 +197,8 @@ devDependencies:
       type: 'package.yaml',
       filepath: '/tmp/package.yaml',
       relative: 'package.yaml',
-      raw: doc,
+      raw: doc.toJS(),
+      yamlDocument: doc,
       deps: [],
       resolved: [
         {
