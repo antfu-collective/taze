@@ -13,7 +13,7 @@ import { SORT_CHOICES } from './utils/sort'
 const cli: CAC = cac('taze')
 
 cli
-  .command('[mode]', 'Keeps your deps fresh')
+  .command('[mode]', `Update mode (version range to check). Available: ${MODE_CHOICES.join(' | ')}`)
   .option('--cwd, -C <cwd>', 'specify the current working directory')
   .option('--loglevel <level>', `log level (${LOG_LEVELS.join('|')})`)
   .option('--fail-on-outdated', 'exit with code 1 if outdated dependencies are found')
@@ -41,7 +41,7 @@ cli
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
-        console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join('|')}`)
+        console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join(' | ')}`)
         process.exit(1)
       }
       options.mode = mode
