@@ -64,13 +64,16 @@ export function getPrefixedVersion(current: string, target: string) {
 }
 
 export function getMaxSatisfying(versions: string[], current: string, mode: RangeMode, tags: Record<string, string>): string | undefined {
-  let version = null
+  let version: string | null = null
 
   if (mode === 'latest') {
     version = tags.latest
   }
   else if (mode === 'newest') {
-    version = versions[versions.length - 1]
+    versions.forEach((ver) => {
+      if (!version || semver.gt(ver, version))
+        version = ver
+    })
   }
   else if (mode === 'next') {
     version = tags.next
@@ -88,10 +91,8 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       maxVersion = null
 
     versions.forEach((ver) => {
-      if (semver.satisfies(ver, range)) {
-        if (!maxVersion || semver.lte(ver, maxVersion))
-          version = ver
-      }
+      if (semver.satisfies(ver, range) && (!maxVersion || semver.lte(ver, maxVersion)) && (!version || semver.gt(ver, version)))
+        version = ver
     })
   }
 
