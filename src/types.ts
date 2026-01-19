@@ -42,6 +42,7 @@ export interface RawDep {
   update: boolean
   parents?: string[]
   protocol?: Protocol
+  hexHash?: string
 }
 
 export type DiffType = 'major' | 'minor' | 'patch' | 'error' | null
@@ -55,6 +56,7 @@ export interface PackageData {
   error?: Error | string
   provenance?: Record<string, boolean | 'trustedPublisher'>
   deprecated?: Record<string, string | boolean>
+  integrity?: Record<string, string>
 }
 
 export interface JsrPackageMeta {

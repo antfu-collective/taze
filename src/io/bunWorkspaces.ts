@@ -16,7 +16,7 @@ export async function loadBunWorkspace(
 
   function createBunWorkspaceEntry(name: string, map: Record<string, string>): BunWorkspaceMeta {
     const deps: RawDep[] = Object.entries(map)
-      .map(([pkg, version]) => parseDependency(pkg, version, 'bun-workspace', shouldUpdate))
+      .map(([pkg, version]) => parseDependency({ name: pkg, version, type: 'bun-workspace', shouldUpdate }))
 
     return {
       name,

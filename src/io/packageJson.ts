@@ -1,6 +1,7 @@
 import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
 import { resolve } from 'pathe'
 import { builtinAddons } from '../addons'
+import { getHexHashFromIntegrity } from '../utils/sha'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
 import { readJSON, writeJSON } from './packages'
 
@@ -38,9 +39,11 @@ export async function loadPackageJSON(
 
     if (key === 'packageManager') {
       if (raw.packageManager) {
-        const [name, version] = raw.packageManager.split('@')
+        const [name, versionWithHash] = raw.packageManager.split('@')
         // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
-        deps.push(parseDependency(name, `^${version.split('+')[0]}`, 'packageManager', shouldUpdate))
+        const [version, hashPart] = versionWithHash.split('+')
+        const hexHash = hashPart?.split('.')[1]
+        deps.push(parseDependency({ name, version: `^${version}`, type: 'packageManager', shouldUpdate, hexHash }))
       }
     }
     else {
@@ -77,7 +80,20 @@ export async function writePackageJSON(
       const value = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))[0]
       if (value) {
         pkg.raw ||= {}
-        pkg.raw.packageManager = `${value[0]}@${value[1].replace('^', '')}`
+        const [name, versionWithCaret] = value
+        const version = versionWithCaret.replace('^', '')
+        let packageManagerValue = `${name}@${version}`
+
+        const resolvedDep = pkg.resolved.find(dep => dep.source === 'packageManager' && dep.name === name)
+        if (resolvedDep?.hexHash) {
+          const integrity = resolvedDep.pkgData.integrity?.[version]
+          if (integrity) {
+            const newHexHash = getHexHashFromIntegrity(integrity)
+            packageManagerValue = `${packageManagerValue}+sha512.${newHexHash}`
+          }
+        }
+
+        pkg.raw.packageManager = packageManagerValue
         changed = true
       }
     }
