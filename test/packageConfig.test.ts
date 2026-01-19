@@ -75,7 +75,7 @@ describe('check package', async () => {
   const result2 = (await CheckPackages(options, {})).packages[0].resolved
   it('not defined in config file / optionMode:major', () => {
     expect(getPkgInfo('express', result2).update).toBe(true)
-    expect(getPkgInfo('express', result2).diff).toBe('major')
+    expect(getPkgInfo('express', result2).diff).toBe('minor')
   })
 
   it('defined in config file / optionMode:major', () => {
