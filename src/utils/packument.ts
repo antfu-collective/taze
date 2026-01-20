@@ -59,7 +59,6 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
         fetch,
         throw: false,
         metadata: true,
-        apiEndpoint: 'https://deploy-preview-25--npm-meta-info.netlify.app/',
       }),
       new Promise<ReturnType<typeof getVersions>>(
         (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
@@ -101,7 +100,6 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
       deprecated: Object.keys(deprecated).length > 0 ? deprecated : undefined,
       integrity: { ...Object.fromEntries(
         Object.entries(data.versionsMeta)
-          // @ts-expect-error wait for the new version of fast-npm-meta
           .map(([version, meta]) => [version, meta?.integrity])
           .filter(([_, integrity]) => integrity),
       ) },
