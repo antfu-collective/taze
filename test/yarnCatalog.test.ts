@@ -43,7 +43,9 @@ it('yarn catalog', async () => {
   expect(
     result.packages.flatMap(p => ({
       name: p.name,
-      packages: p.resolved.map(r => [r.name, r.targetVersion]),
+      packages: p.resolved
+        .map(r => [r.name, r.targetVersion])
+        .sort((a, b) => a[0].localeCompare(b[0])),
     })),
   ).toMatchInlineSnapshot(`
     [
@@ -90,6 +92,10 @@ it('yarn catalog', async () => {
         "name": "@taze/monorepo-example",
         "packages": [
           [
+            "@types/lodash",
+            "^4.14.0",
+          ],
+          [
             "express",
             "4.12.x",
           ],
@@ -106,16 +112,12 @@ it('yarn catalog', async () => {
             "^0.22.6",
           ],
           [
-            "webpack",
-            "~1.9.10",
-          ],
-          [
-            "@types/lodash",
-            "^4.14.0",
-          ],
-          [
             "typescript",
             "3.5",
+          ],
+          [
+            "webpack",
+            "~1.9.10",
           ],
         ],
       },
