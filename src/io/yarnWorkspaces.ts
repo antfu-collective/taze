@@ -19,7 +19,7 @@ export async function loadYarnWorkspace(
 
   function createYarnWorkspaceEntry(name: string, map: Record<string, string>): YarnWorkspaceMeta {
     const deps: RawDep[] = Object.entries(map)
-      .map(([pkg, version]) => parseDependency(pkg, version, 'yarn-workspace', shouldUpdate))
+      .map(([pkg, version]) => parseDependency({ name: pkg, version, type: 'yarn-workspace', shouldUpdate }))
 
     return {
       name,

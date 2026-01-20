@@ -70,7 +70,7 @@ export async function loadPackageYAML(
       if (typeof packageManager === 'string') {
         const [name, version] = packageManager.split('@')
         // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
-        deps.push(parseDependency(name, `^${version.split('+')[0]}`, 'packageManager', shouldUpdate))
+        deps.push(parseDependency({ name, version: `^${version.split('+')[0]}`, type: 'packageManager', shouldUpdate }))
       }
     }
     else {
