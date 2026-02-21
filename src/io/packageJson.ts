@@ -27,9 +27,10 @@ export async function loadPackageJSON(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
+  existingRaw?: Record<string, unknown>,
 ): Promise<PackageMeta[]> {
   const filepath = resolve(options.cwd ?? '', relative)
-  const raw = await readJSON(filepath)
+  const raw: Record<string, any> = existingRaw ?? await readJSON(filepath)
   const deps: RawDep[] = []
 
   for (const key of allDepsFields) {
