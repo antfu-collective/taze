@@ -1,5 +1,6 @@
 import type { BunWorkspaceMeta, CommonOptions, RawDep } from '../types'
 import { readFile, writeFile } from 'node:fs/promises'
+import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
 import { dumpDependencies, parseDependency } from './dependencies'
 
@@ -7,10 +8,10 @@ export async function loadBunWorkspace(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
+  existingRaw?: Record<string, any>,
 ): Promise<BunWorkspaceMeta[]> {
   const filepath = resolve(options.cwd ?? '', relative)
-  const rawText = await readFile(filepath, 'utf-8')
-  const raw = JSON.parse(rawText)
+  const raw: Record<string, any> = existingRaw ?? JSON.parse(await readFile(filepath, 'utf-8'))
 
   const catalogs: BunWorkspaceMeta[] = []
 
@@ -86,11 +87,17 @@ export async function writeBunWorkspace(
       catalogs[catalogName] = { ...catalogs[catalogName], ...versions }
     }
 
-    await writeJSON(pkg, pkg.raw)
+    await writeBunJSON(pkg.filepath, pkg.raw)
   }
 }
 
-async function writeJSON(pkg: BunWorkspaceMeta, data: Record<string, unknown>) {
-  const content = JSON.stringify(data, null, 2)
-  return writeFile(pkg.filepath, `${content}\n`, 'utf8')
+async function writeBunJSON(filepath: string, data: Record<string, unknown>) {
+  let fileIndent: string | undefined
+  try {
+    const actualContent = await readFile(filepath, 'utf-8')
+    fileIndent = detectIndent(actualContent).indent
+  }
+  catch {}
+  const content = JSON.stringify(data, null, fileIndent || '  ')
+  return writeFile(filepath, `${content}\n`, 'utf-8')
 }

@@ -277,4 +277,81 @@ describe('bun catalog write functionality', () => {
     // Should not write anything when there are no updates
     expect(output).toBeUndefined()
   })
+
+  it('should use detect-indent to preserve original file formatting', async () => {
+    // Mock readFile to return 4-space indented JSON (simulating project with 4-space indent)
+    const fourSpaceJson = JSON.stringify({
+      name: '@test/bun-workspace',
+      workspaces: {
+        catalog: {
+          react: '^18.2.0',
+        },
+      },
+    }, null, 4)
+
+    const readFileSpy = vi.spyOn(await import('node:fs/promises'), 'readFile')
+    readFileSpy.mockResolvedValueOnce(fourSpaceJson as any)
+
+    const packageJsonRaw = {
+      name: '@test/bun-workspace',
+      workspaces: {
+        catalog: {
+          react: '^18.2.0',
+        },
+      },
+    }
+
+    const pkg: BunWorkspaceMeta = {
+      name: 'bun-catalog:default',
+      resolved: [
+        { name: 'react', targetVersion: '^19.0.0', source: 'bun-workspace', update: true, currentVersion: '^18.2.0', diff: 'major' } as any,
+      ],
+      raw: packageJsonRaw,
+      filepath: '/tmp/package.json',
+      type: 'bun-workspace',
+      private: false,
+      version: '',
+      relative: '',
+      deps: [],
+    }
+
+    await bunWorkspaces.writeBunWorkspace(pkg, {})
+
+    // Output should use 4-space indent (matching the original file)
+    expect(output).toBeDefined()
+    expect(output).toContain('    "name"')
+    // Should NOT use 2-space indent
+    expect(output).not.toMatch(/^ {2}"name"/m)
+  })
+
+  it('should fall back to 2-space indent when file cannot be read', async () => {
+    const packageJsonRaw = {
+      name: '@test/bun-workspace',
+      workspaces: {
+        catalog: {
+          react: '^18.2.0',
+        },
+      },
+    }
+
+    const pkg: BunWorkspaceMeta = {
+      name: 'bun-catalog:default',
+      resolved: [
+        { name: 'react', targetVersion: '^19.0.0', source: 'bun-workspace', update: true, currentVersion: '^18.2.0', diff: 'major' } as any,
+      ],
+      raw: packageJsonRaw,
+      filepath: '/tmp/nonexistent/package.json',
+      type: 'bun-workspace',
+      private: false,
+      version: '',
+      relative: '',
+      deps: [],
+    }
+
+    await bunWorkspaces.writeBunWorkspace(pkg, {})
+
+    // Should fall back to 2-space indent
+    expect(output).toBeDefined()
+    expect(output).toContain('  "name"')
+  })
 })

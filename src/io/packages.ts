@@ -62,8 +62,8 @@ export async function loadPackage(
   if (relative.endsWith('package.json')) {
     const filepath = resolve(options.cwd ?? '', relative)
     try {
-      const packageJsonRaw = await readJSON(filepath)
-      const workspaces = packageJsonRaw?.workspaces
+      const raw = await readJSON(filepath)
+      const workspaces = raw?.workspaces
 
       // Only process Bun catalogs if we detect Bun is being used
       if (workspaces && (workspaces.catalog || workspaces.catalogs)) {
@@ -71,11 +71,15 @@ export async function loadPackage(
         const hasBunLock = existsSync(join(cwd, 'bun.lockb')) || existsSync(join(cwd, 'bun.lock'))
 
         if (hasBunLock) {
-          const bunWorkspaces = await loadBunWorkspace(relative, options, shouldUpdate)
-          const packageJson = await loadPackageJSON(relative, options, shouldUpdate)
+          // Pass the same raw object to both loaders so writes don't clobber each other
+          const bunWorkspaces = await loadBunWorkspace(relative, options, shouldUpdate, raw)
+          const packageJson = await loadPackageJSON(relative, options, shouldUpdate, raw)
           return [...bunWorkspaces, ...packageJson]
         }
       }
+
+      // Reuse already-read raw for non-bun case
+      return loadPackageJSON(relative, options, shouldUpdate, raw)
     }
     catch {
       // Safe guard: If we can't read the file, fall back to normal package.json loading
