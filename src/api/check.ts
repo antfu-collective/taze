@@ -39,6 +39,9 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
   const queue = newQueue(options.concurrency || 10)
 
   await queueContext.run(queue, () => {
+    // run all CheckSingleProject in parallel
+    // the actual resolveDependencies within CheckSingleProject -> resolvePackage -> resolveDependencies is
+    // actually limited by the queueContext/queue, so it won't overwhelm the npm meta server.
     return Promise.all(packages.map(async (pkg) => {
       callbacks.beforePackageStart?.(pkg)
       await CheckSingleProject(pkg, options, filter, { ...callbacks, onDependencyResolved })

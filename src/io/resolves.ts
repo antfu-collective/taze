@@ -328,6 +328,8 @@ export async function resolveDependencies(
     concurrency = 10,
   } = options
 
+  // resolveDependencies may be called standalone without going through CheckPackages, so we need
+  // to fallback (that respects concurrency option) if it's not in the CheckPackages context.
   const queue = queueContext.getStore() || newQueue(concurrency)
 
   return Promise.all(
