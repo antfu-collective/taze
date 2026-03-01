@@ -72,7 +72,9 @@ describe('bun catalog integration', () => {
     expect(
       result.packages.flatMap(p => ({
         name: p.name,
-        packages: p.resolved.map(r => [r.name, r.targetVersion]),
+        packages: p.resolved
+          .map(r => [r.name, r.targetVersion])
+          .sort((a, b) => a[0].localeCompare(b[0])),
       })),
     ).toMatchInlineSnapshot(`
       [
@@ -119,6 +121,10 @@ describe('bun catalog integration', () => {
           "name": "@taze/bun-monorepo-example",
           "packages": [
             [
+              "@types/lodash",
+              "^4.14.0",
+            ],
+            [
               "express",
               "4.12.x",
             ],
@@ -135,16 +141,12 @@ describe('bun catalog integration', () => {
               "^0.22.6",
             ],
             [
-              "webpack",
-              "~1.9.10",
-            ],
-            [
-              "@types/lodash",
-              "^4.14.0",
-            ],
-            [
               "typescript",
               "3.5",
+            ],
+            [
+              "webpack",
+              "~1.9.10",
             ],
           ],
         },
