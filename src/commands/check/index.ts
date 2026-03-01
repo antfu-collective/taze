@@ -22,7 +22,6 @@ export async function check(options: CheckOptions) {
   const depBar = bars?.create(1, 0)
 
   let resolvePkgs: PackageMeta[] = []
-  let totalDeps = 0
 
   const { packages } = await CheckPackages(options, {
     afterPackagesLoaded(pkgs) {
@@ -30,14 +29,11 @@ export async function check(options: CheckOptions) {
         ? bars?.create(pkgs.length, 0, { type: c.cyan('pkg'), name: c.cyan(pkgs[0].name) })
         : undefined
 
-      totalDeps = pkgs.reduce((acc, pkg) => acc + pkg.deps.length, 0)
-      if (options.recursive)
-        depBar?.start(totalDeps, 0, { type: c.green('dep'), name: '' })
+      const totalDeps = pkgs.reduce((acc, pkg) => acc + pkg.deps.length, 0)
+      depBar?.start(totalDeps, 0, { type: c.green('dep'), name: '' })
     },
     beforePackageStart(pkg) {
       packagesBar?.increment(0, { name: c.cyan(pkg.name) })
-      if (!options.recursive)
-        depBar?.start(pkg.deps.length, 0, { type: c.green('dep'), name: '' })
     },
 
     beforePackageWrite() {
@@ -46,6 +42,8 @@ export async function check(options: CheckOptions) {
     },
     afterPackageEnd() {
       packagesBar?.increment(1)
+    },
+    afterPackagesEnd() {
       depBar?.stop()
     },
     onDependencyResolved(_pkgName, name, progress) {
