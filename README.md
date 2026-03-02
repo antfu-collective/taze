@@ -82,6 +82,23 @@ Bumping version in `peerDependencies` is not enabled by default. Pass `--peer` o
 taze --peer
 ```
 
+### Maturity Period
+
+By default the most recent version of a dependency is used. You may choose to filter to versions that have been out longer by passing `--maturity-period`. 
+
+```bash
+taze --maturity-period
+```
+
+The filter when using the maturity-period flag is 7 days. You may also want to pass a day value to have a longer or shorter number of days.
+
+```bash
+taze --maturity-period 14
+```
+
+> [!NOTE]
+> This kind of filtering is sometimes called `cooldown` or `minimumReleaseAge` by other tools.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.
