@@ -33,11 +33,25 @@ export function parseDependencies(
   shouldUpdate: (name: string) => boolean,
 ): RawDep[] {
   return Object.entries(getByPath(pkg, type) || {})
-    .map(([name, { version, parents }]) => parseDependency(name, version, type, shouldUpdate, parents))
+    .map(([name, { version, parents }]) => parseDependency({ name, version, type, shouldUpdate, parents }))
 }
 
-export function parseDependency(name: string, version: string, type: DepType, shouldUpdate: (name: string) => boolean, parents?: string[]): RawDep {
-  return {
+export function parseDependency({
+  name,
+  version,
+  type,
+  shouldUpdate,
+  parents,
+  hexHash,
+}: {
+  name: string
+  version: string
+  type: DepType
+  shouldUpdate: (name: string) => boolean
+  parents?: string[]
+  hexHash?: string
+}): RawDep {
+  const dep: RawDep = {
     name,
     currentVersion: version,
     parents,
@@ -45,6 +59,10 @@ export function parseDependency(name: string, version: string, type: DepType, sh
     // when `updated` marked to `false`, it will be bypassed on resolving
     update: shouldUpdate(name),
   }
+  if (hexHash) {
+    dep.hexHash = hexHash
+  }
+  return dep
 }
 
 export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {

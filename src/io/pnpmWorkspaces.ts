@@ -19,7 +19,7 @@ export async function loadPnpmWorkspace(
 
   function createPnpmWorkspaceEntry(name: string, map: Record<string, string>): PnpmWorkspaceMeta {
     const deps: RawDep[] = Object.entries(map)
-      .map(([pkg, version]) => parseDependency(pkg, version, 'pnpm-workspace', shouldUpdate))
+      .map(([pkg, version]) => parseDependency({ name: pkg, version, type: 'pnpm-workspace', shouldUpdate }))
 
     return {
       name,

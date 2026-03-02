@@ -98,6 +98,11 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
           .filter(([_, provenance]) => provenance),
       ) },
       deprecated: Object.keys(deprecated).length > 0 ? deprecated : undefined,
+      integrity: { ...Object.fromEntries(
+        Object.entries(data.versionsMeta)
+          .map(([version, meta]) => [version, meta?.integrity])
+          .filter(([_, integrity]) => integrity),
+      ) },
     }
   }
 
