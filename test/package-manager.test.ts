@@ -52,6 +52,7 @@ describe('check package for packageManager', () => {
     const options: CheckOptions = {
       cwd: tempDir,
       mode: 'default',
+      force: true,
     }
     const result = (await CheckPackages(options, {})).packages[0].resolved
     const pnpmInfo = getPkgInfo('pnpm', result)
@@ -68,6 +69,7 @@ describe('check package for packageManager', () => {
       cwd: tempDir,
       mode: 'default',
       write: true,
+      force: true,
     }
     await CheckPackages(options, {})
     const updatedResult = (await CheckPackages(options, {})).packages[0].resolved
@@ -98,6 +100,7 @@ describe('check package for packageManager with sha', () => {
     const options: CheckOptions = {
       cwd: tempDir,
       mode: 'default',
+      force: true,
     }
     const result = (await CheckPackages(options, {})).packages[0].resolved
     const pnpmInfo = getPkgInfo('pnpm', result)
