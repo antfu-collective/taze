@@ -1,6 +1,8 @@
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RawDep } from '../types'
+import { newQueue } from '@henrygd/queue'
 import { loadPackages, writePackage } from '../io/packages'
 import { dumpCache, loadCache, resolvePackage } from '../io/resolves'
+import { queueContext } from '../utils/context'
 
 export interface CheckEventCallbacks {
   afterPackagesLoaded?: (pkgs: PackageMeta[]) => void
@@ -28,12 +30,24 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
   // to filter out private dependency in monorepo
   const filter = (dep: RawDep) => !privatePackageNames.includes(dep.name)
 
-  for (const pkg of packages) {
-    callbacks.beforePackageStart?.(pkg)
-    await CheckSingleProject(pkg, options, filter, callbacks)
-
-    callbacks.afterPackageEnd?.(pkg)
+  let resolvedCount = 0
+  const onDependencyResolved: DependencyResolvedCallback = (pkgName, name, progress, total) => {
+    resolvedCount++
+    callbacks.onDependencyResolved?.(pkgName, name, resolvedCount, total)
   }
+
+  const queue = newQueue(options.concurrency || 10)
+
+  await queueContext.run(queue, () => {
+    // run all CheckSingleProject in parallel
+    // the actual resolveDependencies within CheckSingleProject -> resolvePackage -> resolveDependencies is
+    // actually limited by the queueContext/queue, so it won't overwhelm the npm meta server.
+    return Promise.all(packages.map(async (pkg) => {
+      callbacks.beforePackageStart?.(pkg)
+      await CheckSingleProject(pkg, options, filter, { ...callbacks, onDependencyResolved })
+      callbacks.afterPackageEnd?.(pkg)
+    }))
+  })
 
   callbacks.afterPackagesEnd?.(packages)
 

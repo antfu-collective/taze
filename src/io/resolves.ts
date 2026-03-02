@@ -2,15 +2,17 @@ import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffTy
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
 import process from 'node:process'
+import { newQueue } from '@henrygd/queue'
 import _debug from 'debug'
-import pLimit from 'p-limit'
 import { resolve } from 'pathe'
 import semver from 'semver'
 import { diffSorter } from '../filters/diff-sorter'
 import { getPackageMode } from '../utils/config'
+import { queueContext } from '../utils/context'
 import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
+
 import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
 const debug = {
@@ -326,10 +328,12 @@ export async function resolveDependencies(
     concurrency = 10,
   } = options
 
-  const limit = pLimit(concurrency)
+  // resolveDependencies may be called standalone without going through CheckPackages, so we need
+  // to fallback (that respects concurrency option) if it's not in the CheckPackages context.
+  const queue = queueContext.getStore() || newQueue(concurrency)
 
   return Promise.all(
-    deps.map(raw => limit(async () => {
+    deps.map(raw => queue.add(async () => {
       const dep = await resolveDependency(raw, options, filter)
       counter += 1
       progressCallback(raw.name, counter, total)
