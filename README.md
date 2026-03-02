@@ -9,7 +9,7 @@
 <pre align="center">npx taze <b>-r</b></pre>
 
 <p align='center'>
-<img src='./screenshots/r-major.png' width='600'/>
+<img src='./screenshots/r-major.png' width='600' alt='Recursive mode' />
 </p>
 
 ## Features
@@ -23,7 +23,7 @@
 By default, `taze` will only bump versions in the ranges you specified in `package.json` *(which is safe and the default behavior of `npm install`)*
 
 <p align='center'>
-<img src='./screenshots/default.png' width='600'/>
+<img src='./screenshots/default.png' width='600' alt='Default mode' />
 </p>
 
 To ignore the ranges, explicitly set the maximum allowed version change.
@@ -34,19 +34,19 @@ For example `taze major` will check all changes and bump to the latest stable ch
 <p align='center'>
 Check for <b>major</b> updates
 <br>
-<img src='./screenshots/major.png' width='600'/>
+<img src='./screenshots/major.png' width='600' alt='Major mode' />
 </p>
 
 <p align='center'>
 Check up to <b>minor</b> updates
 <br>
-<img src='./screenshots/minor.png' width='600'/>
+<img src='./screenshots/minor.png' width='600' alt='Minor mode' />
 </p>
 
 <p align='center'>
 Check up to <b>patch</b> updates
 <br>
-<img src='./screenshots/patch.png' width='600'/>
+<img src='./screenshots/patch.png' width='600' alt='Patch mode' />
 </p>
 
 ### Monorepo
@@ -54,7 +54,7 @@ Check up to <b>patch</b> updates
 `taze` has the built-in first-class monorepo support. Simply adding `-r` will scan the subdirectories that contain `package.json` and update them together. It will handle local private packages automatically.
 
 <p align='center'>
-<img src='./screenshots/r-default.png' width='600'/>
+<img src='./screenshots/r-default.png' width='600' alt='Recursive mode default' />
 </p>
 
 ## Configures
@@ -84,7 +84,7 @@ taze --peer
 
 ### Maturity Period
 
-By default the most recent version of a dependency is used. You may choose to filter to versions that have been out longer by passing `--maturity-period`. 
+By default the most recent version of a dependency is used. You may choose to filter to versions that have been out longer by passing `--maturity-period`.
 
 ```bash
 taze --maturity-period
