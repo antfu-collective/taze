@@ -1,14 +1,11 @@
-/* eslint-disable regexp/prefer-w */
-/* eslint-disable regexp/no-useless-escape */
-/* eslint-disable regexp/no-useless-quantifier */
-/* eslint-disable regexp/no-useless-non-capturing-group */
-/* eslint-disable regexp/no-super-linear-backtracking */
 /* eslint-disable no-console */
 
 import process from 'node:process'
+import { stripVTControlCharacters } from 'node:util'
 import c from 'ansis'
 import { SemVer } from 'semver'
 import { getDiff } from './io/resolves'
+
 import { DiffColorMap } from './utils/diff'
 
 export const FIG_CHECK = c.green('◉')
@@ -17,20 +14,11 @@ export const FIG_POINTER = c.cyan('❯ ')
 export const FIG_NO_POINTER = '  '
 export const FIG_BLOCK = c.bold.dim.gray('┃')
 
-const ANSI_REGEX = new RegExp(
-  [
-    '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
-    '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))',
-  ].join('|'),
-  'g',
-)
-const stripAnsi = (str: string) => typeof str === 'string' ? str.replace(ANSI_REGEX, '') : str
-
 export function visualLength(str: string) {
   if (str === '')
     return 0
 
-  str = stripAnsi(str)
+  str = stripVTControlCharacters(str)
 
   let width = 0
 
