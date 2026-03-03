@@ -82,7 +82,6 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
       render() {
         const sr = createSliceRender()
         const Y = (v: string) => c.bold.green(v)
-        console.clear()
         sr.push({ content: `${FIG_BLOCK} ${c.gray`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`}`, fixed: true })
         sr.push({ content: `${FIG_BLOCK} ${c.gray`${Y('enter')} to confirm, ${Y('esc')} to cancel, ${Y('a')} to select/unselect all`}`, fixed: true })
         sr.push({ content: '', fixed: true })
@@ -91,6 +90,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           sr.push(...renderChanges(pkg, options, ctx).lines.map(x => ({ content: x })))
         })
 
+        console.clear()
         sr.render(index)
       },
       onKey(key) {
