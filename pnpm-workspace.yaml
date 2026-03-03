@@ -1,3 +1,4 @@
+ignoreWorkspaceRootCheck: true
 shellEmulator: true
 
 trustPolicy: no-downgrade
