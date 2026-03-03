@@ -17,15 +17,14 @@ export const FIG_POINTER = c.cyan('❯ ')
 export const FIG_NO_POINTER = '  '
 export const FIG_BLOCK = c.bold.dim.gray('┃')
 
-function ansiRegex({ onlyFirst = false } = {}) {
-  const pattern = [
+const ANSI_REGEX = new RegExp(
+  [
     '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
     '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))',
-  ].join('|')
-
-  return new RegExp(pattern, onlyFirst ? undefined : 'g')
-}
-const stripAnsi = (str: string) => typeof str === 'string' ? str.replace(ansiRegex(), '') : str
+  ].join('|'),
+  'g',
+)
+const stripAnsi = (str: string) => typeof str === 'string' ? str.replace(ANSI_REGEX, '') : str
 
 export function visualLength(str: string) {
   if (str === '')
@@ -181,7 +180,7 @@ export function createSliceRender() {
         remainHeight < 1
         || remainLines.length === 0
         || remainLines.length <= remainHeight
-        || lines.some(x => Math.ceil(visualLength(x.content) / availableWidth) > 1)
+        || remainLines.some(x => Math.ceil(visualLength(x.content) / availableWidth) > 1)
       ) {
         slice = remainLines
       }
