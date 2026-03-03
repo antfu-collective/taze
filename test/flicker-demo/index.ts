@@ -1,10 +1,11 @@
+import type { DiffType, PackageData, PackageJsonMeta, ResolvedDepChange } from '../../src/types'
 /**
  * Demo to test the flicker issue in the interactive mode.
- * 
+ *
  * Test with 2000 dependencies, run with:
  * ./node_modules/.bin/tsx test/flicker-demo/index.ts 2000
  */
-import type { DiffType, PackageData, PackageJsonMeta, ResolvedDepChange } from '../../src/types'
+import process from 'node:process'
 import { promptInteractive } from '../../src/commands/check/interactive'
 
 const COUNT = Number(process.argv[2]) || 50
@@ -59,6 +60,7 @@ promptInteractive(pkgs, {
   group: true,
   timediff: true,
 }).then(() => {
+  // eslint-disable-next-line no-console
   console.log(`\nTest completed.`)
   process.exit(0)
 })
