@@ -3,7 +3,7 @@ import type { DiffType, PackageData, PackageJsonMeta, ResolvedDepChange } from '
  * Demo to test the flicker issue in the interactive mode.
  *
  * Test with 2000 dependencies, run with:
- * ./node_modules/.bin/tsx test/flicker-demo/index.ts 2000
+ * npx tsx test/flicker-demo/index.ts 2000
  */
 import process from 'node:process'
 import { promptInteractive } from '../../src/commands/check/interactive'
