@@ -96,6 +96,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
       onKey(key) {
         switch (key.name) {
           case 'escape':
+          case 'q':
             process.exit()
           case 'enter':
           case 'return':
