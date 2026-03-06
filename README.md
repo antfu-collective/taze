@@ -57,7 +57,7 @@ Check up to <b>patch</b> updates
 <img src='./screenshots/r-default.png' width='600' alt='Recursive mode default' />
 </p>
 
-## Configures
+## Configuration
 
 See `taze --help` for more details
 
