@@ -14,6 +14,11 @@
   "bugs": {
     "url": "https://github.com/antfu-collective/taze/issues"
   },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./cli": "./dist/cli.mjs",
+    "./package.json": "./package.json"
+  },
   "types": "dist/index.d.mts",
   "bin": {
     "taze": "bin/taze.mjs"
@@ -67,11 +72,6 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
-  },
-  "exports": {
-    ".": "./dist/index.mjs",
-    "./cli": "./dist/cli.mjs",
-    "./package.json": "./package.json"
   },
   "inlinedDependencies": {
     "@antfu/utils": "9.3.0",
