@@ -6,7 +6,7 @@ import type {
   ResolvedDepChange,
 } from '../../types'
 import c from 'ansis'
-import semver from 'semver'
+import { minVersion } from 'semver-es'
 import {
   colorizeNodeCompatibility,
   colorizeVersionDiff,
@@ -53,7 +53,7 @@ export function renderChange(
     update && timediff
       ? timeDifference(change.targetVersionTime)
       : '',
-    (change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
+    (change.latestVersionAvailable && minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
       ? c.dim.magenta`(${change.latestVersionAvailable} available)`
       : '',
     nodecompat

@@ -1,6 +1,6 @@
 import type { CheckOptions, DependencyFilter, RawDep } from '../src'
 import process from 'node:process'
-import { SemVer } from 'semver'
+import { SemVer } from 'semver-es'
 import { expect, it } from 'vitest'
 import { resolveDependency } from '../src'
 import { getDiff } from '../src/io/resolves'

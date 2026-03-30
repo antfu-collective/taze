@@ -1,3 +1,4 @@
+import type { SemVer } from 'semver-es'
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, Protocol, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
@@ -5,11 +6,10 @@ import process from 'node:process'
 import { newQueue } from '@henrygd/queue'
 import _debug from 'debug'
 import { resolve } from 'pathe'
-import semver from 'semver'
+import { eq, gt, lt, minVersion, satisfies } from 'semver-es'
 import { diffSorter } from '../filters/diff-sorter'
 import { getPackageMode } from '../utils/config'
 import { queueContext } from '../utils/context'
-import { getNpmConfig } from '../utils/npm'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
 
@@ -75,8 +75,7 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm'): 
 
   try {
     debug.resolve(`resolving ${cacheName}`)
-    const npmConfig = await getNpmConfig()
-    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, npmConfig, false)
+    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, false)
 
     if (data) {
       cache[cacheName] = { data, cacheTime: now() }
@@ -139,7 +138,7 @@ export function updateTargetVersion(
     = !!(dep.currentProvenance && !dep.targetProvenance) // trusted -> none, provenance -> none
       || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
 
-  if (versionLocked && semver.eq(dep.currentVersion, dep.targetVersion)) {
+  if (versionLocked && eq(dep.currentVersion, dep.targetVersion)) {
     // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
     // - but this mode will always ignore the locked pkgs
     // - so we need to reset the target
@@ -152,12 +151,12 @@ export function updateTargetVersion(
   }
 
   try {
-    const current = semver.minVersion(dep.currentVersion)!
-    const target = semver.minVersion(dep.targetVersion)!
+    const current = minVersion(dep.currentVersion)!
+    const target = minVersion(dep.targetVersion)!
 
     dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
     dep.diff = getDiff(current, target)
-    dep.update = dep.diff !== null && semver.lt(current, target)
+    dep.update = dep.diff !== null && lt(current, target)
   }
   catch (e) {
     if (!forgiving)
@@ -168,13 +167,13 @@ export function updateTargetVersion(
   }
 }
 
-export function getDiff(current: semver.SemVer, target: semver.SemVer): DiffType {
-  if (semver.eq(current, target))
+export function getDiff(current: SemVer, target: SemVer): DiffType {
+  if (eq(current, target))
     return null
 
-  const tilde = semver.satisfies(target, `~${current}`, { includePrerelease: true })
-  const caret = semver.satisfies(target, `^${current}`, { includePrerelease: true })
-  const gte = semver.satisfies(target, `>=${current}`, { includePrerelease: true })
+  const tilde = satisfies(target, `~${current}`, { includePrerelease: true })
+  const caret = satisfies(target, `^${current}`, { includePrerelease: true })
+  const gte = satisfies(target, `>=${current}`, { includePrerelease: true })
 
   if (tilde) {
     if (caret)
@@ -285,8 +284,8 @@ export async function resolveDependency(
   }
 
   try {
-    const targetVersion = semver.minVersion(target || dep.targetVersion)
-    if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
+    const targetVersion = minVersion(target || dep.targetVersion)
+    if (tags.latest && targetVersion && gt(tags.latest, targetVersion))
       dep.latestVersionAvailable = tags.latest
 
     const { nodecompat = true } = options
@@ -297,7 +296,7 @@ export async function resolveDependency(
         && targetVersion?.version
         && targetVersion?.version in nodeSemver) {
         dep.nodeCompatibleVersion = {
-          compatible: semver.satisfies(currentNodeVersion, nodeSemver[targetVersion?.version]),
+          compatible: satisfies(currentNodeVersion, nodeSemver[targetVersion?.version]),
           semver: nodeSemver[targetVersion?.version],
         }
       }
