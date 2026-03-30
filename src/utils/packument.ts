@@ -8,6 +8,40 @@ const TIMEOUT = 5000
 const JSR_API_REGISTRY = 'https://jsr.io/'
 const USER_AGENT = `taze@npm node/${process.version}`
 
+// @types/pacote uses "import = require()" syntax which is not supported by unbuild
+// So instead of using @types/pacote, we declare the type definition with only fields we need
+export interface PackumentVersion {
+  name: string
+  deprecated?: string | boolean
+  dist: {
+    attestations: {
+      provenance?: { predicateType: string }
+    }
+  }
+}
+
+export interface Packument {
+  'name': string
+  /**
+   * An object where each key is a version, and each value is the manifest for
+   * that version.
+   */
+  'versions': Record<string, PackumentVersion>
+  /**
+   * An object mapping dist-tags to version numbers. This is how `foo@latest`
+   * gets turned into `foo@1.2.3`.
+   */
+  'dist-tags': { latest: string } & Record<string, string>
+  /**
+   * In the full packument, an object mapping version numbers to publication
+   * times, for the `opts.before` functionality.
+   */
+  'time': Record<string, string> & {
+    created: string
+    modified: string
+  }
+}
+
 const fetchWithUserAgent: typeof fetch = (input, init) => {
   const headers = new Headers(init?.headers)
   headers.set('user-agent', USER_AGENT)
@@ -22,7 +56,7 @@ export async function fetchPackage(spec: string, force = false): Promise<Package
       metadata: true,
       throw: false,
     }),
-    new Promise<never>(
+    new Promise<Packument>(
       (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
     ),
   ]) as PackageVersionsInfoWithMetadata
@@ -40,7 +74,7 @@ export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
         accept: 'application/json',
       },
     }).then(r => r.json()),
-    new Promise<never>(
+    new Promise<JsrPackageMeta>(
       (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${name}"`)), TIMEOUT),
     ),
   ]) as JsrPackageMeta
