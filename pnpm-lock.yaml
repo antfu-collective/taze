@@ -5,20 +5,28 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
-  build:
-    tsdown:
-      specifier: ^0.21.7
-      version: 0.21.7
   dev:
+    '@antfu/eslint-config':
+      specifier: ^7.6.1
+      version: 7.6.1
     bumpp:
       specifier: ^10.4.1
       version: 10.4.1
+    eslint:
+      specifier: ^10.0.2
+      version: 10.0.2
+    tsdown:
+      specifier: ^0.21.7
+      version: 0.21.7
     tsx:
       specifier: ^4.21.0
       version: 4.21.0
     typescript:
       specifier: ^5.9.3
       version: 5.9.3
+    vitest:
+      specifier: ^4.0.18
+      version: 4.0.18
   inlined:
     '@antfu/utils':
       specifier: ^9.3.0
@@ -47,13 +55,6 @@ catalogs:
     semver-es:
       specifier: ^0.1.0
       version: 0.1.0
-  lint:
-    '@antfu/eslint-config':
-      specifier: ^7.6.1
-      version: 7.6.1
-    eslint:
-      specifier: ^10.0.2
-      version: 10.0.2
   prod:
     '@antfu/ni':
       specifier: ^28.2.0
@@ -94,10 +95,6 @@ catalogs:
     yaml:
       specifier: ^2.8.2
       version: 2.8.2
-  test:
-    vitest:
-      specifier: ^4.0.18
-      version: 4.0.18
   types:
     '@types/cli-progress':
       specifier: ^3.11.6
@@ -154,7 +151,7 @@ importers:
         version: 2.8.2
     devDependencies:
       '@antfu/eslint-config':
-        specifier: catalog:lint
+        specifier: catalog:dev
         version: 7.6.1(@typescript-eslint/rule-tester@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/typescript-estree@8.56.1(typescript@5.9.3))(@typescript-eslint/utils@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.3.13)(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.18(@types/node@25.3.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       '@antfu/utils':
         specifier: catalog:inlined
@@ -190,7 +187,7 @@ importers:
         specifier: catalog:inlined
         version: 7.0.2
       eslint:
-        specifier: catalog:lint
+        specifier: catalog:dev
         version: 10.0.2(jiti@2.6.1)
       get-npm-meta:
         specifier: catalog:inlined
@@ -202,7 +199,7 @@ importers:
         specifier: workspace:*
         version: 'link:'
       tsdown:
-        specifier: catalog:build
+        specifier: catalog:dev
         version: 0.21.7(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(synckit@0.11.12)(typescript@5.9.3)
       tsx:
         specifier: catalog:dev
@@ -211,7 +208,7 @@ importers:
         specifier: catalog:dev
         version: 5.9.3
       vitest:
-        specifier: catalog:test
+        specifier: catalog:dev
         version: 4.0.18(@types/node@25.3.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
 
 packages:
