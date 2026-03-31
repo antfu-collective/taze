@@ -27,8 +27,8 @@ vitest.mock('package-manager-detector', () => ({
   detect: vitest.fn().mockResolvedValue({ agent: 'npm', version: '1.0.0' }),
 }))
 
-vitest.mock('../src/utils/npm.ts', () => ({
-  fetchPackageInfo: vitest.fn().mockImplementation((name: string) => {
+vitest.mock('../src/utils/packument.ts', () => ({
+  fetchPackage: vitest.fn().mockImplementation((name: string) => {
     const versions: Record<string, any> = {
       'lodash': { tags: { latest: '4.17.21' }, versions: ['4.13.19', '4.17.21'] },
       'express': { tags: { latest: '4.19.2' }, versions: ['4.12.0', '4.19.2'] },
@@ -42,6 +42,7 @@ vitest.mock('../src/utils/npm.ts', () => ({
     }
     return Promise.resolve(versions[name] || { tags: { latest: '1.0.0' }, versions: ['1.0.0'] })
   }),
+  fetchJsrPackageMeta: vitest.fn(),
 }))
 
 const options: CheckOptions = {
@@ -179,7 +180,8 @@ devDependencies:
     const filepath = '/tmp/package.yaml'
 
     // Mock readFile to return our YAML content
-    vi.mocked(await import('node:fs/promises')).readFile = vi.fn().mockResolvedValue(yamlContent)
+    const fsPromises = await import('node:fs/promises')
+    vi.spyOn(fsPromises, 'readFile').mockResolvedValue(yamlContent)
 
     const doc: DocumentType = await packageYaml.readYAML(filepath)
     const raw = doc.toJS()
