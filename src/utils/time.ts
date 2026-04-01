@@ -10,7 +10,7 @@ export function toDate(date: string): number {
   return +new Date(date)
 }
 
-export function timeDifference(from?: number | string, to = +new Date()) {
+export function timeDifference(from?: number | string, to = Date.now()) {
   if (!from)
     return ''
 

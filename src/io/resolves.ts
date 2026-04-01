@@ -28,7 +28,7 @@ const cachePath = resolve(cacheDir, 'cache.json')
 const cacheTTL = 30 * 60_000 // 30min
 
 function now() {
-  return +new Date()
+  return Date.now()
 }
 
 function ttl(n: number) {

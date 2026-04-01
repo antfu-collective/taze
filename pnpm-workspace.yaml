@@ -7,13 +7,13 @@ packages:
   - '!**/test/**'
 catalogs:
   dev:
-    '@antfu/eslint-config': ^7.6.1
-    bumpp: ^10.4.1
-    eslint: ^10.0.2
+    '@antfu/eslint-config': ^8.0.0
+    bumpp: ^11.0.1
+    eslint: ^10.1.0
     tsdown: ^0.21.7
     tsx: ^4.21.0
-    typescript: ^5.9.3
-    vitest: ^4.0.18
+    typescript: ^6.0.2
+    vitest: ^4.1.2
   inlined:
     '@antfu/utils': ^9.3.0
     '@posva/prompts': ^2.4.4
@@ -25,7 +25,7 @@ catalogs:
     get-npm-meta: ^0.1.1
     semver-es: ^0.1.0
   prod:
-    '@antfu/ni': ^28.2.0
+    '@antfu/ni': ^30.0.0
     '@henrygd/queue': ^1.2.0
     cac: ^7.0.0
     find-up-simple: ^1.0.1
@@ -34,14 +34,14 @@ catalogs:
     pathe: ^2.0.3
     pnpm-workspace-yaml: ^1.6.0
     restore-cursor: ^5.1.0
-    tinyexec: ^1.0.2
+    tinyexec: ^1.0.4
     tinyglobby: ^0.2.15
     unconfig: ^7.5.0
-    yaml: ^2.8.2
+    yaml: ^2.8.3
   types:
     '@types/cli-progress': ^3.11.6
-    '@types/debug': ^4.1.12
-    '@types/node': ^25.3.3
+    '@types/debug': ^4.1.13
+    '@types/node': ^25.5.0
 onlyBuiltDependencies:
   - esbuild
   - unrs-resolver

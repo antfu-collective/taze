@@ -2,7 +2,7 @@
   "name": "taze",
   "type": "module",
   "version": "19.10.0",
-  "packageManager": "pnpm@10.30.3",
+  "packageManager": "pnpm@10.33.0",
   "description": "A modern CLI tool that keeps your dependencies fresh in any repo and monorepo",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
