@@ -3,7 +3,7 @@
 import process from 'node:process'
 import { stripVTControlCharacters } from 'node:util'
 import c from 'ansis'
-import { SemVer } from 'semver'
+import { SemVer } from 'semver-es'
 import { getDiff } from './io/resolves'
 
 import { DiffColorMap } from './utils/diff'

@@ -1,5 +1,5 @@
 import type { RangeMode } from '../types'
-import semver from 'semver'
+import { gt, lte, minVersion, satisfies, validRange } from 'semver-es'
 
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
@@ -28,13 +28,13 @@ export function getVersionRangePrefix(v: string) {
 }
 
 export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest' | 'newest' | 'next'>) {
-  if (!semver.validRange(version))
+  if (!validRange(version))
     return null
 
   if (mode === 'default')
     return version
 
-  const min = semver.minVersion(version)
+  const min = minVersion(version)
   if (!min)
     return null
 
@@ -84,13 +84,13 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       throw new Error('invalid_range')
 
     let maxVersion: string | null = tags.latest
-    if (!semver.satisfies(maxVersion, range))
+    if (!satisfies(maxVersion, range))
       maxVersion = null
 
     versions.forEach((ver) => {
-      if (semver.satisfies(ver, range)) {
-        if (!maxVersion || semver.lte(ver, maxVersion)) {
-          if (!version || semver.gt(ver, version))
+      if (satisfies(ver, range)) {
+        if (!maxVersion || lte(ver, maxVersion)) {
+          if (!version || gt(ver, version))
             version = ver
         }
       }
