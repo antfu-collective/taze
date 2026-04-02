@@ -59,7 +59,7 @@ export async function dumpCache() {
   }
 }
 
-export async function getPackageData(name: string, protocol: Protocol = 'npm'): Promise<PackageData> {
+export async function getPackageData(name: string, protocol: Protocol = 'npm', cwd?: string): Promise<PackageData> {
   let error: any
   const cacheName = `${protocol}:${name}`
 
@@ -75,7 +75,7 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm'): 
 
   try {
     debug.resolve(`resolving ${cacheName}`)
-    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, false)
+    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, false, cwd)
 
     if (data) {
       cache[cacheName] = { data, cacheTime: now() }
@@ -240,7 +240,7 @@ export async function resolveDependency(
     resolvedName = packages.pop() ?? dep.name
   }
 
-  const pkgData = await getPackageData(resolvedName, dep.protocol)
+  const pkgData = await getPackageData(resolvedName, dep.protocol, options.cwd)
   const { tags, error, deprecated } = pkgData
 
   dep.pkgData = pkgData

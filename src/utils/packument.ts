@@ -48,9 +48,10 @@ const fetchWithUserAgent: typeof fetch = (input, init) => {
   return ofetch(input, { ...init, headers })
 }
 
-export async function fetchPackage(spec: string, force = false): Promise<PackageData> {
+export async function fetchPackage(spec: string, force: boolean = false, cwd?: string): Promise<PackageData> {
   const data = await Promise.race([
     getVersions(spec, {
+      cwd,
       force,
       fetch: fetchWithUserAgent,
       metadata: true,
