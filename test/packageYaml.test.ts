@@ -91,7 +91,7 @@ describe('package.yaml functionality', () => {
     }))
     expect(firstPackage.deps).toContainEqual(expect.objectContaining({
       name: 'react-dom',
-      currentVersion: '^18.2.0',
+      currentVersion: '^19.2.4',
       source: 'peerDependencies',
     }))
     expect(firstPackage.deps).toContainEqual(expect.objectContaining({
