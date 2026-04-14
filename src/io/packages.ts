@@ -2,7 +2,7 @@ import type { CommonOptions, PackageMeta } from '../types'
 import { existsSync, promises as fs } from 'node:fs'
 import process from 'node:process'
 import detectIndent from 'detect-indent'
-import { findUp } from 'find-up-simple'
+import { up as findUp } from 'empathic/find'
 import { dirname, join, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { DEFAULT_IGNORE_PATHS } from '../constants'
@@ -144,13 +144,13 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
           return [packagePath]
 
         const absolute = join(cwd, packagePath)
-        const gitDir = await findUp('.git', { cwd: absolute, stopAt: cwd })
+        const gitDir = findUp('.git', { cwd: absolute, last: cwd })
         if (gitDir && dirname(gitDir) !== cwd)
           return []
-        const pnpmWorkspace = await findUp('pnpm-workspace.yaml', { cwd: absolute, stopAt: cwd })
+        const pnpmWorkspace = findUp('pnpm-workspace.yaml', { cwd: absolute, last: cwd })
         if (pnpmWorkspace && dirname(pnpmWorkspace) !== cwd)
           return []
-        const yarnWorkspace = await findUp('.yarnrc.yml', { cwd: absolute, stopAt: cwd })
+        const yarnWorkspace = findUp('.yarnrc.yml', { cwd: absolute, last: cwd })
         if (yarnWorkspace && dirname(yarnWorkspace) !== cwd)
           return []
         return [packagePath]

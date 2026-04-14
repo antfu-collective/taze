@@ -49,6 +49,9 @@ catalogs:
     detect-indent:
       specifier: ^7.0.2
       version: 7.0.2
+    empathic:
+      specifier: ^2.0.0
+      version: 2.0.0
     get-npm-meta:
       specifier: ^0.1.1
       version: 0.1.1
@@ -65,9 +68,6 @@ catalogs:
     cac:
       specifier: ^7.0.0
       version: 7.0.0
-    find-up-simple:
-      specifier: ^1.0.1
-      version: 1.0.1
     ofetch:
       specifier: ^1.5.1
       version: 1.5.1
@@ -119,9 +119,6 @@ importers:
       cac:
         specifier: catalog:prod
         version: 7.0.0
-      find-up-simple:
-        specifier: catalog:prod
-        version: 1.0.1
       ofetch:
         specifier: catalog:prod
         version: 1.5.1
@@ -186,6 +183,9 @@ importers:
       detect-indent:
         specifier: catalog:inlined
         version: 7.0.2
+      empathic:
+        specifier: catalog:inlined
+        version: 2.0.0
       eslint:
         specifier: catalog:dev
         version: 10.1.0(jiti@2.6.1)

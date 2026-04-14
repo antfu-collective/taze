@@ -24,11 +24,11 @@ catalogs:
     detect-indent: ^7.0.2
     get-npm-meta: ^0.1.1
     semver-es: ^0.1.0
+    empathic: ^2.0.0
   prod:
     '@antfu/ni': ^30.0.0
     '@henrygd/queue': ^1.2.0
     cac: ^7.0.0
-    find-up-simple: ^1.0.1
     ofetch: ^1.5.1
     package-manager-detector: ^1.6.0
     pathe: ^2.0.3
