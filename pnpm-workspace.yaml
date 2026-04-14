@@ -22,9 +22,9 @@ catalogs:
     debug: ^4.4.3
     deepmerge: ^4.3.1
     detect-indent: ^7.0.2
+    empathic: ^2.0.0
     get-npm-meta: ^0.1.1
     semver-es: ^0.1.0
-    empathic: ^2.0.0
   prod:
     '@antfu/ni': ^30.0.0
     '@henrygd/queue': ^1.2.0
