@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/antfu-collective/taze/schema.json",
+  "title": "Taze Configuration",
+  "description": "Configuration for taze. Used by .tazerc, .tazerc.json, and taze.config.{js,ts,mjs,cjs}.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for editor autocomplete and validation."
+    },
+    "cwd": {
+      "type": "string",
+      "description": "Working directory used to resolve packages.",
+      "default": ""
+    },
+    "recursive": {
+      "type": "boolean",
+      "description": "Recursively search for package.json in subdirectories.",
+      "default": false
+    },
+    "ignorePaths": {
+      "description": "Glob patterns to ignore when searching for package.json files.",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "ignoreOtherWorkspaces": {
+      "type": "boolean",
+      "description": "Ignore package.json files in other workspaces (those with their own .git, pnpm-workspace.yaml, etc.).",
+      "default": true
+    },
+    "include": {
+      "description": "Only the included dependencies will be checked for updates. Accepts a single pattern or a list.",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "exclude": {
+      "description": "Dependencies to exclude from the check. Overrides `include`.",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "loglevel": {
+      "type": "string",
+      "enum": ["debug", "info", "warn", "error", "silent"],
+      "description": "Log verbosity level.",
+      "default": "info"
+    },
+    "failOnOutdated": {
+      "type": "boolean",
+      "description": "Exit with code 1 if outdated dependencies are found.",
+      "default": false
+    },
+    "silent": {
+      "type": "boolean",
+      "description": "Disable all output. Equivalent to setting `loglevel` to `\"silent\"`.",
+      "default": false
+    },
+    "force": {
+      "type": "boolean",
+      "description": "Force fetching from the registry, bypassing the cache.",
+      "default": false
+    },
+    "peer": {
+      "type": "boolean",
+      "description": "Include peerDependencies in the update process."
+    },
+    "depFields": {
+      "type": "object",
+      "description": "Fields in package.json to be checked. By default all fields are checked.",
+      "additionalProperties": false,
+      "properties": {
+        "dependencies": { "type": "boolean" },
+        "devDependencies": { "type": "boolean" },
+        "peerDependencies": { "type": "boolean" },
+        "optionalDependencies": { "type": "boolean" },
+        "packageManager": { "type": "boolean" },
+        "pnpm.overrides": { "type": "boolean" },
+        "resolutions": { "type": "boolean" },
+        "overrides": { "type": "boolean" },
+        "pnpm-workspace": { "type": "boolean" },
+        "bun-workspace": { "type": "boolean" },
+        "yarn-workspace": { "type": "boolean" }
+      }
+    },
+    "packageMode": {
+      "type": "object",
+      "description": "Override bumping mode for specific dependencies. Keys are package names; values are the mode to use (or `\"ignore\"` to skip).",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["major", "minor", "patch", "latest", "newest", "next", "ignore"]
+      }
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["default", "major", "minor", "patch", "latest", "newest", "next"],
+      "description": "Update mode (version range to check).",
+      "default": "default"
+    },
+    "write": {
+      "type": "boolean",
+      "description": "Write changes back to package.json.",
+      "default": false
+    },
+    "global": {
+      "type": "boolean",
+      "description": "Update globally installed packages.",
+      "default": false
+    },
+    "interactive": {
+      "type": "boolean",
+      "description": "Run in interactive mode.",
+      "default": false
+    },
+    "install": {
+      "type": "boolean",
+      "description": "Install dependencies after bumping.",
+      "default": false
+    },
+    "update": {
+      "type": "boolean",
+      "description": "Run the package manager's update command after bumping.",
+      "default": false
+    },
+    "all": {
+      "type": "boolean",
+      "description": "Show all packages, including those that are up to date.",
+      "default": false
+    },
+    "sort": {
+      "type": "string",
+      "enum": ["time-asc", "time-desc", "diff-asc", "diff-desc", "name-asc", "name-desc"],
+      "description": "Sort order for dependencies in the output.",
+      "default": "diff-asc"
+    },
+    "group": {
+      "type": "boolean",
+      "description": "Group dependencies by source (dependencies, devDependencies, etc.) on display.",
+      "default": true
+    },
+    "includeLocked": {
+      "type": "boolean",
+      "description": "Include locked dependencies and devDependencies.",
+      "default": false
+    },
+    "timediff": {
+      "type": "boolean",
+      "description": "Show time difference between the current and the updated version.",
+      "default": true
+    },
+    "nodecompat": {
+      "type": "boolean",
+      "description": "Show package compatibility with the current Node.js version.",
+      "default": true
+    },
+    "maturityPeriod": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Wait period in days before upgrading to newly released packages. Helps avoid potentially malicious packages released recently.",
+      "default": 0
+    },
+    "concurrency": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of concurrent requests when resolving dependencies.",
+      "default": 10
+    }
+  }
+}
