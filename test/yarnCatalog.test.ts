@@ -34,8 +34,8 @@ it('yarn catalog', async () => {
   expect(result.packages.map(p => p.name)).toMatchInlineSnapshot(`
     [
       "yarn-catalog:default",
-      "yarn-catalog:react17",
       "yarn-catalog:react18",
+      "yarn-catalog:react19",
       "@taze/monorepo-example",
     ]
   `)
@@ -54,24 +54,11 @@ it('yarn catalog', async () => {
         "packages": [
           [
             "react",
-            "^18.2.0",
+            "^19.2.4",
           ],
           [
             "react-dom",
-            "^18.2.0",
-          ],
-        ],
-      },
-      {
-        "name": "yarn-catalog:react17",
-        "packages": [
-          [
-            "react",
-            "^17.0.2",
-          ],
-          [
-            "react-dom",
-            "^17.0.2",
+            "^19.2.4",
           ],
         ],
       },
@@ -85,6 +72,19 @@ it('yarn catalog', async () => {
           [
             "react-dom",
             "^18.2.0",
+          ],
+        ],
+      },
+      {
+        "name": "yarn-catalog:react19",
+        "packages": [
+          [
+            "react",
+            "^19.2.4",
+          ],
+          [
+            "react-dom",
+            "^19.2.4",
           ],
         ],
       },
@@ -163,7 +163,7 @@ describe('yarn catalog update w/ yaml anchors and aliases', () => {
   it('should preserve yaml anchors and aliases with single string value, when anchor is defined in a separate field', async () => {
     const workspaceYamlContents = `
     defines:
-      - &react ^18.2.0
+      - &react ^19.2.4
 
     catalog:
       react: *react

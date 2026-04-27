@@ -130,12 +130,12 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
         packagesNames.push(jsonPkg)
       }
     }
-
-    packagesNames = packagesNames.sort((a, b) => a.localeCompare(b))
   }
   else {
-    packagesNames = await Array.fromAsync(await glob('package.{yaml,json}', { cwd }))
+    packagesNames = await glob('package.{yaml,json}', { cwd })
   }
+
+  packagesNames = packagesNames.sort((a, b) => a.localeCompare(b))
 
   if (options.ignoreOtherWorkspaces) {
     packagesNames = (await Promise.all(

@@ -36,7 +36,7 @@ vitest.mock('../src/io/resolves.ts', async (importOriginal) => {
       name: 'react',
       currentVersion: '^18.2.0',
       source: 'bun-workspace',
-      targetVersion: '^18.2.0',
+      targetVersion: '^19.2.4',
       diff: null,
       resolveError: null,
       update: false,
@@ -63,8 +63,8 @@ describe('bun catalog integration', () => {
     expect(result.packages.map(p => p.name)).toMatchInlineSnapshot(`
       [
         "bun-catalog:default",
-        "bun-catalog:react17",
         "bun-catalog:react18",
+        "bun-catalog:react19",
         "@taze/bun-monorepo-example",
       ]
     `)
@@ -83,24 +83,11 @@ describe('bun catalog integration', () => {
           "packages": [
             [
               "react",
-              "^18.2.0",
+              "^19.2.4",
             ],
             [
               "react-dom",
-              "^18.2.0",
-            ],
-          ],
-        },
-        {
-          "name": "bun-catalog:react17",
-          "packages": [
-            [
-              "react",
-              "^17.0.2",
-            ],
-            [
-              "react-dom",
-              "^17.0.2",
+              "^19.2.4",
             ],
           ],
         },
@@ -114,6 +101,19 @@ describe('bun catalog integration', () => {
             [
               "react-dom",
               "^18.2.0",
+            ],
+          ],
+        },
+        {
+          "name": "bun-catalog:react19",
+          "packages": [
+            [
+              "react",
+              "^19.2.4",
+            ],
+            [
+              "react-dom",
+              "^19.2.4",
             ],
           ],
         },
@@ -161,13 +161,13 @@ describe('bun catalog write functionality', () => {
       name: '@test/bun-workspace',
       workspaces: {
         catalog: {
-          'react': '^18.2.0',
-          'react-dom': '^18.2.0',
+          'react': '^19.2.4',
+          'react-dom': '^19.2.4',
         },
         catalogs: {
-          react17: {
-            'react': '^17.0.2',
-            'react-dom': '^17.0.2',
+          react18: {
+            'react': '^18.2.0',
+            'react-dom': '^18.2.0',
           },
         },
       },
@@ -177,8 +177,8 @@ describe('bun catalog write functionality', () => {
       name: 'bun-catalog:default',
       resolved: [
         // testing purpose - simulate updated versions
-        { name: 'react', targetVersion: '^18.3.1', source: 'bun-workspace', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
-        { name: 'react-dom', targetVersion: '^18.3.1', source: 'bun-workspace', update: true, currentVersion: '^18.2.0', diff: 'minor' } as any,
+        { name: 'react', targetVersion: '^19.2.4', source: 'bun-workspace', update: true, currentVersion: '^19.0.0', diff: 'minor' } as any,
+        { name: 'react-dom', targetVersion: '^19.2.4', source: 'bun-workspace', update: true, currentVersion: '^19.0.0', diff: 'minor' } as any,
       ],
       raw: packageJsonRaw,
       filepath: '/tmp/package.json',
@@ -191,16 +191,16 @@ describe('bun catalog write functionality', () => {
 
     await bunWorkspaces.writeBunWorkspace(pkg, {})
 
-    expect(output).toContain('"react": "^18.3.1"')
-    expect(output).toContain('"react-dom": "^18.3.1"')
+    expect(output).toContain('"react": "^19.2.4"')
+    expect(output).toContain('"react-dom": "^19.2.4"')
 
     // Verify the JSON structure is maintained
     const writtenJson = JSON.parse(output!)
-    expect(writtenJson.workspaces.catalog.react).toBe('^18.3.1')
-    expect(writtenJson.workspaces.catalog['react-dom']).toBe('^18.3.1')
+    expect(writtenJson.workspaces.catalog.react).toBe('^19.2.4')
+    expect(writtenJson.workspaces.catalog['react-dom']).toBe('^19.2.4')
 
     // Ensure other catalogs are preserved
-    expect(writtenJson.workspaces.catalogs.react17.react).toBe('^17.0.2')
+    expect(writtenJson.workspaces.catalogs.react18.react).toBe('^18.2.0')
   })
 
   it('should update named catalog in package.json', async () => {
@@ -208,28 +208,28 @@ describe('bun catalog write functionality', () => {
       name: '@test/bun-workspace',
       workspaces: {
         catalog: {
-          'react': '^18.2.0',
-          'react-dom': '^18.2.0',
+          'react': '^19.2.4',
+          'react-dom': '^19.2.4',
         },
         catalogs: {
-          react17: {
-            'react': '^17.0.2',
-            'react-dom': '^17.0.2',
-          },
           react18: {
             'react': '^18.2.0',
             'react-dom': '^18.2.0',
+          },
+          react19: {
+            'react': '^19.2.4',
+            'react-dom': '^19.2.4',
           },
         },
       },
     }
 
     const pkg: BunWorkspaceMeta = {
-      name: 'bun-catalog:react17',
+      name: 'bun-catalog:react19',
       resolved: [
         // testing purpose - simulate updated versions
-        { name: 'react', targetVersion: '^17.0.3', source: 'bun-workspace', update: true, currentVersion: '^17.0.2', diff: 'patch' } as any,
-        { name: 'react-dom', targetVersion: '^17.0.3', source: 'bun-workspace', update: true, currentVersion: '^17.0.2', diff: 'patch' } as any,
+        { name: 'react', targetVersion: '^19.2.4', source: 'bun-workspace', update: true, currentVersion: '^18.2.0', diff: 'patch' } as any,
+        { name: 'react-dom', targetVersion: '^19.2.4', source: 'bun-workspace', update: true, currentVersion: '^18.2.0', diff: 'patch' } as any,
       ],
       raw: packageJsonRaw,
       filepath: '/tmp/package.json',
@@ -244,11 +244,11 @@ describe('bun catalog write functionality', () => {
 
     // Verify the JSON structure is updated correctly
     const writtenJson = JSON.parse(output!)
-    expect(writtenJson.workspaces.catalogs.react17.react).toBe('^17.0.3')
-    expect(writtenJson.workspaces.catalogs.react17['react-dom']).toBe('^17.0.3')
+    expect(writtenJson.workspaces.catalogs.react18.react).toBe('^18.2.0')
+    expect(writtenJson.workspaces.catalogs.react18['react-dom']).toBe('^18.2.0')
 
     // Ensure default catalog and other catalogs are preserved
-    expect(writtenJson.workspaces.catalog.react).toBe('^18.2.0')
+    expect(writtenJson.workspaces.catalog.react).toBe('^19.2.4')
     expect(writtenJson.workspaces.catalogs.react18.react).toBe('^18.2.0')
   })
 
@@ -257,7 +257,7 @@ describe('bun catalog write functionality', () => {
       name: '@test/bun-workspace',
       workspaces: {
         catalog: {
-          react: '^18.2.0',
+          react: '^19.2.4',
         },
       },
     }
@@ -286,7 +286,7 @@ describe('bun catalog write functionality', () => {
       name: '@test/bun-workspace',
       workspaces: {
         catalog: {
-          react: '^18.2.0',
+          react: '^19.2.4',
         },
       },
     }, null, 4)
@@ -298,7 +298,7 @@ describe('bun catalog write functionality', () => {
       name: '@test/bun-workspace',
       workspaces: {
         catalog: {
-          react: '^18.2.0',
+          react: '^19.2.4',
         },
       },
     }
@@ -306,7 +306,7 @@ describe('bun catalog write functionality', () => {
     const pkg: BunWorkspaceMeta = {
       name: 'bun-catalog:default',
       resolved: [
-        { name: 'react', targetVersion: '^19.0.0', source: 'bun-workspace', update: true, currentVersion: '^18.2.0', diff: 'major' } as any,
+        { name: 'react', targetVersion: '^20.0.0', source: 'bun-workspace', update: true, currentVersion: '^19.2.4', diff: 'major' } as any,
       ],
       raw: packageJsonRaw,
       filepath: '/tmp/package.json',
@@ -331,7 +331,7 @@ describe('bun catalog write functionality', () => {
       name: '@test/bun-workspace',
       workspaces: {
         catalog: {
-          react: '^18.2.0',
+          react: '^19.2.4',
         },
       },
     }
@@ -339,7 +339,7 @@ describe('bun catalog write functionality', () => {
     const pkg: BunWorkspaceMeta = {
       name: 'bun-catalog:default',
       resolved: [
-        { name: 'react', targetVersion: '^19.0.0', source: 'bun-workspace', update: true, currentVersion: '^18.2.0', diff: 'major' } as any,
+        { name: 'react', targetVersion: '^20.0.0', source: 'bun-workspace', update: true, currentVersion: '^19.2.4', diff: 'major' } as any,
       ],
       raw: packageJsonRaw,
       filepath: '/tmp/nonexistent/package.json',
