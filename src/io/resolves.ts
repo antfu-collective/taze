@@ -111,6 +111,8 @@ export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, opti
   if (filteredVersions.length === 0) {
     return undefined
   }
+  
+  dep.filteredVersions = filteredVersions
 
   return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
 }
@@ -143,7 +145,7 @@ export function updateTargetVersion(
     // - but this mode will always ignore the locked pkgs
     // - so we need to reset the target
     const { versions, time = {}, tags } = dep.pkgData
-    const targetVersion = getMaxSatisfying(versions, dep.currentVersion, 'minor', tags)
+    const targetVersion = getMaxSatisfying(dep.filteredVersions ?? versions, dep.currentVersion, 'minor', tags)
     if (targetVersion) {
       dep.targetVersion = targetVersion
       dep.targetVersionTime = time[dep.targetVersion]
