@@ -1,10 +1,11 @@
-import type { CheckOptions, ResolvedDepChange } from '../src'
+import type { CheckOptions, PackageMeta, ResolvedDepChange } from '../src'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { CheckPackages } from '../src'
+import { writePackageJSON } from '../src/io/packageJson'
 import { getHexHashFromIntegrity } from '../src/utils/sha'
 
 function getPkgInfo(name: string, result: ResolvedDepChange[]) {
@@ -116,5 +117,91 @@ describe('check package for packageManager with sha', () => {
     const pkgJson = JSON.parse(fs.readFileSync(path.join(tempDir, 'package.json'), 'utf-8'))
     const expectedHexHash = updatedPnpmInfo.hexHash
     expect(pkgJson.packageManager).toBe(`pnpm@${updatedPnpmInfo.currentVersion.slice(1)}+sha512.${expectedHexHash}`)
+  })
+})
+
+// Regression test for https://github.com/antfu-collective/taze/issues/260
+//
+// When `--include` filters out the package manager, taze never fetches its registry
+// data, so `pkgData` is undefined on the resolved dep. The `packageManager` write
+// path used to read `resolvedDep.pkgData.integrity?.[version]` (optional chain on
+// the wrong link), which threw `Cannot read properties of undefined (reading
+// 'integrity')`. This test calls `writePackageJSON` directly with that exact shape
+// to assert the write completes without throwing.
+describe('writePackageJSON with packageManager+sha when pkgData is undefined', () => {
+  let tempDir: string
+  let filepath: string
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'taze-test-pm-no-pkgdata-'))
+    filepath = path.join(tempDir, 'package.json')
+  })
+
+  afterEach(() => {
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  })
+
+  it('does not throw when the packageManager dep has hexHash but pkgData is undefined', async () => {
+    const pnpmVersion = '10.29.2'
+    const pnpmHexHash = 'bef43fa759d91fd2da4b319a5a0d13ef7a45bb985a3d7342058470f9d2051a3ba8674e629672654686ef9443ad13a82da2beb9eeb3e0221c87b8154fff9d74b8'
+    const originalPackageManager = `pnpm@${pnpmVersion}+sha512.${pnpmHexHash}`
+
+    const initialPkgJson = {
+      name: 'taze-pm-no-pkgdata',
+      private: true,
+      packageManager: originalPackageManager,
+      dependencies: {
+        storybook: '10.4.0-alpha.8',
+      },
+    }
+    fs.writeFileSync(filepath, JSON.stringify(initialPkgJson, null, 2))
+
+    // pnpm came in via `packageManager` and was given a hexHash during loading,
+    // but it was filtered out (--include storybook) so `update` is false and the
+    // resolve path that populates `pkgData` was skipped. `pkgData` is undefined.
+    const pnpmDep = {
+      name: 'pnpm',
+      currentVersion: `^${pnpmVersion}`,
+      source: 'packageManager',
+      update: false,
+      hexHash: pnpmHexHash,
+      targetVersion: `^${pnpmVersion}`,
+      diff: null,
+      provenanceDowngraded: false,
+      pkgData: undefined,
+    } as unknown as ResolvedDepChange
+
+    // storybook was included and bumped, which is what triggers writePackageJSON
+    // to run in the real flow.
+    const storybookDep = {
+      name: 'storybook',
+      currentVersion: '10.4.0-alpha.8',
+      source: 'dependencies',
+      update: true,
+      targetVersion: '10.4.0-alpha.10',
+      diff: 'patch',
+      provenanceDowngraded: false,
+      pkgData: { tags: {}, versions: [] },
+    } as unknown as ResolvedDepChange
+
+    const pkg: PackageMeta = {
+      name: initialPkgJson.name,
+      private: true,
+      version: '',
+      type: 'package.json',
+      relative: 'package.json',
+      filepath,
+      raw: { ...initialPkgJson },
+      deps: [],
+      resolved: [pnpmDep, storybookDep],
+    }
+
+    await expect(writePackageJSON(pkg, {})).resolves.not.toThrow()
+
+    const updated = JSON.parse(fs.readFileSync(filepath, 'utf-8'))
+    // The storybook bump is written.
+    expect(updated.dependencies.storybook).toBe('10.4.0-alpha.10')
+    // The packageManager line still names the same version of pnpm.
+    expect(updated.packageManager).toMatch(/^pnpm@10\.29\.2/)
   })
 })
