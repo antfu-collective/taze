@@ -2,7 +2,7 @@ import type { CheckOptions, CommonOptions } from './types'
 
 export const LOG_LEVELS = ['debug', 'info', 'warn', 'error', 'silent'] as const
 
-export const MODE_CHOICES = ['default', 'major', 'minor', 'patch', 'latest', 'newest', 'next'] as const
+export const MODE_CHOICES = ['default', 'major', 'minor', 'patch', 'latest', 'newest', 'stable', 'next'] as const
 
 export const DEFAULT_IGNORE_PATHS = [
   '**/node_modules/**',

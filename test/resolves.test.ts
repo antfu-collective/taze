@@ -103,7 +103,16 @@ it('resolveDependency', async () => {
   expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
 
+  options.mode = 'stable'
+  // stable
+  expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
+  expect(false).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkg('>4.0.0'), options, filter)).update)
+
   // include locked
+  options.mode = 'newest'
   options.includeLocked = true
   expect(true).toBe((await resolveDependency(makePkg('4.0.0'), options, filter)).update)
 

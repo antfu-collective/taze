@@ -150,3 +150,20 @@ it('maturity period filter', () => {
   const noFilter = filterVersionsByMaturityPeriod(versions, time, 0)
   expect(noFilter).toEqual(versions)
 })
+
+it('stable mode should ignore prereleases and use filtered candidates', () => {
+  const versions = [
+    '1.0.0',
+    '1.1.0-beta.1',
+    '1.1.0',
+    '1.2.0-canary.1',
+  ]
+
+  const tags = {
+    latest: '1.2.0-canary.1',
+    next: '1.2.0-canary.1',
+  }
+
+  expect(getMaxSatisfying(versions, '^1.0.0', 'stable', tags)).toBe('1.1.0')
+  expect(getMaxSatisfying(versions, '~1.0.0', 'stable', tags)).toBe('1.0.0')
+})
