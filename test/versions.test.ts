@@ -30,7 +30,7 @@ it('getVersionRange', () => {
 it('getMaxSatisfying', async () => {
   const { versions, tags } = await getPackageData('typescript')
   const latest = tags.latest
-  const newest = tags.next
+  const newest = versions.at(-1)
 
   // default
   expect(getMaxSatisfying(versions, '', 'default', tags)).toBeUndefined()
@@ -115,6 +115,40 @@ it('getMaxSatisfying', async () => {
     experimental: '0.0.0-experimental-4508873393-20240430',
   }))
 }, 10_000)
+
+it('getMaxSatisfying - maturity period respects latest/next tags', () => {
+  // maturity period: latest tag filtered out -> fall back to newest in filtered list
+  expect('1.0.5').toBe(getMaxSatisfying(
+    ['1.0.4', '1.0.5'],
+    '^1.0.0',
+    'latest',
+    { latest: '1.0.6' }, // 1.0.6 too new, not in filtered list
+  ))
+
+  // maturity period: latest tag still in filtered list -> return it
+  expect('1.0.6').toBe(getMaxSatisfying(
+    ['1.0.4', '1.0.5', '1.0.6'],
+    '^1.0.0',
+    'latest',
+    { latest: '1.0.6' },
+  ))
+
+  // maturity period: next tag filtered out -> fall back to newest in filtered list
+  expect('1.0.5').toBe(getMaxSatisfying(
+    ['1.0.4', '1.0.5'],
+    '^1.0.0',
+    'next',
+    { next: '1.0.6' }, // 1.0.6 too new, not in filtered list
+  ))
+
+  // maturity period: next tag in filtered list -> return it
+  expect('1.0.6').toBe(getMaxSatisfying(
+    ['1.0.4', '1.0.5', '1.0.6'],
+    '^1.0.0',
+    'next',
+    { next: '1.0.6' },
+  ))
+})
 
 it('deprecated filter', () => {
   const versions = ['1.0.0', '1.1.0', '1.2.0', '2.0.0']

@@ -67,13 +67,13 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
   let version: string | null = null
 
   if (mode === 'latest') {
-    version = tags.latest
+    version = versions.includes(tags.latest) ? tags.latest : versions.at(-1) ?? null
   }
   else if (mode === 'newest') {
     version = versions.at(-1)!
   }
   else if (mode === 'next') {
-    version = tags.next
+    version = tags.next && versions.includes(tags.next) ? tags.next : versions.at(-1) ?? null
   }
   else if (mode === 'stable') {
     const range = changeVersionRange(current, 'default')
