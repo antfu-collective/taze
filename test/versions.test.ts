@@ -114,7 +114,6 @@ it('getMaxSatisfying', async () => {
     rc: '4.2.1-rc.3',
     experimental: '0.0.0-experimental-4508873393-20240430',
   }))
-
 }, 10_000)
 
 it('getMaxSatisfying - maturity period respects latest/next tags', () => {
@@ -184,4 +183,21 @@ it('maturity period filter', () => {
   // Test with 0 days - should return all versions
   const noFilter = filterVersionsByMaturityPeriod(versions, time, 0)
   expect(noFilter).toEqual(versions)
+})
+
+it('stable mode should ignore prereleases and use filtered candidates', () => {
+  const versions = [
+    '1.0.0',
+    '1.1.0-beta.1',
+    '1.1.0',
+    '1.2.0-canary.1',
+  ]
+
+  const tags = {
+    latest: '1.2.0-canary.1',
+    next: '1.2.0-canary.1',
+  }
+
+  expect(getMaxSatisfying(versions, '^1.0.0', 'stable', tags)).toBe('1.1.0')
+  expect(getMaxSatisfying(versions, '~1.0.0', 'stable', tags)).toBe('1.0.0')
 })

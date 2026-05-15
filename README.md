@@ -96,6 +96,12 @@ The filter when using the maturity-period flag is 7 days. You may also want to p
 taze --maturity-period 14
 ```
 
+If you want stable releases only while still honoring the maturity period, use `stable` mode.
+
+```bash
+taze stable --maturity-period 14
+```
+
 > [!NOTE]
 > This kind of filtering is sometimes called `cooldown` or `minimumReleaseAge` by other tools.
 
