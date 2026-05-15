@@ -111,7 +111,7 @@ export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, opti
   if (filteredVersions.length === 0) {
     return undefined
   }
-  
+
   dep.filteredVersions = filteredVersions
 
   return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
