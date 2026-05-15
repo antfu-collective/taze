@@ -34,8 +34,8 @@ it('pnpm catalog', async () => {
   expect(result.packages.map(p => p.name)).toMatchInlineSnapshot(`
     [
       "pnpm-catalog:default",
-      "pnpm-catalog:react17",
       "pnpm-catalog:react18",
+      "pnpm-catalog:react19",
       "pnpm-workspace:overrides",
       "@taze/monorepo-example",
     ]
@@ -55,24 +55,11 @@ it('pnpm catalog', async () => {
         "packages": [
           [
             "react",
-            "^18.2.0",
+            "^19.2.4",
           ],
           [
             "react-dom",
-            "^18.2.0",
-          ],
-        ],
-      },
-      {
-        "name": "pnpm-catalog:react17",
-        "packages": [
-          [
-            "react",
-            "^17.0.2",
-          ],
-          [
-            "react-dom",
-            "^17.0.2",
+            "^19.2.4",
           ],
         ],
       },
@@ -86,6 +73,19 @@ it('pnpm catalog', async () => {
           [
             "react-dom",
             "^18.2.0",
+          ],
+        ],
+      },
+      {
+        "name": "pnpm-catalog:react19",
+        "packages": [
+          [
+            "react",
+            "^19.2.4",
+          ],
+          [
+            "react-dom",
+            "^^19.2.4",
           ],
         ],
       },
