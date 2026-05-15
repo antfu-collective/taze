@@ -153,6 +153,10 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
         const yarnWorkspace = await findUp('.yarnrc.yml', { cwd: absolute, stopAt: cwd })
         if (yarnWorkspace && dirname(yarnWorkspace) !== cwd)
           return []
+        const bunLock = await findUp('bun.lockb', { cwd: absolute, stopAt: cwd })
+          || await findUp('bun.lock', { cwd: absolute, stopAt: cwd })
+        if (bunLock && dirname(bunLock) !== cwd)
+          return []
         return [packagePath]
       }),
     )).flat()

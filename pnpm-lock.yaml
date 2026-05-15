@@ -50,11 +50,11 @@ catalogs:
       specifier: ^7.0.2
       version: 7.0.2
     get-npm-meta:
+      specifier: ^0.1.2
+      version: 0.1.2
+    semver-es:
       specifier: ^0.1.1
       version: 0.1.1
-    semver-es:
-      specifier: ^0.1.0
-      version: 0.1.0
   prod:
     '@antfu/ni':
       specifier: ^30.0.0
@@ -191,10 +191,10 @@ importers:
         version: 10.1.0(jiti@2.6.1)
       get-npm-meta:
         specifier: catalog:inlined
-        version: 0.1.1
+        version: 0.1.2
       semver-es:
         specifier: catalog:inlined
-        version: 0.1.0
+        version: 0.1.1
       taze:
         specifier: workspace:*
         version: 'link:'
@@ -1709,8 +1709,8 @@ packages:
   fzf@0.5.2:
     resolution: {integrity: sha512-Tt4kuxLXFKHy8KT40zwsUPUkg1CrsgY25FxA2U/j/0WgEDCk3ddc/zLTCCcbSHX9FcKtLuVaDGtGE/STWC+j3Q==}
 
-  get-npm-meta@0.1.1:
-    resolution: {integrity: sha512-YoFCXyeCTXHK2ppdKlDnMP5JQEyYC4Ey/vwT3sGu9xLe8YUJyyIrZSKzkVsTg0255W/xBXD1h68OxhbNjxRsgQ==}
+  get-npm-meta@0.1.2:
+    resolution: {integrity: sha512-iMKe4T1dAR4VEgAGGdxY/RQIokHgA3RcmcUsM/DSt0lGE65clXGV8lSPf6v0rKhks0cM2moLw5dyV5raZcQmdg==}
 
   get-tsconfig@4.13.7:
     resolution: {integrity: sha512-7tN6rFgBlMgpBML5j8typ92BKFi2sFQvIdpAqLA2beia5avZDrMs0FLZiM5etShWq5irVyGcGMEA1jcDaK7A/Q==}
@@ -2163,8 +2163,8 @@ packages:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
 
-  semver-es@0.1.0:
-    resolution: {integrity: sha512-ugjCvvVx7kMsK2VC/M2aclMEet0XaqpXlm8bt/tJGIRxxgWJq8laZjIoEHnjhwf72gXD5rIXP3WsIMABcsZgLg==}
+  semver-es@0.1.1:
+    resolution: {integrity: sha512-EqJ7FSA1KH6SmsaNxZnoDVJOwCTD0DhBlDLsTl2+cMRXtKSvxIRU6fYE/Je9JU7e3Tbrq8S4mphU56F4/kOQ7A==}
 
   semver@7.7.4:
     resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
@@ -3872,7 +3872,7 @@ snapshots:
 
   fzf@0.5.2: {}
 
-  get-npm-meta@0.1.1:
+  get-npm-meta@0.1.2:
     dependencies:
       fast-npm-meta: 1.4.2
 
@@ -4527,7 +4527,7 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  semver-es@0.1.0: {}
+  semver-es@0.1.1: {}
 
   semver@7.7.4: {}
 
