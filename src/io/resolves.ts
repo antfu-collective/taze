@@ -96,8 +96,20 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm', c
 }
 
 export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, options: CheckOptions) {
-  const { versions, tags, deprecated, time } = dep.pkgData
+  const { tags } = dep.pkgData
+  const filteredVersions = getFilteredVersions(dep, options)
 
+  if (filteredVersions.length === 0) {
+    return undefined
+  }
+
+  dep.filteredVersions = filteredVersions
+
+  return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
+}
+
+export function getFilteredVersions(dep: ResolvedDepChange, options: CheckOptions) {
+  const { versions, deprecated, time } = dep.pkgData
   let filteredVersions = versions
 
   if (deprecated && Object.keys(deprecated).length > 0) {
@@ -108,13 +120,26 @@ export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, opti
     filteredVersions = filterVersionsByMaturityPeriod(filteredVersions, time, options.maturityPeriod)
   }
 
-  if (filteredVersions.length === 0) {
-    return undefined
-  }
+  return filteredVersions
+}
 
+export function getVersionOfTag(dep: ResolvedDepChange, tag: string, options: CheckOptions) {
+  const version = dep.pkgData.tags[tag]
+  if (!version)
+    return undefined
+
+  if (tag === 'latest' || tag === 'next')
+    return getVersionOfRange(dep, tag, options)
+
+  const filteredVersions = dep.filteredVersions ?? getFilteredVersions(dep, options)
   dep.filteredVersions = filteredVersions
 
-  return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
+  return filteredVersions.includes(version) ? version : undefined
+}
+
+export function getLatestVersionAvailable(dep: ResolvedDepChange, targetVersion: string | SemVer, options: CheckOptions) {
+  const version = getVersionOfRange(dep, 'latest', options)
+  return version && gt(version, targetVersion) ? version : undefined
 }
 
 export function updateTargetVersion(
@@ -243,7 +268,7 @@ export async function resolveDependency(
   }
 
   const pkgData = await getPackageData(resolvedName, dep.protocol, options.cwd)
-  const { tags, error, deprecated } = pkgData
+  const { error, deprecated } = pkgData
 
   dep.pkgData = pkgData
   let err: Error | string | null = null
@@ -287,8 +312,8 @@ export async function resolveDependency(
 
   try {
     const targetVersion = minVersion(target || dep.targetVersion)
-    if (tags.latest && targetVersion && gt(tags.latest, targetVersion))
-      dep.latestVersionAvailable = tags.latest
+    if (targetVersion)
+      dep.latestVersionAvailable = getLatestVersionAvailable(dep, targetVersion, options)
 
     const { nodecompat = true } = options
     if (nodecompat) {

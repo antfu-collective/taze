@@ -5,7 +5,7 @@ import process from 'node:process'
 import readline from 'node:readline'
 import { createControlledPromise, notNullish } from '@antfu/utils'
 import c from 'ansis'
-import { getVersionOfRange, updateTargetVersion } from '../../io/resolves'
+import { getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../../io/resolves'
 import { colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable } from '../../render'
 import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
@@ -145,7 +145,12 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     const versions = Object.entries({
       minor: getVersionOfRange(dep, 'minor', options),
       patch: getVersionOfRange(dep, 'patch', options),
-      ...dep.pkgData.tags,
+      ...Object.fromEntries(
+        Object.keys(dep.pkgData.tags).map(tag => [
+          tag,
+          getVersionOfTag(dep, tag, options),
+        ]),
+      ),
     })
       .map(([name, version]) => {
         if (!version)
