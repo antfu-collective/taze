@@ -1,9 +1,9 @@
-import type { CheckOptions, DependencyFilter, RawDep } from '../src'
+import type { CheckOptions, DependencyFilter, RawDep, ResolvedDepChange } from '../src'
 import process from 'node:process'
 import { SemVer } from 'semver-es'
 import { expect, it } from 'vitest'
 import { resolveDependency } from '../src'
-import { getDiff } from '../src/io/resolves'
+import { getDiff, getLatestVersionAvailable, getVersionOfTag } from '../src/io/resolves'
 
 const filter: DependencyFilter = () => true
 
@@ -53,6 +53,34 @@ const options: CheckOptions = {
   mode: 'default',
   write: false,
   all: false,
+}
+
+function makeResolvedDepForMaturityPeriod(): ResolvedDepChange {
+  const now = new Date()
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+  return {
+    name: 'test-package',
+    currentVersion: '^1.0.0',
+    source: 'dependencies',
+    update: true,
+    targetVersion: '^1.1.0',
+    diff: 'minor',
+    provenanceDowngraded: false,
+    pkgData: {
+      tags: {
+        latest: '1.2.0',
+        beta: '1.2.0',
+        stable: '1.1.0',
+      },
+      versions: ['1.0.0', '1.1.0', '1.2.0'],
+      time: {
+        '1.0.0': twoDaysAgo.toISOString(),
+        '1.1.0': twoDaysAgo.toISOString(),
+        '1.2.0': now.toISOString(),
+      },
+    },
+  }
 }
 
 it('resolveDependency', async () => {
@@ -187,4 +215,19 @@ it('getDiff', () => {
   expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.3.3-a'))).toBe('minor')
   expect(getDiff(new SemVer('1.2.3-a'), new SemVer('2.2.3-a'))).toBe('major')
   expect(getDiff(new SemVer('2.0.0-a'), new SemVer('2.0.0'))).toBe('patch')
+})
+
+it('filters interactive candidate versions by maturity period', () => {
+  const dep = makeResolvedDepForMaturityPeriod()
+  const maturityOptions = {
+    ...options,
+    maturityPeriod: 1,
+  }
+
+  expect(getLatestVersionAvailable(dep, '1.1.0', maturityOptions)).toBeUndefined()
+  expect(getLatestVersionAvailable(dep, '1.0.0', maturityOptions)).toBe('1.1.0')
+
+  expect(getVersionOfTag(dep, 'latest', maturityOptions)).toBe('1.1.0')
+  expect(getVersionOfTag(dep, 'stable', maturityOptions)).toBe('1.1.0')
+  expect(getVersionOfTag(dep, 'beta', maturityOptions)).toBeUndefined()
 })
