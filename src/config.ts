@@ -1,10 +1,11 @@
-import type { CommonOptions } from './types'
+import type { CheckOptions, CommonOptions } from './types'
 import process from 'node:process'
 import { toArray } from '@antfu/utils'
 import _debug from 'debug'
 import deepmerge from 'deepmerge'
 import { createConfigLoader } from 'unconfig'
 import { DEFAULT_CHECK_OPTIONS } from './constants'
+import { detectMaturityPeriod } from './utils/detectMaturity'
 
 const debug = _debug('taze:config')
 
@@ -49,11 +50,22 @@ export async function resolveConfig(
 
   const config = await loader.load()
 
-  if (!config.sources.length)
-    return deepmerge(defaults, options)
+  let merged: CommonOptions
+  if (!config.sources.length) {
+    merged = deepmerge(defaults, options)
+  }
+  else {
+    debug(`config file found ${config.sources[0]}`)
+    const configOptions = normalizeConfig(config.config)
+    merged = deepmerge(deepmerge(defaults, configOptions), options)
+  }
 
-  debug(`config file found ${config.sources[0]}`)
-  const configOptions = normalizeConfig(config.config)
+  const checkMerged = merged as CheckOptions
+  if (checkMerged.maturityPeriod == null && !checkMerged.global) {
+    const detected = await detectMaturityPeriod(checkMerged.cwd || process.cwd())
+    if (detected != null)
+      checkMerged.maturityPeriod = detected
+  }
 
-  return deepmerge(deepmerge(defaults, configOptions), options)
+  return merged
 }
