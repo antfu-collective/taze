@@ -5,7 +5,7 @@ import _debug from 'debug'
 import deepmerge from 'deepmerge'
 import { createConfigLoader } from 'unconfig'
 import { DEFAULT_CHECK_OPTIONS } from './constants'
-import { detectMaturityPeriod } from './utils/detectMaturity'
+import { detectMaturityConfig } from './utils/detectMaturity'
 
 const debug = _debug('taze:config')
 
@@ -14,9 +14,11 @@ function normalizeConfig(options: CommonOptions) {
   if ('default' in options)
     options = options.default as CommonOptions
 
+  const checkOptions = options as CheckOptions
   options.ignorePaths = toArray(options.ignorePaths)
   options.exclude = toArray(options.exclude)
   options.include = toArray(options.include)
+  checkOptions.maturityPeriodExclude = toArray(checkOptions.maturityPeriodExclude)
 
   if (options.silent)
     options.loglevel = 'silent'
@@ -61,10 +63,12 @@ export async function resolveConfig(
   }
 
   const checkMerged = merged as CheckOptions
-  if (checkMerged.maturityPeriod == null && !checkMerged.global) {
-    const detected = await detectMaturityPeriod(checkMerged.cwd || process.cwd())
-    if (detected != null)
-      checkMerged.maturityPeriod = detected
+  if (!checkMerged.global && (checkMerged.maturityPeriod == null || !checkMerged.maturityPeriodExclude?.length)) {
+    const detected = await detectMaturityConfig(checkMerged.cwd || process.cwd())
+    if (checkMerged.maturityPeriod == null && detected?.maturityPeriod != null)
+      checkMerged.maturityPeriod = detected.maturityPeriod
+    if (!checkMerged.maturityPeriodExclude?.length && detected?.maturityPeriodExclude.length)
+      checkMerged.maturityPeriodExclude = detected.maturityPeriodExclude
   }
 
   return merged

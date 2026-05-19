@@ -8,7 +8,7 @@ import _debug from 'debug'
 import { resolve } from 'pathe'
 import { eq, gt, lt, minVersion, satisfies } from 'semver-es'
 import { diffSorter } from '../filters/diff-sorter'
-import { getPackageMode } from '../utils/config'
+import { getMaturityPeriodExcludeRanges, getPackageMode, isVersionMaturityPeriodExcluded } from '../utils/config'
 import { queueContext } from '../utils/context'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
@@ -116,8 +116,18 @@ export function getFilteredVersions(dep: ResolvedDepChange, options: CheckOption
     filteredVersions = filterDeprecatedVersions(filteredVersions, deprecated)
   }
 
-  if (options.maturityPeriod && options.maturityPeriod > 0) {
-    filteredVersions = filterVersionsByMaturityPeriod(filteredVersions, time, options.maturityPeriod)
+  const maturityPeriodExclude = getMaturityPeriodExcludeRanges(dep.name, options)
+  if (options.maturityPeriod && options.maturityPeriod > 0 && maturityPeriodExclude !== true) {
+    const maturityCandidates = filteredVersions
+    filteredVersions = filterVersionsByMaturityPeriod(maturityCandidates, time, options.maturityPeriod)
+
+    if (maturityPeriodExclude.length > 0) {
+      const filteredVersionSet = new Set(filteredVersions)
+      filteredVersions = maturityCandidates.filter(version =>
+        filteredVersionSet.has(version)
+        || isVersionMaturityPeriodExcluded(version, maturityPeriodExclude),
+      )
+    }
   }
 
   return filteredVersions
