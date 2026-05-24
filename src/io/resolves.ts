@@ -22,6 +22,7 @@ const debug = {
 
 let cache: Record<string, { cacheTime: number, data: PackageData }> = {}
 let cacheChanged = false
+const inflightRequests = new Map<string, Promise<PackageData>>()
 
 const cacheDir = resolve(os.tmpdir(), 'taze')
 const cachePath = resolve(cacheDir, 'cache.json')
@@ -59,7 +60,7 @@ export async function dumpCache() {
   }
 }
 
-export async function getPackageData(name: string, protocol: Protocol = 'npm', cwd?: string): Promise<PackageData> {
+export async function getPackageData(name: string, protocol: Protocol = 'npm', cwd?: string, requestTimeout?: number): Promise<PackageData> {
   let error: any
   const cacheName = `${protocol}:${name}`
 
@@ -73,25 +74,45 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm', c
     }
   }
 
-  try {
-    debug.resolve(`resolving ${cacheName}`)
-    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, false, cwd)
+  const inflightRequest = inflightRequests.get(cacheName)
 
-    if (data) {
-      cache[cacheName] = { data, cacheTime: now() }
-      cacheChanged = true
-      return data
+  if (inflightRequest) {
+    debug.cache(`in-flight hit for ${cacheName}`)
+    return inflightRequest
+  }
+
+  const request = (async () => {
+    try {
+      debug.resolve(`resolving ${cacheName}`)
+      const data = protocol === 'jsr'
+        ? await fetchJsrPackageMeta(name, requestTimeout)
+        : await fetchPackage(name, false, cwd, requestTimeout)
+
+      if (data) {
+        cache[cacheName] = { data, cacheTime: now() }
+        cacheChanged = true
+        return data
+      }
     }
-  }
-  catch (e) {
-    error = e
-  }
+    catch (e) {
+      error = e
+    }
 
-  return {
-    tags: {},
-    versions: [],
-    error: error?.statusCode?.toString() || error,
-    deprecated: {},
+    return {
+      tags: {},
+      versions: [],
+      error: error?.statusCode?.toString() || error,
+      deprecated: {},
+    }
+  })()
+
+  inflightRequests.set(cacheName, request)
+
+  try {
+    return await request
+  }
+  finally {
+    inflightRequests.delete(cacheName)
   }
 }
 
@@ -277,7 +298,7 @@ export async function resolveDependency(
     resolvedName = packages.pop() ?? dep.name
   }
 
-  const pkgData = await getPackageData(resolvedName, dep.protocol, options.cwd)
+  const pkgData = await getPackageData(resolvedName, dep.protocol, options.cwd, options.requestTimeout)
   const { error, deprecated } = pkgData
 
   dep.pkgData = pkgData

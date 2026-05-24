@@ -39,6 +39,7 @@ cli
   .option('--maturity-period [days]', 'wait period in days before upgrading to newly released packages (default: 7 when flag is used, 0 when not used)')
   .option('--maturity-period-exclude <deps>', 'dependencies to exclude from the maturity period filter')
   .option('--concurrency <requests>', 'number of concurrent requests when resolving dependencies', { default: 10 })
+  .option('--request-timeout <ms>', 'request timeout in milliseconds when fetching package metadata', { default: 5000 })
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
