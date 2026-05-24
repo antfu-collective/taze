@@ -19,3 +19,12 @@ it('taze cli should accept --concurrency option', async () => {
   expect(proc.stderr).toBe('')
   expect(proc.exitCode).toBe(0)
 })
+
+it('taze cli should accept --request-timeout option', async () => {
+  const binPath = resolve(__dirname, '../bin/taze.mjs')
+
+  const proc = await exec(process.execPath, [binPath, '--request-timeout', '15000'], { throwOnError: false })
+
+  expect(proc.stderr).toBe('')
+  expect(proc.exitCode).toBe(0)
+})

@@ -1,5 +1,4 @@
 import { expect, it } from 'vitest'
-import { getPackageData } from '../src/io/resolves'
 import { changeVersionRange, filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
 
 it('getVersionRange', () => {
@@ -33,8 +32,18 @@ it('changeVersionRange', () => {
   expect(changeVersionRange('not-a-range', 'minor')).toBeNull()
 })
 
-it('getMaxSatisfying', async () => {
-  const { versions, tags } = await getPackageData('typescript')
+it('getMaxSatisfying', () => {
+  const versions = [
+    '5.9.0',
+    '6.0.1',
+    '6.1.0',
+    '7.0.0',
+    '7.1.0',
+    '8.0.0-beta.1',
+  ]
+  const tags = {
+    latest: '7.1.0',
+  }
   const latest = tags.latest
   const newest = versions.at(-1)
 
@@ -120,7 +129,7 @@ it('getMaxSatisfying', async () => {
     rc: '4.2.1-rc.3',
     experimental: '0.0.0-experimental-4508873393-20240430',
   }))
-}, 10_000)
+})
 
 it('getMaxSatisfying - maturity period respects latest/next tags', () => {
   // maturity period: latest tag filtered out -> fall back to newest in filtered list
