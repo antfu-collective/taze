@@ -6,7 +6,7 @@ import readline from 'node:readline'
 import { createControlledPromise, notNullish } from '@antfu/utils'
 import c from 'ansis'
 import { getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../../io/resolves'
-import { colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable } from '../../render'
+import { colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable, sliceRenderLines } from '../../render'
 import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { getPrefixedVersion } from '../../utils/versions'
@@ -171,20 +171,35 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     return {
       render() {
         console.clear()
-        console.log(`${FIG_BLOCK} ${c.gray`Select a version for ${c.green.bold(dep.name)}${c.gray` (current ${dep.currentVersion})`}`}`)
-        console.log()
-        console.log(
-          formatTable(versions.map((v, idx) => {
-            return [
-              (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.gray(v.name)),
-              timediff ? timeDifference(dep.currentVersionTime) : '',
-              c.gray(dep.currentVersion),
-              c.dim.gray('→'),
-              colorizeVersionDiff(dep.currentVersion, v.targetVersion),
-              timediff ? timeDifference(v.time) : '',
-            ]
-          }), 'LLLL').join('\n'),
-        )
+        const headerLines = [
+          `${FIG_BLOCK} ${c.gray`Select a version for ${c.green.bold(dep.name)}${c.gray` (current ${dep.currentVersion})`}`}`,
+          '',
+        ]
+        const versionRows = versions.map((v, idx) => {
+          return [
+            (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.gray(v.name)),
+            timediff ? timeDifference(dep.currentVersionTime) : '',
+            c.gray(dep.currentVersion),
+            c.dim.gray('→'),
+            colorizeVersionDiff(dep.currentVersion, v.targetVersion),
+            timediff ? timeDifference(v.time) : '',
+          ]
+        })
+        const versionLines = formatTable(
+          versionRows,
+          'LLLL',
+        ).map(content => ({ content }))
+        let {
+          rows: remainHeight,
+          columns: availableWidth,
+        } = process.stdout
+
+        remainHeight -= headerLines.length + 1
+
+        headerLines.forEach(line => console.log(line))
+        const slice = sliceRenderLines(versionLines, index, remainHeight, availableWidth)
+
+        console.log(slice.map(line => line.content).join('\n'))
       },
       onKey(key) {
         switch (key.name) {

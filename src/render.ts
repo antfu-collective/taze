@@ -111,9 +111,39 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
     + c[color](partsToColor.slice(i).join('.')).trim()
 }
 
-interface SliceRenderLine {
+export interface SliceRenderLine {
   content: string
   fixed?: boolean
+}
+
+export function sliceRenderLines(
+  lines: SliceRenderLine[],
+  focusedLineIndex: number,
+  remainHeight: number,
+  availableWidth: number,
+) {
+  const hasWrappedLines = lines.some((line) => {
+    const visualLineCount = Math.ceil(visualLength(line.content) / availableWidth)
+
+    return visualLineCount > 1
+  })
+
+  if (
+    remainHeight < 1
+    || lines.length === 0
+    || lines.length <= remainHeight
+    || hasWrappedLines
+  ) {
+    return lines
+  }
+
+  const half = Math.floor((remainHeight - 1) / 2)
+  const startOffset = focusedLineIndex - half
+  const endOffset = focusedLineIndex + remainHeight - half - lines.length
+  const compensatedStartOffset = endOffset <= 0 ? startOffset : startOffset - endOffset
+  const start = Math.max(0, compensatedStartOffset)
+
+  return lines.slice(start, start + remainHeight)
 }
 
 export function createSliceRender() {
@@ -159,26 +189,11 @@ export function createSliceRender() {
 
         if (depIndex === selectedDepIndex)
           break
-        else
-          focusedLineIndex += 1
+
+        focusedLineIndex += 1
       }
 
-      let slice: SliceRenderLine[]
-      if (
-        remainHeight < 1
-        || remainLines.length === 0
-        || remainLines.length <= remainHeight
-        || remainLines.some(x => Math.ceil(visualLength(x.content) / availableWidth) > 1)
-      ) {
-        slice = remainLines
-      }
-      else {
-        const half = Math.floor((remainHeight - 1) / 2)
-        const f = focusedLineIndex - half
-        const b = focusedLineIndex + remainHeight - half - remainLines.length
-        const start = Math.max(0, b <= 0 ? f : f - b)
-        slice = remainLines.slice(start, start + remainHeight)
-      }
+      const slice = sliceRenderLines(remainLines, focusedLineIndex, remainHeight, availableWidth)
 
       console.log(slice.map(x => x.content).join('\n'))
     },
