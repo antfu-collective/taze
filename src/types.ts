@@ -172,6 +172,10 @@ export interface CheckOptions extends CommonOptions {
    * @default 0 (no waiting period)
    */
   maturityPeriod?: number
+  /**
+   * Dependencies that bypass the maturity period filter
+   */
+  maturityPeriodExclude?: string | string[]
 }
 
 interface BasePackageMeta {

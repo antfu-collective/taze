@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { detectMaturityPeriod, parseYarnDuration } from '../src/utils/detectMaturity'
+import { detectMaturityConfig, detectMaturityPeriod, parseYarnDuration } from '../src/utils/detectMaturity'
 
 const tmpRoots: string[] = []
 
@@ -73,6 +73,14 @@ describe('detectMaturityPeriod', () => {
       expect(await detectMaturityPeriod(cwd)).toBe(0.5)
     })
 
+    it('reads minimumReleaseAgeExclude', async () => {
+      write(cwd, 'pnpm-workspace.yaml', 'minimumReleaseAge: 1440\nminimumReleaseAgeExclude:\n  - react\n  - "@myorg/*"\n')
+      expect(await detectMaturityConfig(cwd)).toEqual({
+        maturityPeriod: 1,
+        maturityPeriodExclude: ['react', '@myorg/*'],
+      })
+    })
+
     it('falls through when minimumReleaseAge is 0', async () => {
       write(cwd, 'pnpm-workspace.yaml', 'minimumReleaseAge: 0\n')
       expect(await detectMaturityPeriod(cwd)).toBeUndefined()
@@ -98,6 +106,14 @@ describe('detectMaturityPeriod', () => {
     it('reads npmMinimalAgeGate as a bare number (minutes)', async () => {
       write(cwd, '.yarnrc.yml', 'npmMinimalAgeGate: 1440\n')
       expect(await detectMaturityPeriod(cwd)).toBe(1)
+    })
+
+    it('reads npmPreapprovedPackages', async () => {
+      write(cwd, '.yarnrc.yml', 'npmMinimalAgeGate: "1d"\nnpmPreapprovedPackages:\n  - react\n  - "@myorg/*"\n')
+      expect(await detectMaturityConfig(cwd)).toEqual({
+        maturityPeriod: 1,
+        maturityPeriodExclude: ['react', '@myorg/*'],
+      })
     })
 
     it('falls through when the yaml exists without the field', async () => {
@@ -132,6 +148,15 @@ describe('detectMaturityPeriod', () => {
       expect(await detectMaturityPeriod(cwd)).toBe(1)
     })
 
+    it('applies pnpm@11 default with minimumReleaseAgeExclude', async () => {
+      write(cwd, 'package.json', JSON.stringify({ packageManager: 'pnpm@11.0.0' }))
+      write(cwd, 'pnpm-workspace.yaml', 'minimumReleaseAgeExclude:\n  - react\n')
+      expect(await detectMaturityConfig(cwd)).toEqual({
+        maturityPeriod: 1,
+        maturityPeriodExclude: ['react'],
+      })
+    })
+
     it('tolerates pnpm hash suffix in packageManager', async () => {
       write(cwd, 'package.json', JSON.stringify({ packageManager: 'pnpm@11.2.0+sha512.abc' }))
       expect(await detectMaturityPeriod(cwd)).toBe(1)
@@ -145,6 +170,15 @@ describe('detectMaturityPeriod', () => {
     it('applies yarn@4.12 default', async () => {
       write(cwd, 'package.json', JSON.stringify({ packageManager: 'yarn@4.12.0' }))
       expect(await detectMaturityPeriod(cwd)).toBe(1)
+    })
+
+    it('applies yarn@4.12 default with npmPreapprovedPackages', async () => {
+      write(cwd, 'package.json', JSON.stringify({ packageManager: 'yarn@4.12.0' }))
+      write(cwd, '.yarnrc.yml', 'npmPreapprovedPackages:\n  - react\n')
+      expect(await detectMaturityConfig(cwd)).toEqual({
+        maturityPeriod: 1,
+        maturityPeriodExclude: ['react'],
+      })
     })
 
     it('returns undefined for yarn@4.11', async () => {

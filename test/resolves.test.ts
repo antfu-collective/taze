@@ -231,3 +231,26 @@ it('filters interactive candidate versions by maturity period', () => {
   expect(getVersionOfTag(dep, 'stable', maturityOptions)).toBe('1.1.0')
   expect(getVersionOfTag(dep, 'beta', maturityOptions)).toBeUndefined()
 })
+
+it('excludes packages from the maturity period filter', () => {
+  const maturityOptions = {
+    ...options,
+    maturityPeriod: 1,
+    maturityPeriodExclude: ['test-*'],
+  }
+
+  expect(getLatestVersionAvailable(makeResolvedDepForMaturityPeriod(), '1.1.0', maturityOptions)).toBe('1.2.0')
+  expect(getVersionOfTag(makeResolvedDepForMaturityPeriod(), 'latest', maturityOptions)).toBe('1.2.0')
+  expect(getVersionOfTag(makeResolvedDepForMaturityPeriod(), 'beta', maturityOptions)).toBe('1.2.0')
+})
+
+it('excludes package versions from the maturity period filter', () => {
+  const maturityOptions = {
+    ...options,
+    maturityPeriod: 1,
+    maturityPeriodExclude: ['test-package@1.2.0'],
+  }
+
+  expect(getVersionOfTag(makeResolvedDepForMaturityPeriod(), 'latest', maturityOptions)).toBe('1.2.0')
+  expect(getVersionOfTag(makeResolvedDepForMaturityPeriod(), 'beta', maturityOptions)).toBe('1.2.0')
+})

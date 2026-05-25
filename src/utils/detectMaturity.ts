@@ -14,6 +14,11 @@ const YARN_DEFAULT_MAJOR = 4
 const YARN_DEFAULT_MINOR = 12
 const DEFAULT_DAYS = 1
 
+export interface DetectedMaturityConfig {
+  maturityPeriod?: number
+  maturityPeriodExclude: string[]
+}
+
 // Parse a Yarn DURATION value. Yarn's SettingsType.DURATION with
 // unit: MINUTES accepts either a bare number (minutes) or a string with
 // an optional unit suffix (d/h/m/s). Returns days, or undefined.
@@ -48,6 +53,13 @@ async function readYamlTop(filepath: string | undefined): Promise<Record<string,
     debug(`failed to parse ${filepath}: ${e}`)
     return null
   }
+}
+
+function readStringList(value: unknown): string[] {
+  if (!Array.isArray(value))
+    return []
+
+  return value.filter((item): item is string => typeof item === 'string')
 }
 
 function parseSemverParts(version: string | undefined): { major: number, minor: number } | null {
@@ -96,24 +108,26 @@ async function detectAgentAndVersion(cwd: string): Promise<{ name: string, versi
   return matched
 }
 
-export async function detectMaturityPeriod(cwd: string): Promise<number | undefined> {
+export async function detectMaturityConfig(cwd: string): Promise<DetectedMaturityConfig | undefined> {
   // 1. pnpm-workspace.yaml → minimumReleaseAge (minutes)
   const pnpmYamlPath = await findUp('pnpm-workspace.yaml', { cwd })
   const pnpmYaml = await readYamlTop(pnpmYamlPath)
+  const pnpmExclude = readStringList(pnpmYaml?.minimumReleaseAgeExclude)
   if (pnpmYaml && typeof pnpmYaml.minimumReleaseAge === 'number' && pnpmYaml.minimumReleaseAge > 0) {
     const days = pnpmYaml.minimumReleaseAge / 1440
-    debug(`maturityPeriod=${days}d from ${pnpmYamlPath} (minimumReleaseAge=${pnpmYaml.minimumReleaseAge}m)`)
-    return days
+    debug(`maturityPeriod=${days}d from ${pnpmYamlPath} (minimumReleaseAge=${pnpmYaml.minimumReleaseAge}m, minimumReleaseAgeExclude=${JSON.stringify(pnpmExclude)})`)
+    return { maturityPeriod: days, maturityPeriodExclude: pnpmExclude }
   }
 
   // 2. .yarnrc.yml → npmMinimalAgeGate (duration)
   const yarnYamlPath = await findUp('.yarnrc.yml', { cwd })
   const yarnYaml = await readYamlTop(yarnYamlPath)
+  const yarnExclude = readStringList(yarnYaml?.npmPreapprovedPackages)
   if (yarnYaml && yarnYaml.npmMinimalAgeGate != null) {
     const days = parseYarnDuration(yarnYaml.npmMinimalAgeGate)
     if (days != null) {
-      debug(`maturityPeriod=${days}d from ${yarnYamlPath} (npmMinimalAgeGate=${JSON.stringify(yarnYaml.npmMinimalAgeGate)})`)
-      return days
+      debug(`maturityPeriod=${days}d from ${yarnYamlPath} (npmMinimalAgeGate=${JSON.stringify(yarnYaml.npmMinimalAgeGate)}, npmPreapprovedPackages=${JSON.stringify(yarnExclude)})`)
+      return { maturityPeriod: days, maturityPeriodExclude: yarnExclude }
     }
   }
 
@@ -123,13 +137,20 @@ export async function detectMaturityPeriod(cwd: string): Promise<number | undefi
   if (agent && parts) {
     if (agent.name === 'pnpm' && parts.major >= PNPM_DEFAULT_MAJOR) {
       debug(`maturityPeriod=${DEFAULT_DAYS}d from detected ${agent.name}@${agent.version}`)
-      return DEFAULT_DAYS
+      return { maturityPeriod: DEFAULT_DAYS, maturityPeriodExclude: pnpmExclude }
     }
     if (agent.name === 'yarn' && (parts.major > YARN_DEFAULT_MAJOR || (parts.major === YARN_DEFAULT_MAJOR && parts.minor >= YARN_DEFAULT_MINOR))) {
       debug(`maturityPeriod=${DEFAULT_DAYS}d from detected ${agent.name}@${agent.version}`)
-      return DEFAULT_DAYS
+      return { maturityPeriod: DEFAULT_DAYS, maturityPeriodExclude: yarnExclude }
     }
   }
 
+  if (pnpmExclude.length > 0 || yarnExclude.length > 0)
+    return { maturityPeriodExclude: [...pnpmExclude, ...yarnExclude] }
+
   return undefined
+}
+
+export async function detectMaturityPeriod(cwd: string): Promise<number | undefined> {
+  return (await detectMaturityConfig(cwd))?.maturityPeriod
 }
