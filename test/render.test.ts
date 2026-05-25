@@ -1,7 +1,7 @@
 import process from 'node:process'
 import readline from 'node:readline'
-import { afterEach, expect, it, vi } from 'vitest'
-import { formatTable, writeInteractiveScreen } from '../src/render'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { formatTable, sliceRenderLines, writeInteractiveScreen } from '../src/render'
 
 const originalIsTTYDescriptor = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY')
 
@@ -43,4 +43,20 @@ it('writeInteractiveScreen uses cursor-based redraw for tty output', () => {
   expect(cursorToSpy).toHaveBeenCalledWith(process.stdout, 0, 0)
   expect(clearScreenDownSpy).toHaveBeenCalledWith(process.stdout)
   expect(writeSpy).toHaveBeenCalledWith('first line\nsecond line\n')
+})
+
+describe(sliceRenderLines, () => {
+  it('keeps the focused line visible when slicing long lists', () => {
+    const lines = Array.from({ length: 12 }, (_, index) => ({ content: `version-${index}` }))
+
+    const slice = sliceRenderLines(lines, 8, 4, 80)
+    const contents = slice.map(line => line.content)
+
+    expect(contents).toStrictEqual([
+      'version-7',
+      'version-8',
+      'version-9',
+      'version-10',
+    ])
+  })
 })
