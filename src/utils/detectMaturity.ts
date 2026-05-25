@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs'
 import _debug from 'debug'
-import { findUp } from 'find-up-simple'
+import { up as findUp } from 'empathic/find'
 import { detect } from 'package-manager-detector'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 
@@ -110,7 +110,7 @@ async function detectAgentAndVersion(cwd: string): Promise<{ name: string, versi
 
 export async function detectMaturityConfig(cwd: string): Promise<DetectedMaturityConfig | undefined> {
   // 1. pnpm-workspace.yaml → minimumReleaseAge (minutes)
-  const pnpmYamlPath = await findUp('pnpm-workspace.yaml', { cwd })
+  const pnpmYamlPath = findUp('pnpm-workspace.yaml', { cwd })
   const pnpmYaml = await readYamlTop(pnpmYamlPath)
   const pnpmExclude = readStringList(pnpmYaml?.minimumReleaseAgeExclude)
   if (pnpmYaml && typeof pnpmYaml.minimumReleaseAge === 'number' && pnpmYaml.minimumReleaseAge > 0) {
@@ -120,7 +120,7 @@ export async function detectMaturityConfig(cwd: string): Promise<DetectedMaturit
   }
 
   // 2. .yarnrc.yml → npmMinimalAgeGate (duration)
-  const yarnYamlPath = await findUp('.yarnrc.yml', { cwd })
+  const yarnYamlPath = findUp('.yarnrc.yml', { cwd })
   const yarnYaml = await readYamlTop(yarnYamlPath)
   const yarnExclude = readStringList(yarnYaml?.npmPreapprovedPackages)
   if (yarnYaml && yarnYaml.npmMinimalAgeGate != null) {
