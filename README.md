@@ -96,6 +96,18 @@ The filter when using the maturity-period flag is 7 days. You may also want to p
 taze --maturity-period 14
 ```
 
+You can exclude packages from the maturity filter. This is also inferred from package manager config when available, such as `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` and `npmPreapprovedPackages` in `.yarnrc.yml`.
+
+```bash
+taze --maturity-period-exclude react,webpack
+```
+
+If you want stable releases only while still honoring the maturity period, use `stable` mode.
+
+```bash
+taze stable --maturity-period 14
+```
+
 > [!NOTE]
 > This kind of filtering is sometimes called `cooldown` or `minimumReleaseAge` by other tools.
 
@@ -131,6 +143,11 @@ export default defineConfig({
     // regex starts and ends with '/'
     '/vue/': 'latest'
   },
+  // exclude packages from the maturity period filter
+  maturityPeriodExclude: [
+    'react',
+    '@myorg/*',
+  ],
   // disable checking for "overrides" package.json field
   depFields: {
     overrides: false

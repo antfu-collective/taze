@@ -27,7 +27,7 @@ export function getVersionRangePrefix(v: string) {
   return null
 }
 
-export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest' | 'newest' | 'next'>) {
+export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest' | 'newest' | 'stable' | 'next'>) {
   if (!validRange(version))
     return null
 
@@ -67,13 +67,27 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
   let version: string | null = null
 
   if (mode === 'latest') {
-    version = tags.latest
+    version = versions.includes(tags.latest) ? tags.latest : versions.at(-1) ?? null
   }
   else if (mode === 'newest') {
     version = versions.at(-1)!
   }
   else if (mode === 'next') {
-    version = tags.next
+    version = tags.next && versions.includes(tags.next) ? tags.next : versions.at(-1) ?? null
+  }
+  else if (mode === 'stable') {
+    const range = changeVersionRange(current, 'default')
+    if (!range)
+      return
+
+    versions
+      .filter(ver => !ver.includes('-'))
+      .forEach((ver) => {
+        if (satisfies(ver, range)) {
+          if (!version || gt(ver, version))
+            version = ver
+        }
+      })
   }
   else if (mode === 'default' && (current === '*' || current.trim() === '')) {
     return

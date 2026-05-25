@@ -8,7 +8,7 @@ import _debug from 'debug'
 import { resolve } from 'pathe'
 import { eq, gt, lt, minVersion, satisfies } from 'semver-es'
 import { diffSorter } from '../filters/diff-sorter'
-import { getPackageMode } from '../utils/config'
+import { getMaturityPeriodExcludeRanges, getPackageMode, isVersionMaturityPeriodExcluded } from '../utils/config'
 import { queueContext } from '../utils/context'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
@@ -59,7 +59,7 @@ export async function dumpCache() {
   }
 }
 
-export async function getPackageData(name: string, protocol: Protocol = 'npm'): Promise<PackageData> {
+export async function getPackageData(name: string, protocol: Protocol = 'npm', cwd?: string): Promise<PackageData> {
   let error: any
   const cacheName = `${protocol}:${name}`
 
@@ -75,7 +75,7 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm'): 
 
   try {
     debug.resolve(`resolving ${cacheName}`)
-    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, false)
+    const data = protocol === 'jsr' ? await fetchJsrPackageMeta(name) : await fetchPackage(name, false, cwd)
 
     if (data) {
       cache[cacheName] = { data, cacheTime: now() }
@@ -96,23 +96,60 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm'): 
 }
 
 export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, options: CheckOptions) {
-  const { versions, tags, deprecated, time } = dep.pkgData
+  const { tags } = dep.pkgData
+  const filteredVersions = getFilteredVersions(dep, options)
 
+  if (filteredVersions.length === 0) {
+    return undefined
+  }
+
+  dep.filteredVersions = filteredVersions
+
+  return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
+}
+
+export function getFilteredVersions(dep: ResolvedDepChange, options: CheckOptions) {
+  const { versions, deprecated, time } = dep.pkgData
   let filteredVersions = versions
 
   if (deprecated && Object.keys(deprecated).length > 0) {
     filteredVersions = filterDeprecatedVersions(filteredVersions, deprecated)
   }
 
-  if (options.maturityPeriod && options.maturityPeriod > 0) {
-    filteredVersions = filterVersionsByMaturityPeriod(filteredVersions, time, options.maturityPeriod)
+  const maturityPeriodExclude = getMaturityPeriodExcludeRanges(dep.name, options)
+  if (options.maturityPeriod && options.maturityPeriod > 0 && maturityPeriodExclude !== true) {
+    const maturityCandidates = filteredVersions
+    filteredVersions = filterVersionsByMaturityPeriod(maturityCandidates, time, options.maturityPeriod)
+
+    if (maturityPeriodExclude.length > 0) {
+      const filteredVersionSet = new Set(filteredVersions)
+      filteredVersions = maturityCandidates.filter(version =>
+        filteredVersionSet.has(version)
+        || isVersionMaturityPeriodExcluded(version, maturityPeriodExclude),
+      )
+    }
   }
 
-  if (filteredVersions.length === 0) {
+  return filteredVersions
+}
+
+export function getVersionOfTag(dep: ResolvedDepChange, tag: string, options: CheckOptions) {
+  const version = dep.pkgData.tags[tag]
+  if (!version)
     return undefined
-  }
 
-  return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
+  if (tag === 'latest' || tag === 'next')
+    return getVersionOfRange(dep, tag, options)
+
+  const filteredVersions = dep.filteredVersions ?? getFilteredVersions(dep, options)
+  dep.filteredVersions = filteredVersions
+
+  return filteredVersions.includes(version) ? version : undefined
+}
+
+export function getLatestVersionAvailable(dep: ResolvedDepChange, targetVersion: string | SemVer, options: CheckOptions) {
+  const version = getVersionOfRange(dep, 'latest', options)
+  return version && gt(version, targetVersion) ? version : undefined
 }
 
 export function updateTargetVersion(
@@ -143,7 +180,7 @@ export function updateTargetVersion(
     // - but this mode will always ignore the locked pkgs
     // - so we need to reset the target
     const { versions, time = {}, tags } = dep.pkgData
-    const targetVersion = getMaxSatisfying(versions, dep.currentVersion, 'minor', tags)
+    const targetVersion = getMaxSatisfying(dep.filteredVersions ?? versions, dep.currentVersion, 'minor', tags)
     if (targetVersion) {
       dep.targetVersion = targetVersion
       dep.targetVersionTime = time[dep.targetVersion]
@@ -240,8 +277,8 @@ export async function resolveDependency(
     resolvedName = packages.pop() ?? dep.name
   }
 
-  const pkgData = await getPackageData(resolvedName, dep.protocol)
-  const { tags, error, deprecated } = pkgData
+  const pkgData = await getPackageData(resolvedName, dep.protocol, options.cwd)
+  const { error, deprecated } = pkgData
 
   dep.pkgData = pkgData
   let err: Error | string | null = null
@@ -285,8 +322,8 @@ export async function resolveDependency(
 
   try {
     const targetVersion = minVersion(target || dep.targetVersion)
-    if (tags.latest && targetVersion && gt(tags.latest, targetVersion))
-      dep.latestVersionAvailable = tags.latest
+    if (targetVersion)
+      dep.latestVersionAvailable = getLatestVersionAvailable(dep, targetVersion, options)
 
     const { nodecompat = true } = options
     if (nodecompat) {

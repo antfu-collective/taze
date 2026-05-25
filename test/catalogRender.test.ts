@@ -72,7 +72,7 @@ describe('catalog display name consistency', () => {
 
   it('should style named catalogs correctly for all managers', () => {
     for (const prefix of ['pnpm-catalog:', 'bun-catalog:', 'yarn-catalog:']) {
-      const catalogName = 'react17'
+      const catalogName = 'react18'
       const source = prefix.replace('-catalog:', '-workspace')
       const pkg = makePkg(`${prefix}${catalogName}`, [makeChange('react', source)])
       const { lines } = renderChanges(pkg, options)

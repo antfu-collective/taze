@@ -130,12 +130,12 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
         packagesNames.push(jsonPkg)
       }
     }
-
-    packagesNames = packagesNames.sort((a, b) => a.localeCompare(b))
   }
   else {
-    packagesNames = await Array.fromAsync(await glob('package.{yaml,json}', { cwd }))
+    packagesNames = await glob('package.{yaml,json}', { cwd })
   }
+
+  packagesNames = packagesNames.sort((a, b) => a.localeCompare(b))
 
   if (options.ignoreOtherWorkspaces) {
     packagesNames = (await Promise.all(
@@ -152,6 +152,10 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
           return []
         const yarnWorkspace = findUp('.yarnrc.yml', { cwd: absolute, last: cwd })
         if (yarnWorkspace && dirname(yarnWorkspace) !== cwd)
+          return []
+        const bunLock = await findUp('bun.lockb', { cwd: absolute, stopAt: cwd })
+          || await findUp('bun.lock', { cwd: absolute, stopAt: cwd })
+        if (bunLock && dirname(bunLock) !== cwd)
           return []
         return [packagePath]
       }),
