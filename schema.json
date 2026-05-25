@@ -177,6 +177,12 @@
       "minimum": 1,
       "description": "Number of concurrent requests when resolving dependencies.",
       "default": 10
+    },
+    "requestTimeout": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Request timeout in milliseconds when fetching package metadata.",
+      "default": 5000
     }
   }
 }
