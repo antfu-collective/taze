@@ -2,6 +2,8 @@ ignoreWorkspaceRootCheck: true
 shellEmulator: true
 
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  - tinyexec@1.2.2
 
 packages:
   - '!**/test/**'
@@ -9,11 +11,11 @@ catalogs:
   dev:
     '@antfu/eslint-config': ^9.0.0
     bumpp: ^11.1.0
-    eslint: ^10.3.0
+    eslint: ^10.4.0
     tsdown: ^0.22.0
-    tsx: ^4.22.0
+    tsx: ^4.22.3
     typescript: ^6.0.3
-    vitest: ^4.1.6
+    vitest: ^4.1.7
   inlined:
     '@antfu/utils': ^9.3.0
     '@posva/prompts': ^2.4.4
@@ -22,7 +24,7 @@ catalogs:
     debug: ^4.4.3
     deepmerge: ^4.3.1
     detect-indent: ^7.0.2
-    empathic: ^2.0.0
+    empathic: ^2.0.1
     get-npm-meta: ^0.1.2
     semver-es: ^0.1.1
   prod:
@@ -32,16 +34,15 @@ catalogs:
     ofetch: ^1.5.1
     package-manager-detector: ^1.6.0
     pathe: ^2.0.3
-    pnpm-workspace-yaml: ^1.6.0
+    pnpm-workspace-yaml: ^1.6.1
     restore-cursor: ^5.1.0
-    tinyexec: ^1.1.2
+    tinyexec: ^1.2.2
     tinyglobby: ^0.2.16
     unconfig: ^7.5.0
     yaml: ^2.9.0
   types:
     '@types/cli-progress': ^3.11.6
     '@types/debug': ^4.1.13
-    '@types/node': ^25.8.0
-onlyBuiltDependencies:
-  - esbuild
-  - unrs-resolver
+    '@types/node': ^25.9.1
+allowBuilds:
+  esbuild: true
