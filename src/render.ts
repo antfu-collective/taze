@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 import process from 'node:process'
+import readline from 'node:readline'
 import { stripVTControlCharacters } from 'node:util'
 import c from 'ansis'
 import { SemVer } from 'semver-es'
@@ -111,6 +112,27 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
     + c[color](partsToColor.slice(i).join('.')).trim()
 }
 
+export function clearInteractiveScreen() {
+  if (process.stdout.isTTY) {
+    readline.cursorTo(process.stdout, 0, 0)
+    readline.clearScreenDown(process.stdout)
+
+    return
+  }
+
+  console.clear()
+}
+
+export function writeInteractiveScreen(lines: string[]) {
+  clearInteractiveScreen()
+
+  const output = lines.join('\n')
+  if (output === '')
+    return
+
+  process.stdout.write(`${output}\n`)
+}
+
 export interface SliceRenderLine {
   content: string
   fixed?: boolean
@@ -158,6 +180,7 @@ export function createSliceRender() {
         rows: remainHeight,
         columns: availableWidth,
       } = process.stdout
+      const outputLines: string[] = []
 
       const lines: SliceRenderLine[] = buffer.length < remainHeight - 1
         ? buffer
@@ -169,7 +192,7 @@ export function createSliceRender() {
       while (i < lines.length) {
         const curr = lines[i]
         if (curr.fixed) {
-          console.log(curr.content)
+          outputLines.push(curr.content)
           remainHeight -= 1
           i++
         }
@@ -195,7 +218,9 @@ export function createSliceRender() {
 
       const slice = sliceRenderLines(remainLines, focusedLineIndex, remainHeight, availableWidth)
 
-      console.log(slice.map(x => x.content).join('\n'))
+      outputLines.push(...slice.map(line => line.content))
+
+      writeInteractiveScreen(outputLines)
     },
   }
 }

@@ -1,12 +1,11 @@
 import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
 /* eslint-disable no-fallthrough */
 import process from 'node:process'
-/* eslint-disable no-console */
 import readline from 'node:readline'
 import { createControlledPromise, notNullish } from '@antfu/utils'
 import c from 'ansis'
 import { getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../../io/resolves'
-import { colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable, sliceRenderLines } from '../../render'
+import { clearInteractiveScreen, colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable, sliceRenderLines, writeInteractiveScreen } from '../../render'
 import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { getPrefixedVersion } from '../../utils/versions'
@@ -90,7 +89,6 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           sr.push(...renderChanges(pkg, options, ctx).lines.map(x => ({ content: x })))
         })
 
-        console.clear()
         sr.render(index)
       },
       onKey(key) {
@@ -100,7 +98,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
             process.exit()
           case 'enter':
           case 'return':
-            console.clear()
+            clearInteractiveScreen()
             pkgs.forEach((pkg) => {
               pkg.resolved.forEach((dep) => {
                 dep.update = ctx.isChecked(dep)
@@ -170,7 +168,6 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
     return {
       render() {
-        console.clear()
         const headerLines = [
           `${FIG_BLOCK} ${c.gray`Select a version for ${c.green.bold(dep.name)}${c.gray` (current ${dep.currentVersion})`}`}`,
           '',
@@ -196,10 +193,9 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
         remainHeight -= headerLines.length + 1
 
-        headerLines.forEach(line => console.log(line))
         const slice = sliceRenderLines(versionLines, index, remainHeight, availableWidth)
 
-        console.log(slice.map(line => line.content).join('\n'))
+        writeInteractiveScreen([...headerLines, ...slice.map(line => line.content)])
       },
       onKey(key) {
         switch (key.name) {
