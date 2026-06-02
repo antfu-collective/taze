@@ -113,10 +113,15 @@ export async function detectMaturityConfig(cwd: string): Promise<DetectedMaturit
   const pnpmYamlPath = findUp('pnpm-workspace.yaml', { cwd })
   const pnpmYaml = await readYamlTop(pnpmYamlPath)
   const pnpmExclude = readStringList(pnpmYaml?.minimumReleaseAgeExclude)
-  if (pnpmYaml && typeof pnpmYaml.minimumReleaseAge === 'number' && pnpmYaml.minimumReleaseAge > 0) {
-    const days = pnpmYaml.minimumReleaseAge / 1440
-    debug(`maturityPeriod=${days}d from ${pnpmYamlPath} (minimumReleaseAge=${pnpmYaml.minimumReleaseAge}m, minimumReleaseAgeExclude=${JSON.stringify(pnpmExclude)})`)
-    return { maturityPeriod: days, maturityPeriodExclude: pnpmExclude }
+  if (pnpmYaml && typeof pnpmYaml.minimumReleaseAge === 'number') {
+    if (pnpmYaml.minimumReleaseAge > 0) {
+      const days = pnpmYaml.minimumReleaseAge / 1440
+      debug(`maturityPeriod=${days}d from ${pnpmYamlPath} (minimumReleaseAge=${pnpmYaml.minimumReleaseAge}m, minimumReleaseAgeExclude=${JSON.stringify(pnpmExclude)})`)
+      return { maturityPeriod: days, maturityPeriodExclude: pnpmExclude }
+    }
+
+    debug(`maturityPeriod disabled from ${pnpmYamlPath} (minimumReleaseAge=${pnpmYaml.minimumReleaseAge}m, minimumReleaseAgeExclude=${JSON.stringify(pnpmExclude)})`)
+    return { maturityPeriodExclude: pnpmExclude }
   }
 
   // 2. .yarnrc.yml → npmMinimalAgeGate (duration)
