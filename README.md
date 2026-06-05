@@ -12,6 +12,48 @@
 <img src='./screenshots/r-major.png' width='600' alt='Recursive mode' />
 </p>
 
+## Fork 说明（@whyjs/taze）
+
+本仓库为 [antfu-collective/taze](https://github.com/antfu-collective/taze) 的个人 fork，npm 包名为 **`@whyjs/taze`**，版本格式为 `{upstream}-fix.{N}`（`fix.N` 在发布时递增）。
+
+### 发布包
+
+| npm 包 | CLI 命令 | 说明 |
+|---|---|---|
+| `@whyjs/taze` | `taze` | 主包，完整功能 |
+| `uploom` | `uploom` | 短包名 wrapper，`npx uploom` 等价于完整 CLI |
+
+```bash
+npm i -g @whyjs/taze   # → taze
+npm i -g uploom        # → uploom（更短的 npx 入口）
+```
+
+### 相较上游新增功能
+
+- **可配置请求超时**：`--timeout <ms>`（默认 10000）
+- **npm 镜像管理**（兼容 nrm 使用习惯）：
+  - 切换镜像通过 `npm config set`，不直接改写 `~/.npmrc` 中的 token
+  - 自定义镜像列表保存在 `~/.taze/registries.yaml`（YAML 格式）
+  - 首次运行可自动从 `~/.nrmrc` 迁移
+- **双包发布**：CI 使用 `pnpm -r publish` 同时发布 `@whyjs/taze` 与 `uploom`
+
+### 镜像管理命令
+
+`registry` 可缩写为 **`reg`**（`taze reg` = `taze registry`，`uploom reg` 同理）。
+
+```bash
+taze reg ls                   # 列出镜像
+taze reg current              # 当前镜像
+taze reg use taobao           # 切换镜像
+taze reg add <name> <url> [home]
+taze reg del <name>
+taze reg test [name]          # 测速
+
+# 短包名同样可用（reg 缩写同样有效）
+npx uploom reg use taobao
+npx uploom minor -w
+```
+
 ## Features
 
 - Built-in support for monorepos

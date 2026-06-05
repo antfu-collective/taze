@@ -1,7 +1,7 @@
 {
-  "name": "taze",
+  "name": "@whyjs/taze",
   "type": "module",
-  "version": "19.14.1",
+  "version": "19.14.1-fix.5",
   "packageManager": "pnpm@11.3.0",
   "description": "A modern CLI tool that keeps your dependencies fresh in any repo and monorepo",
   "license": "MIT",
@@ -57,6 +57,7 @@
     "@types/cli-progress": "catalog:types",
     "@types/debug": "catalog:types",
     "@types/node": "catalog:types",
+    "@whyjs/taze": "workspace:*",
     "ansis": "catalog:inlined",
     "bumpp": "catalog:dev",
     "cli-progress": "catalog:inlined",
@@ -67,7 +68,6 @@
     "eslint": "catalog:dev",
     "get-npm-meta": "catalog:inlined",
     "semver-es": "catalog:inlined",
-    "taze": "workspace:*",
     "tsdown": "catalog:dev",
     "tsx": "catalog:dev",
     "typescript": "catalog:dev",
@@ -93,5 +93,9 @@
     "sisteransi": "1.0.5",
     "string-width": "4.2.3",
     "strip-ansi": "6.0.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }

@@ -35,4 +35,4 @@ jobs:
         run: pnpm install
 
       - name: Publish to NPM
-        run: npm install -g npm@latest && pnpm publish --no-git-checks
+        run: npm install -g npm@latest && pnpm -r publish --no-git-checks

@@ -6,11 +6,14 @@ import restoreCursor from 'restore-cursor'
 import pkgJson from '../package.json'
 import { check } from './commands/check'
 import { checkGlobal } from './commands/check/checkGlobal'
+import { registerRegistryCommands } from './commands/registry'
 import { resolveConfig } from './config'
 import { LOG_LEVELS, MODE_CHOICES } from './constants'
 import { SORT_CHOICES } from './utils/sort'
 
 const cli: CAC = cac('taze')
+
+registerRegistryCommands(cli)
 
 cli
   .command('[mode]', `Update mode (version range to check). Available: ${MODE_CHOICES.join(' | ')}`)
@@ -39,6 +42,7 @@ cli
   .option('--maturity-period [days]', 'wait period in days before upgrading to newly released packages (default: 7 when flag is used, 0 when not used)')
   .option('--maturity-period-exclude <deps>', 'dependencies to exclude from the maturity period filter')
   .option('--concurrency <requests>', 'number of concurrent requests when resolving dependencies', { default: 10 })
+  .option('--timeout <ms>', 'timeout in milliseconds for each package fetch request', { default: 10000 })
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {

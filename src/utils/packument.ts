@@ -4,7 +4,7 @@ import process from 'node:process'
 import { getVersions } from 'get-npm-meta'
 import { fetch as ofetch } from 'ofetch'
 
-const TIMEOUT = 5000
+const TIMEOUT = 10000
 const JSR_API_REGISTRY = 'https://jsr.io/'
 const USER_AGENT = `taze@npm node/${process.version}`
 
@@ -68,7 +68,7 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
   return toPackageData(data)
 }
 
-export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
+export async function fetchJsrPackageMeta(name: string, timeout = TIMEOUT): Promise<PackageData> {
   const meta = await Promise.race([
     fetchWithUserAgent(new URL(`${name}/meta.json`, JSR_API_REGISTRY), {
       headers: {
@@ -76,7 +76,7 @@ export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
       },
     }).then(r => r.json()),
     new Promise<JsrPackageMeta>(
-      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${name}"`)), TIMEOUT),
+      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${name}"`)), timeout),
     ),
   ]) as JsrPackageMeta
 
