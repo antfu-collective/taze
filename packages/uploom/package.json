@@ -1,5 +1,5 @@
 {
-  "name": "upz",
+  "name": "uploom",
   "type": "module",
   "version": "19.14.1-fix.5",
   "description": "CLI alias for @whyjs/taze",
@@ -8,13 +8,13 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yeli19950109/taze.git",
-    "directory": "packages/upz"
+    "directory": "packages/uploom"
   },
   "bugs": {
     "url": "https://github.com/yeli19950109/taze/issues"
   },
   "bin": {
-    "upz": "bin/upz.mjs"
+    "uploom": "bin/uploom.mjs"
   },
   "files": [
     "bin"

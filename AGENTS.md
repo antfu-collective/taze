@@ -59,7 +59,7 @@ The version format is:
 ```
 19.11.0-fix.1   ← first publish on upstream v19.11.0
 19.14.0-fix.1   ← merged upstream v19.14.0 → N unchanged (not published yet)
-                  (registry, upz, yaml config… multiple commits, still fix.1)
+                  (registry, uploom, yaml config… multiple commits, still fix.1)
 19.14.0-fix.2   ← published to npm → N +1
 19.15.0-fix.2   ← merged upstream v19.15.0 → N unchanged
 19.15.0-fix.3   ← published to npm → N +1
@@ -82,7 +82,7 @@ This fork publishes **two npm packages** from the same codebase:
 | Package | CLI command | Role |
 |---|---|---|
 | `@whyjs/taze` | `taze` | Main package — library + CLI, built from `src/` |
-| `upz` | `upz` | Thin CLI wrapper in `packages/upz/`, depends on `@whyjs/taze` |
+| `uploom` | `uploom` | Thin CLI wrapper in `packages/uploom/`, depends on `@whyjs/taze` |
 
 Both packages share the same version (`{upstream_version}-fix.{N}`). When releasing, publish both via `pnpm -r publish`.
 

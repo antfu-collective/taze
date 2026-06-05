@@ -26,7 +26,7 @@ function unknownRegistryCommand(command: string): never {
 
 export function registerRegistryCommands(cli: CAC): void {
   cli
-    .command('registry [command] [args...]', 'Manage npm registries')
+    .command('registry [command] [args...]', 'Manage npm registries (alias: reg)')
     .alias('reg')
     .option('--url', 'Show registry URL instead of name')
     .action(async (command: string | undefined, args: string[], options: { url?: boolean }) => {
