@@ -1,7 +1,7 @@
 {
   "name": "@whyjs/taze",
   "type": "module",
-  "version": "19.14.1-fix.2",
+  "version": "19.14.1-fix.5",
   "packageManager": "pnpm@11.3.0",
   "description": "A modern CLI tool that keeps your dependencies fresh in any repo and monorepo",
   "license": "MIT",

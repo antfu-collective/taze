@@ -58,7 +58,7 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
       throw: false,
     }),
     new Promise<Packument>(
-      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), timeout),
+      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
     ),
   ]) as PackageVersionsInfoWithMetadata
 

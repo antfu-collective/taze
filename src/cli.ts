@@ -6,11 +6,14 @@ import restoreCursor from 'restore-cursor'
 import pkgJson from '../package.json'
 import { check } from './commands/check'
 import { checkGlobal } from './commands/check/checkGlobal'
+import { registerRegistryCommands } from './commands/registry'
 import { resolveConfig } from './config'
 import { LOG_LEVELS, MODE_CHOICES } from './constants'
 import { SORT_CHOICES } from './utils/sort'
 
 const cli: CAC = cac('taze')
+
+registerRegistryCommands(cli)
 
 cli
   .command('[mode]', `Update mode (version range to check). Available: ${MODE_CHOICES.join(' | ')}`)
