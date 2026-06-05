@@ -1,7 +1,7 @@
 {
   "name": "@whyjs/taze",
   "type": "module",
-  "version": "19.14.0-fix.1",
+  "version": "19.14.1-fix.2",
   "packageManager": "pnpm@11.3.0",
   "description": "A modern CLI tool that keeps your dependencies fresh in any repo and monorepo",
   "license": "MIT",
@@ -83,7 +83,7 @@
     "deepmerge": "4.3.1",
     "detect-indent": "7.0.2",
     "emoji-regex": "8.0.0",
-    "empathic": "2.0.0",
+    "empathic": "2.0.1",
     "fast-npm-meta": "1.4.2",
     "get-npm-meta": "0.1.2",
     "is-fullwidth-code-point": "3.0.0",
