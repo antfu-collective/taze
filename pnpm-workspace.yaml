@@ -6,6 +6,8 @@ trustPolicyExclude:
   - tinyexec@1.2.2
 
 packages:
+  - '.'
+  - 'packages/*'
   - '!**/test/**'
 catalogs:
   dev:
