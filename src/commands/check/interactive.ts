@@ -1,12 +1,11 @@
 import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange } from '../../types'
 /* eslint-disable no-fallthrough */
 import process from 'node:process'
-/* eslint-disable no-console */
 import readline from 'node:readline'
 import { createControlledPromise, notNullish } from '@antfu/utils'
 import c from 'ansis'
-import { getVersionOfRange, updateTargetVersion } from '../../io/resolves'
-import { colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable } from '../../render'
+import { getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../../io/resolves'
+import { clearInteractiveScreen, colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable, sliceRenderLines, writeInteractiveScreen } from '../../render'
 import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { getPrefixedVersion } from '../../utils/versions'
@@ -90,7 +89,6 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
           sr.push(...renderChanges(pkg, options, ctx).lines.map(x => ({ content: x })))
         })
 
-        console.clear()
         sr.render(index)
       },
       onKey(key) {
@@ -100,7 +98,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
             process.exit()
           case 'enter':
           case 'return':
-            console.clear()
+            clearInteractiveScreen()
             pkgs.forEach((pkg) => {
               pkg.resolved.forEach((dep) => {
                 dep.update = ctx.isChecked(dep)
@@ -145,7 +143,12 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     const versions = Object.entries({
       minor: getVersionOfRange(dep, 'minor', options),
       patch: getVersionOfRange(dep, 'patch', options),
-      ...dep.pkgData.tags,
+      ...Object.fromEntries(
+        Object.keys(dep.pkgData.tags).map(tag => [
+          tag,
+          getVersionOfTag(dep, tag, options),
+        ]),
+      ),
     })
       .map(([name, version]) => {
         if (!version)
@@ -165,21 +168,34 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
     return {
       render() {
-        console.clear()
-        console.log(`${FIG_BLOCK} ${c.gray`Select a version for ${c.green.bold(dep.name)}${c.gray` (current ${dep.currentVersion})`}`}`)
-        console.log()
-        console.log(
-          formatTable(versions.map((v, idx) => {
-            return [
-              (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.gray(v.name)),
-              timediff ? timeDifference(dep.currentVersionTime) : '',
-              c.gray(dep.currentVersion),
-              c.dim.gray('→'),
-              colorizeVersionDiff(dep.currentVersion, v.targetVersion),
-              timediff ? timeDifference(v.time) : '',
-            ]
-          }), 'LLLL').join('\n'),
-        )
+        const headerLines = [
+          `${FIG_BLOCK} ${c.gray`Select a version for ${c.green.bold(dep.name)}${c.gray` (current ${dep.currentVersion})`}`}`,
+          '',
+        ]
+        const versionRows = versions.map((v, idx) => {
+          return [
+            (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.gray(v.name)),
+            timediff ? timeDifference(dep.currentVersionTime) : '',
+            c.gray(dep.currentVersion),
+            c.dim.gray('→'),
+            colorizeVersionDiff(dep.currentVersion, v.targetVersion),
+            timediff ? timeDifference(v.time) : '',
+          ]
+        })
+        const versionLines = formatTable(
+          versionRows,
+          'LLLL',
+        ).map(content => ({ content }))
+        let {
+          rows: remainHeight,
+          columns: availableWidth,
+        } = process.stdout
+
+        remainHeight -= headerLines.length + 1
+
+        const slice = sliceRenderLines(versionLines, index, remainHeight, availableWidth)
+
+        writeInteractiveScreen([...headerLines, ...slice.map(line => line.content)])
       },
       onKey(key) {
         switch (key.name) {

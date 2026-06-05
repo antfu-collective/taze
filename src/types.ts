@@ -83,6 +83,7 @@ export interface ResolvedDepChange extends RawDep {
   resolveError?: Error | string | null
   aliasName?: string
   nodeCompatibleVersion?: { semver: string, compatible: boolean }
+  filteredVersions?: string[]
 }
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent'
@@ -177,6 +178,10 @@ export interface CheckOptions extends CommonOptions {
    * @default 0 (no waiting period)
    */
   maturityPeriod?: number
+  /**
+   * Dependencies that bypass the maturity period filter
+   */
+  maturityPeriodExclude?: string | string[]
 }
 
 interface BasePackageMeta {

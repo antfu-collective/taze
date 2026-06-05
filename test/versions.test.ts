@@ -30,7 +30,7 @@ it('getVersionRange', () => {
 it('getMaxSatisfying', async () => {
   const { versions, tags } = await getPackageData('typescript')
   const latest = tags.latest
-  const newest = tags.next
+  const newest = versions.at(-1)
 
   // default
   expect(getMaxSatisfying(versions, '', 'default', tags)).toBeUndefined()
@@ -116,6 +116,40 @@ it('getMaxSatisfying', async () => {
   }))
 }, 10_000)
 
+it('getMaxSatisfying - maturity period respects latest/next tags', () => {
+  // maturity period: latest tag filtered out -> fall back to newest in filtered list
+  expect('1.0.5').toBe(getMaxSatisfying(
+    ['1.0.4', '1.0.5'],
+    '^1.0.0',
+    'latest',
+    { latest: '1.0.6' }, // 1.0.6 too new, not in filtered list
+  ))
+
+  // maturity period: latest tag still in filtered list -> return it
+  expect('1.0.6').toBe(getMaxSatisfying(
+    ['1.0.4', '1.0.5', '1.0.6'],
+    '^1.0.0',
+    'latest',
+    { latest: '1.0.6' },
+  ))
+
+  // maturity period: next tag filtered out -> fall back to newest in filtered list
+  expect('1.0.5').toBe(getMaxSatisfying(
+    ['1.0.4', '1.0.5'],
+    '^1.0.0',
+    'next',
+    { next: '1.0.6' }, // 1.0.6 too new, not in filtered list
+  ))
+
+  // maturity period: next tag in filtered list -> return it
+  expect('1.0.6').toBe(getMaxSatisfying(
+    ['1.0.4', '1.0.5', '1.0.6'],
+    '^1.0.0',
+    'next',
+    { next: '1.0.6' },
+  ))
+})
+
 it('deprecated filter', () => {
   const versions = ['1.0.0', '1.1.0', '1.2.0', '2.0.0']
   const deprecated = {
@@ -149,4 +183,21 @@ it('maturity period filter', () => {
   // Test with 0 days - should return all versions
   const noFilter = filterVersionsByMaturityPeriod(versions, time, 0)
   expect(noFilter).toEqual(versions)
+})
+
+it('stable mode should ignore prereleases and use filtered candidates', () => {
+  const versions = [
+    '1.0.0',
+    '1.1.0-beta.1',
+    '1.1.0',
+    '1.2.0-canary.1',
+  ]
+
+  const tags = {
+    latest: '1.2.0-canary.1',
+    next: '1.2.0-canary.1',
+  }
+
+  expect(getMaxSatisfying(versions, '^1.0.0', 'stable', tags)).toBe('1.1.0')
+  expect(getMaxSatisfying(versions, '~1.0.0', 'stable', tags)).toBe('1.0.0')
 })

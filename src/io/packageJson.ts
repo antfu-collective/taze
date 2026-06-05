@@ -87,7 +87,10 @@ export async function writePackageJSON(
 
         const resolvedDep = pkg.resolved.find(dep => dep.source === 'packageManager' && dep.name === name)
         if (resolvedDep?.hexHash) {
-          const integrity = resolvedDep.pkgData.integrity?.[version]
+          // `pkgData` may be undefined when the dep was filtered out (e.g. via
+          // `--include`) and the resolve path that fetches registry data was
+          // skipped. In that case there's no fresh integrity to refresh with.
+          const integrity = resolvedDep.pkgData?.integrity?.[version]
           if (integrity) {
             const newHexHash = getHexHashFromIntegrity(integrity)
             packageManagerValue = `${packageManagerValue}+sha512.${newHexHash}`

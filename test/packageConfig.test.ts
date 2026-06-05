@@ -1,9 +1,41 @@
 import type { CheckOptions, CommonOptions, ResolvedDepChange } from '../src'
 import process from 'node:process'
 import { join } from 'pathe'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 import { CheckPackages } from '../src'
 import { resolveConfig } from '../src/config'
+import * as packument from '../src/utils/packument'
+
+vi.spyOn(packument, 'fetchPackage').mockImplementation(async (name: string) => {
+  const packages: Record<string, { tags: Record<string, string>, versions: string[] }> = {
+    'express': {
+      tags: { latest: '5.1.0' },
+      versions: ['4.1.0', '4.19.2', '5.1.0'],
+    },
+    'typescript': {
+      tags: { latest: '6.0.3' },
+      versions: ['0.22.6', '6.0.3'],
+    },
+    'vite': {
+      tags: { latest: '6.0.0' },
+      versions: ['2.1.0', '6.0.0'],
+    },
+    'vue': {
+      tags: { latest: '3.5.34' },
+      versions: ['3.4.0', '3.5.34'],
+    },
+    'vue-router': {
+      tags: { latest: '4.6.4' },
+      versions: ['4.0.2', '4.6.4'],
+    },
+  }
+
+  return packages[name] ?? { tags: { latest: '1.0.0' }, versions: ['1.0.0'] }
+})
+
+afterAll(() => {
+  vi.restoreAllMocks()
+})
 
 function getPkgInfo(name: string, result: ResolvedDepChange[]) {
   return result.filter(r => r.name === name)[0]

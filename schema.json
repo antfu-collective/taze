@@ -165,6 +165,13 @@
       "description": "Wait period in days before upgrading to newly released packages. Helps avoid potentially malicious packages released recently.",
       "default": 0
     },
+    "maturityPeriodExclude": {
+      "description": "Dependencies to exclude from the maturity period filter. Accepts a single pattern or a list.",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
     "concurrency": {
       "type": "integer",
       "minimum": 1,
