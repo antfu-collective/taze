@@ -133,6 +133,22 @@ it('getMaxSatisfying - maturity period respects latest/next tags', () => {
     { latest: '1.0.6' },
   ))
 
+  // maturity period: stable latest tag filtered out -> skip mature prereleases
+  expect('1.2.5').toBe(getMaxSatisfying(
+    ['1.2.5', '1.3.0-rc.1', '1.3.0-rc.2'],
+    '^1.2.5',
+    'latest',
+    { latest: '1.3.0' },
+  ))
+
+  // maturity period: prerelease latest tag filtered out -> keep prerelease fallback
+  expect('1.3.0-rc.1').toBe(getMaxSatisfying(
+    ['1.2.5', '1.3.0-rc.1'],
+    '^1.2.5',
+    'latest',
+    { latest: '1.3.0-rc.2' },
+  ))
+
   // maturity period: next tag filtered out -> fall back to newest in filtered list
   expect('1.0.5').toBe(getMaxSatisfying(
     ['1.0.4', '1.0.5'],

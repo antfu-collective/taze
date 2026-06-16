@@ -1,5 +1,5 @@
 import type { RangeMode } from '../types'
-import { gt, lte, minVersion, satisfies, validRange } from 'semver-es'
+import { gt, lte, minVersion, prerelease, satisfies, validRange } from 'semver-es'
 
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
@@ -67,7 +67,17 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
   let version: string | null = null
 
   if (mode === 'latest') {
-    version = versions.includes(tags.latest) ? tags.latest : versions.at(-1) ?? null
+    const latest = tags.latest
+    if (versions.includes(latest)) {
+      version = latest
+    }
+    else {
+      const candidates = latest && !prerelease(latest)
+        ? versions.filter(ver => !prerelease(ver) && lte(ver, latest))
+        : versions.filter(ver => !latest || lte(ver, latest))
+
+      version = candidates.at(-1) ?? null
+    }
   }
   else if (mode === 'newest') {
     version = versions.at(-1)!
