@@ -72,9 +72,16 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       version = latest
     }
     else {
-      const candidates = latest && !prerelease(latest)
-        ? versions.filter(ver => !prerelease(ver) && lte(ver, latest))
-        : versions.filter(ver => !latest || lte(ver, latest))
+      const currentMin = minVersion(current)
+      const currentIsPrerelease = !!(currentMin && prerelease(currentMin.toString()))
+      const latestIsPrerelease = !!(latest && prerelease(latest))
+      // only consider prerelease candidates if either the currently installed
+      // version or the registry's `latest` tag is itself on a prerelease track
+      const allowPrerelease = currentIsPrerelease || latestIsPrerelease
+
+      const candidates = versions.filter(ver =>
+        (allowPrerelease || !prerelease(ver)) && (!latest || lte(ver, latest)),
+      )
 
       version = candidates.at(-1) ?? null
     }
