@@ -4,7 +4,7 @@ import process from 'node:process'
 import { getVersions } from 'get-npm-meta'
 import { fetch as ofetch } from 'ofetch'
 
-const TIMEOUT = 5000
+const TIMEOUT = 30_000
 const JSR_API_REGISTRY = 'https://jsr.io/'
 const USER_AGENT = `taze@npm node/${process.version}`
 
@@ -49,7 +49,7 @@ const fetchWithUserAgent: typeof fetch = (input, init) => {
 }
 
 export async function fetchPackage(spec: string, force: boolean = false, cwd?: string): Promise<PackageData> {
-  const data = await Promise.race([
+  const data = await withTimeout(
     getVersions(spec, {
       cwd,
       force,
@@ -57,10 +57,8 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
       metadata: true,
       throw: false,
     }),
-    new Promise<Packument>(
-      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
-    ),
-  ]) as PackageVersionsInfoWithMetadata
+    `Timeout requesting "${spec}"`,
+  ) as PackageVersionsInfoWithMetadata
 
   if ('error' in data)
     throw new Error(`Failed to fetch package "${spec}": ${data.error}`)
@@ -69,20 +67,34 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
 }
 
 export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
-  const meta = await Promise.race([
+  const meta = await withTimeout(
     fetchWithUserAgent(new URL(`${name}/meta.json`, JSR_API_REGISTRY), {
       headers: {
         accept: 'application/json',
       },
     }).then(r => r.json()),
-    new Promise<JsrPackageMeta>(
-      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${name}"`)), TIMEOUT),
-    ),
-  ]) as JsrPackageMeta
+    `Timeout requesting "${name}"`,
+  ) as JsrPackageMeta
 
   return {
     versions: Object.keys(meta.versions),
     tags: { latest: meta.latest },
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), TIMEOUT)
+      }),
+    ])
+  }
+  finally {
+    clearTimeout(timer)
   }
 }
 
