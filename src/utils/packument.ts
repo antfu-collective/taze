@@ -56,6 +56,7 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
       fetch: fetchWithUserAgent,
       metadata: true,
       throw: false,
+      retry: 4,
     }),
     new Promise<Packument>(
       (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
