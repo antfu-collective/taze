@@ -1,10 +1,11 @@
 import type { PackageVersionsInfoWithMetadata } from 'get-npm-meta'
-import type { JsrPackageMeta, PackageData } from '../types'
+import type { JsrPackageMeta, PackageData, RetryOptions } from '../types'
 import process from 'node:process'
 import { getVersions } from 'get-npm-meta'
 import { fetch as ofetch } from 'ofetch'
 
 const TIMEOUT = 5000
+const DEFAULT_RETRIES = 4
 const JSR_API_REGISTRY = 'https://jsr.io/'
 const USER_AGENT = `taze@npm node/${process.version}`
 
@@ -48,7 +49,7 @@ const fetchWithUserAgent: typeof fetch = (input, init) => {
   return ofetch(input, { ...init, headers })
 }
 
-export async function fetchPackage(spec: string, force: boolean = false, cwd?: string): Promise<PackageData> {
+export async function fetchPackage(spec: string, force: boolean = false, cwd?: string, retry: number | false | RetryOptions = DEFAULT_RETRIES): Promise<PackageData> {
   const data = await Promise.race([
     getVersions(spec, {
       cwd,
@@ -56,7 +57,8 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
       fetch: fetchWithUserAgent,
       metadata: true,
       throw: false,
-      retry: 4,
+      // an object without an explicit count should still retry 4 times by default
+      retry: typeof retry === 'object' ? { retries: DEFAULT_RETRIES, ...retry } : retry,
     }),
     new Promise<Packument>(
       (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),

@@ -1,8 +1,11 @@
+import type { RetryOptions } from 'get-npm-meta'
 import type { Agent } from 'package-manager-detector'
 import type { PnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import type { Document } from 'yaml'
 import type { MODE_CHOICES } from './constants'
 import type { SortOption } from './utils/sort'
+
+export type { RetryOptions }
 
 export type RangeMode = typeof MODE_CHOICES[number]
 export type PackageMode = Exclude<RangeMode, 'default'> | 'ignore'
@@ -140,6 +143,17 @@ export interface CheckOptions extends CommonOptions {
    * @default 10
    */
   concurrency?: number
+  /**
+   * Retry behavior when fetching package metadata from the registry fails
+   *
+   * Can be:
+   * - a number for simple retry count
+   * - `false` to disable retries
+   * - a `RetryOptions` object for fine-grained control
+   *
+   * @default 4
+   */
+  retry?: number | false | RetryOptions
   /**
    * Group dependencies by source, e.g. dependencies, devDependencies, etc.
    *
