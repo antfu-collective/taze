@@ -177,6 +177,7 @@ it('resolveDependency', async () => {
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript', 'npm:typescript@^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@5.0.0', '^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('foo@1>typescript', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@>=4.0.0 <5.0.0', '^4.0.0'), options, filter)).update)
 
   // provenance downgrade
   expect(await resolveDependency({
