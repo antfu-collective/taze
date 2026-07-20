@@ -1,4 +1,6 @@
 ignoreWorkspaceRootCheck: true
+minimumReleaseAgeExclude:
+  - verkit@0.1.2
 shellEmulator: true
 
 trustPolicy: no-downgrade
@@ -21,16 +23,15 @@ catalogs:
     '@posva/prompts': ^2.4.4
     ansis: ^4.3.0
     cli-progress: ^3.12.0
-    debug: ^4.4.3
     deepmerge: ^4.3.1
     detect-indent: ^7.0.2
     empathic: ^2.0.1
     get-npm-meta: ^0.1.2
-    semver-es: ^0.1.1
   prod:
     '@antfu/ni': ^30.1.0
     '@henrygd/queue': ^1.2.0
     cac: ^7.0.0
+    obug: ^2.1.4
     ofetch: ^1.5.1
     package-manager-detector: ^1.6.0
     pathe: ^2.0.3
@@ -39,10 +40,10 @@ catalogs:
     tinyexec: ^1.2.2
     tinyglobby: ^0.2.16
     unconfig: ^7.5.0
+    verkit: ^0.1.2
     yaml: ^2.9.0
   types:
     '@types/cli-progress': ^3.11.6
-    '@types/debug': ^4.1.13
     '@types/node': ^25.9.1
 allowBuilds:
   esbuild: true
