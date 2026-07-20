@@ -187,7 +187,7 @@ it('resolveDependency', async () => {
     name: '@test-zone/provenance',
     provenanceDowngraded: true,
     currentVersion: '0.0.1',
-    currentProvenance: 'trustedPublisher',
+    currentProvenance: true,
     targetVersion: '0.0.2',
     targetProvenance: undefined,
   })
