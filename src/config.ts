@@ -1,13 +1,13 @@
 import type { CheckOptions, CommonOptions } from './types'
 import process from 'node:process'
 import { toArray } from '@antfu/utils'
-import _debug from 'debug'
 import deepmerge from 'deepmerge'
+import { createDebug } from 'obug'
 import { createConfigLoader } from 'unconfig'
 import { DEFAULT_CHECK_OPTIONS } from './constants'
 import { detectMaturityConfig } from './utils/detectMaturity'
 
-const debug = _debug('taze:config')
+const debug = createDebug('taze:config')
 
 function normalizeConfig(options: CommonOptions) {
   // interop

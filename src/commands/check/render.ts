@@ -6,7 +6,7 @@ import type {
   ResolvedDepChange,
 } from '../../types'
 import c from 'ansis'
-import { minVersion } from 'semver-es'
+import { findMinimumForRange } from 'verkit'
 import {
   colorizeNodeCompatibility,
   colorizeVersionDiff,
@@ -53,7 +53,7 @@ export function renderChange(
     update && timediff
       ? timeDifference(change.targetVersionTime)
       : '',
-    (change.latestVersionAvailable && minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
+    (change.latestVersionAvailable && findMinimumForRange(change.targetVersion) !== change.latestVersionAvailable)
       ? c.dim.magenta`(${change.latestVersionAvailable} available)`
       : '',
     nodecompat

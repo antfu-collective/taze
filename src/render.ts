@@ -4,7 +4,6 @@ import process from 'node:process'
 import readline from 'node:readline'
 import { stripVTControlCharacters } from 'node:util'
 import c from 'ansis'
-import { SemVer } from 'semver-es'
 import { getDiff } from './io/resolves'
 
 import { DiffColorMap } from './utils/diff'
@@ -93,7 +92,7 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
 
   let diffType = null
   try {
-    diffType = getDiff(new SemVer(from), new SemVer(to))
+    diffType = getDiff(from, to)
   }
   catch {
   }

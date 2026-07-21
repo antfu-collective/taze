@@ -1,12 +1,11 @@
-import type { SemVer } from 'semver-es'
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, Protocol, RangeMode, RawDep, ResolvedDepChange } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
 import process from 'node:process'
 import { newQueue } from '@henrygd/queue'
-import _debug from 'debug'
+import { createDebug } from 'obug'
 import { resolve } from 'pathe'
-import { eq, gt, lt, minVersion, satisfies } from 'semver-es'
+import { findMinimumForRange, isEqual, isGreater, isLess, satisfies } from 'verkit'
 import { diffSorter } from '../filters/diff-sorter'
 import { getMaturityPeriodExcludeRanges, getPackageMode, isVersionMaturityPeriodExcluded } from '../utils/config'
 import { queueContext } from '../utils/context'
@@ -16,8 +15,8 @@ import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
 import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
 const debug = {
-  cache: _debug('taze:cache'),
-  resolve: _debug('taze:resolve'),
+  cache: createDebug('taze:cache'),
+  resolve: createDebug('taze:resolve'),
 }
 
 let cache: Record<string, { cacheTime: number, data: PackageData }> = {}
@@ -147,9 +146,9 @@ export function getVersionOfTag(dep: ResolvedDepChange, tag: string, options: Ch
   return filteredVersions.includes(version) ? version : undefined
 }
 
-export function getLatestVersionAvailable(dep: ResolvedDepChange, targetVersion: string | SemVer, options: CheckOptions) {
+export function getLatestVersionAvailable(dep: ResolvedDepChange, targetVersion: string, options: CheckOptions) {
   const version = getVersionOfRange(dep, 'latest', options)
-  return version && gt(version, targetVersion) ? version : undefined
+  return version && isGreater(version, targetVersion) ? version : undefined
 }
 
 export function updateTargetVersion(
@@ -175,7 +174,7 @@ export function updateTargetVersion(
     = !!(dep.currentProvenance && !dep.targetProvenance) // trusted -> none, provenance -> none
       || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
 
-  if (versionLocked && eq(dep.currentVersion, dep.targetVersion)) {
+  if (versionLocked && isEqual(dep.currentVersion, dep.targetVersion)) {
     // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
     // - but this mode will always ignore the locked pkgs
     // - so we need to reset the target
@@ -188,12 +187,12 @@ export function updateTargetVersion(
   }
 
   try {
-    const current = minVersion(dep.currentVersion)!
-    const target = minVersion(dep.targetVersion)!
+    const current = findMinimumForRange(dep.currentVersion)!
+    const target = findMinimumForRange(dep.targetVersion)!
 
-    dep.currentVersionTime = dep.pkgData.time?.[current.toString()]
+    dep.currentVersionTime = dep.pkgData.time?.[current]
     dep.diff = getDiff(current, target)
-    dep.update = dep.diff !== null && lt(current, target)
+    dep.update = dep.diff !== null && isLess(current, target)
   }
   catch (e) {
     if (!forgiving)
@@ -204,8 +203,8 @@ export function updateTargetVersion(
   }
 }
 
-export function getDiff(current: SemVer, target: SemVer): DiffType {
-  if (eq(current, target))
+export function getDiff(current: string, target: string): DiffType {
+  if (isEqual(current, target))
     return null
 
   const tilde = satisfies(target, `~${current}`, { includePrerelease: true })
@@ -321,7 +320,7 @@ export async function resolveDependency(
   }
 
   try {
-    const targetVersion = minVersion(target || dep.targetVersion)
+    const targetVersion = findMinimumForRange(target || dep.targetVersion)
     if (targetVersion)
       dep.latestVersionAvailable = getLatestVersionAvailable(dep, targetVersion, options)
 
@@ -330,11 +329,11 @@ export async function resolveDependency(
       const currentNodeVersion = process.version
       const { nodeSemver } = dep.pkgData
       if (nodeSemver
-        && targetVersion?.version
-        && targetVersion?.version in nodeSemver) {
+        && targetVersion
+        && targetVersion in nodeSemver) {
         dep.nodeCompatibleVersion = {
-          compatible: satisfies(currentNodeVersion, nodeSemver[targetVersion?.version]),
-          semver: nodeSemver[targetVersion?.version],
+          compatible: satisfies(currentNodeVersion, nodeSemver[targetVersion]),
+          semver: nodeSemver[targetVersion],
         }
       }
     }

@@ -1,6 +1,5 @@
 import type { CheckOptions, DependencyFilter, RawDep, ResolvedDepChange } from '../src'
 import process from 'node:process'
-import { SemVer } from 'semver-es'
 import { expect, it } from 'vitest'
 import { resolveDependency } from '../src'
 import { getDiff, getLatestVersionAvailable, getVersionOfTag } from '../src/io/resolves'
@@ -188,7 +187,7 @@ it('resolveDependency', async () => {
     name: '@test-zone/provenance',
     provenanceDowngraded: true,
     currentVersion: '0.0.1',
-    currentProvenance: 'trustedPublisher',
+    currentProvenance: true,
     targetVersion: '0.0.2',
     targetProvenance: undefined,
   })
@@ -196,25 +195,25 @@ it('resolveDependency', async () => {
 
 it('getDiff', () => {
   // normal
-  expect(getDiff(new SemVer('1.2.3'), new SemVer('1.2.3'))).toBe(null)
-  expect(getDiff(new SemVer('1.2.3'), new SemVer('1.2.4'))).toBe('patch')
-  expect(getDiff(new SemVer('1.2.3'), new SemVer('1.3.3'))).toBe('minor')
-  expect(getDiff(new SemVer('1.2.3'), new SemVer('2.2.3'))).toBe('major')
+  expect(getDiff('1.2.3', '1.2.3')).toBe(null)
+  expect(getDiff('1.2.3', '1.2.4')).toBe('patch')
+  expect(getDiff('1.2.3', '1.3.3')).toBe('minor')
+  expect(getDiff('1.2.3', '2.2.3')).toBe('major')
 
   // 0.x
-  expect(getDiff(new SemVer('0.1.2'), new SemVer('0.1.3'))).toBe('patch')
-  expect(getDiff(new SemVer('0.1.2'), new SemVer('0.2.2'))).toBe('major')
-  expect(getDiff(new SemVer('0.0.3'), new SemVer('0.0.4'))).toBe('major')
+  expect(getDiff('0.1.2', '0.1.3')).toBe('patch')
+  expect(getDiff('0.1.2', '0.2.2')).toBe('major')
+  expect(getDiff('0.0.3', '0.0.4')).toBe('major')
 
   // pre
-  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.2.3'))).toBe('patch')
-  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.2.4'))).toBe('patch')
-  expect(getDiff(new SemVer('1.2.2'), new SemVer('1.2.3-a'))).toBe('patch')
-  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.2.3-b'))).toBe('patch')
-  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.2.4-b'))).toBe('patch')
-  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('1.3.3-a'))).toBe('minor')
-  expect(getDiff(new SemVer('1.2.3-a'), new SemVer('2.2.3-a'))).toBe('major')
-  expect(getDiff(new SemVer('2.0.0-a'), new SemVer('2.0.0'))).toBe('patch')
+  expect(getDiff('1.2.3-a', '1.2.3')).toBe('patch')
+  expect(getDiff('1.2.3-a', '1.2.4')).toBe('patch')
+  expect(getDiff('1.2.2', '1.2.3-a')).toBe('patch')
+  expect(getDiff('1.2.3-a', '1.2.3-b')).toBe('patch')
+  expect(getDiff('1.2.3-a', '1.2.4-b')).toBe('patch')
+  expect(getDiff('1.2.3-a', '1.3.3-a')).toBe('minor')
+  expect(getDiff('1.2.3-a', '2.2.3-a')).toBe('major')
+  expect(getDiff('2.0.0-a', '2.0.0')).toBe('patch')
 })
 
 it('filters interactive candidate versions by maturity period', () => {

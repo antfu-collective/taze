@@ -1,5 +1,5 @@
 import type { RangeMode } from '../types'
-import { gt, lte, minVersion, satisfies, validRange } from 'semver-es'
+import { findMinimumForRange, isGreater, isLessOrEqual, normalizeRange, satisfies } from 'verkit'
 
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
@@ -28,13 +28,13 @@ export function getVersionRangePrefix(v: string) {
 }
 
 export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest' | 'newest' | 'stable' | 'next'>) {
-  if (!validRange(version))
+  if (!normalizeRange(version))
     return null
 
   if (mode === 'default')
     return version
 
-  const min = minVersion(version)
+  const min = findMinimumForRange(version)
   if (!min)
     return null
 
@@ -84,7 +84,7 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       .filter(ver => !ver.includes('-'))
       .forEach((ver) => {
         if (satisfies(ver, range)) {
-          if (!version || gt(ver, version))
+          if (!version || isGreater(ver, version))
             version = ver
         }
       })
@@ -103,8 +103,8 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
 
     versions.forEach((ver) => {
       if (satisfies(ver, range)) {
-        if (!maxVersion || lte(ver, maxVersion)) {
-          if (!version || gt(ver, version))
+        if (!maxVersion || isLessOrEqual(ver, maxVersion)) {
+          if (!version || isGreater(ver, version))
             version = ver
         }
       }

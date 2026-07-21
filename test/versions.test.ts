@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { getPackageData } from '../src/io/resolves'
-import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
+import { changeVersionRange, filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
 
 it('getVersionRange', () => {
   expect('~').toBe(getVersionRangePrefix('~1.2.3'))
@@ -27,6 +27,12 @@ it('getVersionRange', () => {
   expect('*').toBe(getVersionRangePrefix('x'))
 })
 
+it('changeVersionRange', () => {
+  expect(changeVersionRange('^1.2.3', 'patch')).toBe('~1.2.3')
+  expect(changeVersionRange('>1.2.3', 'minor')).toBe('^1.2.4')
+  expect(changeVersionRange('not-a-range', 'minor')).toBeNull()
+})
+
 it('getMaxSatisfying', async () => {
   const { versions, tags } = await getPackageData('typescript')
   const latest = tags.latest
@@ -36,8 +42,8 @@ it('getMaxSatisfying', async () => {
   expect(getMaxSatisfying(versions, '', 'default', tags)).toBeUndefined()
   expect(getMaxSatisfying(versions, '*', 'default', tags)).toBeUndefined()
   expect(getMaxSatisfying(versions, '6.0.0', 'default', tags)).toBeUndefined()
-  expect(latest).toBe(getMaxSatisfying(versions, '^6.0.0', 'default', tags))
-  expect(latest).toBe(getMaxSatisfying(versions, '>6.0.0', 'default', tags))
+  expect(latest).toBe(getMaxSatisfying(versions, '^7.0.0', 'default', tags))
+  expect(latest).toBe(getMaxSatisfying(versions, '>7.0.0', 'default', tags))
 
   // major
   expect(getMaxSatisfying(versions, '', 'major', tags)).not.toBeUndefined()
