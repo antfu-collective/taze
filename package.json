@@ -1,7 +1,7 @@
 {
   "name": "taze",
   "type": "module",
-  "version": "19.14.1",
+  "version": "19.15.0",
   "packageManager": "pnpm@11.15.1",
   "description": "A modern CLI tool that keeps your dependencies fresh in any repo and monorepo",
   "license": "MIT",
