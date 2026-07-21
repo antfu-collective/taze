@@ -68,9 +68,6 @@ catalogs:
     ofetch:
       specifier: ^1.5.1
       version: 1.5.1
-    package-manager-detector:
-      specifier: ^1.7.0
-      version: 1.7.0
     pathe:
       specifier: ^2.0.3
       version: 2.0.3
@@ -105,6 +102,7 @@ catalogs:
 
 overrides:
   fast-npm-meta: ^2.2.0
+  package-manager-detector: ^1.7.0
 
 importers:
 
@@ -126,7 +124,7 @@ importers:
         specifier: catalog:prod
         version: 1.5.1
       package-manager-detector:
-        specifier: catalog:prod
+        specifier: ^1.7.0
         version: 1.7.0
       pathe:
         specifier: catalog:prod
@@ -2187,9 +2185,6 @@ packages:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
 
-  package-manager-detector@1.6.0:
-    resolution: {integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==}
-
   package-manager-detector@1.7.0:
     resolution: {integrity: sha512-xg1eHpwYL/D/HEdWw2goFZP6vV0FH7W+PZ5rFkGjdIDLtxq7EkzBUeT3m+lndYCt8wKbmofUu1MUdMCXkCk9ZQ==}
 
@@ -2703,13 +2698,13 @@ snapshots:
 
   '@antfu/install-pkg@1.1.0':
     dependencies:
-      package-manager-detector: 1.6.0
+      package-manager-detector: 1.7.0
       tinyexec: 1.2.2
 
   '@antfu/ni@30.2.0':
     dependencies:
       fzf: 0.5.2
-      package-manager-detector: 1.6.0
+      package-manager-detector: 1.7.0
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
 
@@ -4641,8 +4636,6 @@ snapshots:
   p-locate@5.0.0:
     dependencies:
       p-limit: 3.1.0
-
-  package-manager-detector@1.6.0: {}
 
   package-manager-detector@1.7.0: {}
 

@@ -11,6 +11,7 @@ packages:
   - '!**/test/**'
 overrides:
   fast-npm-meta: ^2.2.0
+  package-manager-detector: ^1.7.0
 
 catalogs:
   dev:
