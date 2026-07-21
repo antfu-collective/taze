@@ -3,6 +3,7 @@ import type { JsrPackageMeta, PackageData } from '../types'
 import process from 'node:process'
 import { getVersions } from 'get-npm-meta'
 import { fetch as ofetch } from 'ofetch'
+import { getRegistriesEnv } from './registries'
 
 const TIMEOUT = 5000
 const JSR_API_REGISTRY = 'https://jsr.io/'
@@ -49,6 +50,11 @@ const fetchWithUserAgent: typeof fetch = (input, init) => {
 }
 
 export async function fetchPackage(spec: string, force: boolean = false, cwd?: string): Promise<PackageData> {
+  const registriesEnv = getRegistriesEnv(cwd)
+  const env = Object.keys(registriesEnv).length > 0
+    ? { ...process.env, ...registriesEnv }
+    : undefined
+
   const data = await Promise.race([
     getVersions(spec, {
       cwd,
@@ -56,6 +62,7 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
       fetch: fetchWithUserAgent,
       metadata: true,
       throw: false,
+      env,
     }),
     new Promise<Packument>(
       (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),

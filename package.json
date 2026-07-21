@@ -46,6 +46,7 @@
     "pathe": "catalog:prod",
     "pnpm-workspace-yaml": "catalog:prod",
     "restore-cursor": "catalog:prod",
+    "smol-toml": "catalog:prod",
     "tinyexec": "catalog:prod",
     "tinyglobby": "catalog:prod",
     "unconfig": "catalog:prod",
