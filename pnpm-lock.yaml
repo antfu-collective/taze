@@ -50,8 +50,8 @@ catalogs:
       specifier: ^2.0.1
       version: 2.0.1
     get-npm-meta:
-      specifier: ^0.1.2
-      version: 0.1.2
+      specifier: ^0.2.0
+      version: 0.2.0
   prod:
     '@antfu/ni':
       specifier: ^30.2.0
@@ -189,7 +189,7 @@ importers:
         version: 10.7.0(jiti@2.6.1)
       get-npm-meta:
         specifier: catalog:inlined
-        version: 0.1.2
+        version: 0.2.0
       taze:
         specifier: workspace:*
         version: 'link:'
@@ -1844,8 +1844,8 @@ packages:
   fzf@0.5.2:
     resolution: {integrity: sha512-Tt4kuxLXFKHy8KT40zwsUPUkg1CrsgY25FxA2U/j/0WgEDCk3ddc/zLTCCcbSHX9FcKtLuVaDGtGE/STWC+j3Q==}
 
-  get-npm-meta@0.1.2:
-    resolution: {integrity: sha512-iMKe4T1dAR4VEgAGGdxY/RQIokHgA3RcmcUsM/DSt0lGE65clXGV8lSPf6v0rKhks0cM2moLw5dyV5raZcQmdg==}
+  get-npm-meta@0.2.0:
+    resolution: {integrity: sha512-+MiqlNBBLxx1rlHUCZGoZF6QtKMhT4fcg+wRp6H8GX4qYD7mPRe7lDIq3+Va7s7YCaj00JHhwCTehs/IsMK3kg==}
 
   get-tsconfig@4.13.7:
     resolution: {integrity: sha512-7tN6rFgBlMgpBML5j8typ92BKFi2sFQvIdpAqLA2beia5avZDrMs0FLZiM5etShWq5irVyGcGMEA1jcDaK7A/Q==}
@@ -4129,9 +4129,10 @@ snapshots:
 
   fzf@0.5.2: {}
 
-  get-npm-meta@0.1.2:
+  get-npm-meta@0.2.0:
     dependencies:
       fast-npm-meta: 2.2.0
+      verkit: 0.1.2
 
   get-tsconfig@4.13.7:
     dependencies:
