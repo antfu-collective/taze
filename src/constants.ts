@@ -42,4 +42,5 @@ export const DEFAULT_CHECK_OPTIONS: CheckOptions = {
   group: true,
   includeLocked: false,
   nodecompat: true,
+  retry: 4,
 }

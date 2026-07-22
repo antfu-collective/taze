@@ -1,10 +1,11 @@
 import type { PackageVersionsInfoWithMetadata } from 'get-npm-meta'
-import type { JsrPackageMeta, PackageData } from '../types'
+import type { JsrPackageMeta, PackageData, RetryOptions } from '../types'
 import process from 'node:process'
 import { getVersions } from 'get-npm-meta'
 import { fetch as ofetch } from 'ofetch'
 
 const DEFAULT_REQUEST_TIMEOUT = 5000
+const DEFAULT_RETRIES = 4
 const JSR_API_REGISTRY = 'https://jsr.io/'
 const USER_AGENT = `taze@npm node/${process.version}`
 
@@ -74,13 +75,15 @@ async function withRequestTimeout<T>(name: string, timeout: number, run: (signal
   }
 }
 
-export async function fetchPackage(spec: string, force: boolean = false, cwd?: string, requestTimeout: number = DEFAULT_REQUEST_TIMEOUT): Promise<PackageData> {
+export async function fetchPackage(spec: string, force: boolean = false, cwd?: string, requestTimeout: number = DEFAULT_REQUEST_TIMEOUT, retry: number | false | RetryOptions = DEFAULT_RETRIES): Promise<PackageData> {
   const data = await withRequestTimeout(spec, requestTimeout, signal => getVersions(spec, {
     cwd,
     force,
     fetch: (input, init) => fetchWithUserAgent(input, { ...init, signal }),
     metadata: true,
     throw: false,
+    // an object without an explicit count should still retry 4 times by default
+    retry: typeof retry === 'object' ? { retries: DEFAULT_RETRIES, ...retry } : retry,
   })) as PackageVersionsInfoWithMetadata
 
   if ('error' in data)

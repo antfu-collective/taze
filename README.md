@@ -135,6 +135,10 @@ export default defineConfig({
   ],
   // fetch latest package info from registry without cache
   force: true,
+  // retry behavior when fetching package metadata fails:
+  // a number for retry count, `false` to disable, or an object for fine-grained
+  // control, e.g. { retries: 4, factor: 2, minTimeout: 1000, maxTimeout: 30_000, randomize: false }
+  retry: 4,
   // write to package.json
   write: true,
   // run `npm install` or `yarn install` right after bumping
