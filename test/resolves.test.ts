@@ -82,6 +82,61 @@ function makeResolvedDepForMaturityPeriod(): ResolvedDepChange {
   }
 }
 
+function makeResolvedDepWithMaturePrereleaseFallback(): ResolvedDepChange {
+  const now = new Date()
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+  return {
+    name: 'test-package',
+    currentVersion: '^1.2.5',
+    source: 'dependencies',
+    update: true,
+    targetVersion: '^1.2.5',
+    diff: null,
+    provenanceDowngraded: false,
+    pkgData: {
+      tags: {
+        latest: '1.3.0',
+        next: '1.3.0-rc.2',
+      },
+      versions: ['1.2.5', '1.3.0-rc.1', '1.3.0-rc.2', '1.3.0'],
+      time: {
+        '1.2.5': twoDaysAgo.toISOString(),
+        '1.3.0-rc.1': twoDaysAgo.toISOString(),
+        '1.3.0-rc.2': now.toISOString(),
+        '1.3.0': now.toISOString(),
+      },
+    },
+  }
+}
+
+function makeResolvedDepOnPrereleaseTrack(): ResolvedDepChange {
+  const now = new Date()
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+  return {
+    name: 'test-package',
+    currentVersion: '^2.0.0-rc.1',
+    source: 'dependencies',
+    update: true,
+    targetVersion: '^2.0.0-rc.1',
+    diff: null,
+    provenanceDowngraded: false,
+    pkgData: {
+      tags: {
+        latest: '2.0.0',
+      },
+      versions: ['2.0.0-rc.1', '2.0.0-rc.2', '2.0.0-rc.3', '2.0.0'],
+      time: {
+        '2.0.0-rc.1': twoDaysAgo.toISOString(),
+        '2.0.0-rc.2': twoDaysAgo.toISOString(),
+        '2.0.0-rc.3': twoDaysAgo.toISOString(),
+        '2.0.0': now.toISOString(),
+      },
+    },
+  }
+}
+
 it('resolveDependency', async () => {
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
@@ -261,6 +316,28 @@ it('filters interactive candidate versions by maturity period', () => {
   expect(getVersionOfTag(dep, 'latest', maturityOptions)).toBe('1.1.0')
   expect(getVersionOfTag(dep, 'stable', maturityOptions)).toBe('1.1.0')
   expect(getVersionOfTag(dep, 'beta', maturityOptions)).toBeUndefined()
+})
+
+it('does not offer mature prereleases when stable latest is blocked by maturity period', () => {
+  const dep = makeResolvedDepWithMaturePrereleaseFallback()
+  const maturityOptions = {
+    ...options,
+    maturityPeriod: 1,
+  }
+
+  expect(getVersionOfTag(dep, 'latest', maturityOptions)).toBe('1.2.5')
+  expect(getLatestVersionAvailable(dep, '1.2.5', maturityOptions)).toBeUndefined()
+})
+
+it('offers mature prereleases when current is on a prerelease track and stable latest is blocked by maturity period', () => {
+  const dep = makeResolvedDepOnPrereleaseTrack()
+  const maturityOptions = {
+    ...options,
+    maturityPeriod: 1,
+  }
+
+  expect(getVersionOfTag(dep, 'latest', maturityOptions)).toBe('2.0.0-rc.3')
+  expect(getLatestVersionAvailable(dep, '2.0.0-rc.1', maturityOptions)).toBe('2.0.0-rc.3')
 })
 
 it('excludes packages from the maturity period filter', () => {

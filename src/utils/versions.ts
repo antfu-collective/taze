@@ -1,5 +1,5 @@
 import type { RangeMode } from '../types'
-import { findMinimumForRange, isGreater, isLessOrEqual, normalizeRange, satisfies } from 'verkit'
+import { findMinimumForRange, getPrerelease, isGreater, isLessOrEqual, normalizeRange, satisfies } from 'verkit'
 
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
@@ -67,7 +67,24 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
   let version: string | null = null
 
   if (mode === 'latest') {
-    version = versions.includes(tags.latest) ? tags.latest : versions.at(-1) ?? null
+    const latest = tags.latest
+    if (versions.includes(latest)) {
+      version = latest
+    }
+    else {
+      const currentMin = findMinimumForRange(current)
+      const currentIsPrerelease = !!(currentMin && getPrerelease(currentMin))
+      const latestIsPrerelease = !!(latest && getPrerelease(latest))
+      // only consider prerelease candidates if either the currently installed
+      // version or the registry's `latest` tag is itself on a prerelease track
+      const allowPrerelease = currentIsPrerelease || latestIsPrerelease
+
+      const candidates = versions.filter(ver =>
+        (allowPrerelease || !getPrerelease(ver)) && (!latest || isLessOrEqual(ver, latest)),
+      )
+
+      version = candidates.at(-1) ?? null
+    }
   }
   else if (mode === 'newest') {
     version = versions.at(-1)!
