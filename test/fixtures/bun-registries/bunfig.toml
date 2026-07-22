@@ -1,0 +1,6 @@
+[install]
+registry = "https://registry.example.com/"
+
+[install.scopes]
+myorg = { url = "https://npm.myorg.com/", token = "$TAZE_TEST_BUN_TOKEN" }
+another = "https://npm.another.dev/"

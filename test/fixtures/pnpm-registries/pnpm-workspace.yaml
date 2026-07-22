@@ -1,0 +1,7 @@
+packages:
+  - '!**/test/**'
+
+registries:
+  default: https://registry.npmjs.org/
+  '@my-scope': https://npm.example.com/
+  '@another': https://npm.another.dev/
