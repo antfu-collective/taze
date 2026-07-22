@@ -30,6 +30,7 @@ cli
   .option('--install, -i', 'install directly after bumping')
   .option('--update, -u', 'update directly after bumping')
   .option('--all, -a', 'show all packages up to date info')
+  .option('--json', 'output update info as JSON (implies non-interactive)')
   .option('--sort <type>', `sort by most outdated absolute or relative to dependency (${SORT_CHOICES.join('|')})`)
   .option('--group', 'group dependencies by source on display')
   .option('--include-locked, -l', 'include locked dependencies & devDependencies')

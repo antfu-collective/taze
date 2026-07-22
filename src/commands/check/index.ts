@@ -13,11 +13,11 @@ import { CheckPackages } from '../../api/check'
 import { writePackage } from '../../io/packages'
 import { createMultiProgressBar } from '../../log'
 import { promptInteractive } from './interactive'
-import { outputErr, renderPackages } from './render'
+import { outputErr, outputJson, renderPackages } from './render'
 
 export async function check(options: CheckOptions) {
   let exitCode = 0
-  const bars = options.loglevel === 'silent' ? null : createMultiProgressBar()
+  const bars = (options.loglevel === 'silent' || options.json) ? null : createMultiProgressBar()
   let packagesBar: SingleBar | undefined
   const depBar = bars?.create(1, 0)
 
@@ -53,6 +53,27 @@ export async function check(options: CheckOptions) {
   resolvePkgs = packages
 
   bars?.stop()
+
+  // In JSON mode we only report the resolved update info. `interactive` is
+  // ignored and no tables, tips, install/update steps are printed.
+  if (options.json) {
+    outputJson(resolvePkgs, options)
+
+    const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
+
+    if (options.write) {
+      for (const pkg of resolvePkgs) {
+        for (const addon of (options.addons || builtinAddons))
+          await addon.postprocess?.(pkg, options)
+        await writePackage(pkg, options)
+      }
+    }
+
+    if (hasChanges && options.failOnOutdated)
+      exitCode = 1
+
+    return exitCode
+  }
 
   if (options.interactive)
     resolvePkgs = await promptInteractive(resolvePkgs, options)

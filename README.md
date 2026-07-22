@@ -111,6 +111,16 @@ taze stable --maturity-period 14
 > [!NOTE]
 > This kind of filtering is sometimes called `cooldown` or `minimumReleaseAge` by other tools.
 
+### JSON Output
+
+Pass `--json` to output the resolved update info as JSON to stdout instead of the rendered table. This is handy for scripting and CI.
+
+```bash
+taze --json
+```
+
+When `--json` is used, `--interactive` is ignored and no progress bars, tables, or tips are printed. By default only dependencies with an available update are included; combine it with `--all` to include up-to-date dependencies too. It can still be combined with `-w` to write the changes back to `package.json`.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.
