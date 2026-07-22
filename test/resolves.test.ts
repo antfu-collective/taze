@@ -2,7 +2,7 @@ import type { CheckOptions, DependencyFilter, RawDep, ResolvedDepChange } from '
 import process from 'node:process'
 import { expect, it } from 'vitest'
 import { resolveDependency } from '../src'
-import { getDiff, getLatestVersionAvailable, getVersionOfTag } from '../src/io/resolves'
+import { getDiff, getLatestVersionAvailable, getVersionOfTag, updateTargetVersion } from '../src/io/resolves'
 
 const filter: DependencyFilter = () => true
 
@@ -179,20 +179,51 @@ it('resolveDependency', async () => {
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@>=4.0.0 <5.0.0', '^4.0.0'), options, filter)).update)
 
   // provenance downgrade
-  expect(await resolveDependency({
+  const provenanceResult = await resolveDependency({
     name: '@test-zone/provenance',
     currentVersion: '0.0.1',
     source: 'dependencies',
     update: true,
-  }, options, filter)).toMatchObject({
+  }, options, filter)
+
+  expect(provenanceResult).toMatchObject({
     name: '@test-zone/provenance',
     provenanceDowngraded: true,
     currentVersion: '0.0.1',
-    currentProvenance: true,
     targetVersion: '0.0.2',
     targetProvenance: undefined,
   })
+
+  expect([true, 'trustedPublisher']).toContain(provenanceResult.currentProvenance)
 }, 10000)
+
+it('marks trusted publisher provenance downgrade', () => {
+  const dep: ResolvedDepChange = {
+    name: 'trusted-publisher-package',
+    currentVersion: '1.0.0',
+    source: 'dependencies',
+    update: true,
+    targetVersion: '1.0.0',
+    diff: null,
+    provenanceDowngraded: false,
+    pkgData: {
+      tags: {
+        latest: '1.1.0',
+      },
+      versions: ['1.0.0', '1.1.0'],
+      provenance: {
+        '1.0.0': 'trustedPublisher',
+        '1.1.0': true,
+      },
+    },
+  }
+
+  updateTargetVersion(dep, '1.1.0', true, true)
+
+  expect(dep.currentProvenance).toBe('trustedPublisher')
+  expect(dep.targetProvenance).toBe(true)
+  expect(dep.provenanceDowngraded).toBe(true)
+})
 
 it('getDiff', () => {
   // normal
