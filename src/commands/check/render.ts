@@ -1,12 +1,14 @@
 import type {
   CheckOptions,
+  DepType,
   DiffType,
   InteractiveContext,
   PackageMeta,
   ResolvedDepChange,
 } from '../../types'
+import { stripVTControlCharacters } from 'node:util'
 import c from 'ansis'
-import { minVersion } from 'semver-es'
+import { findMinimumForRange } from 'verkit'
 import {
   colorizeNodeCompatibility,
   colorizeVersionDiff,
@@ -53,7 +55,7 @@ export function renderChange(
     update && timediff
       ? timeDifference(change.targetVersionTime)
       : '',
-    (change.latestVersionAvailable && minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
+    (change.latestVersionAvailable && findMinimumForRange(change.targetVersion) !== change.latestVersionAvailable)
       ? c.dim.magenta`(${change.latestVersionAvailable} available)`
       : '',
     nodecompat
@@ -207,6 +209,67 @@ export function outputErr(errLines: string[]) {
   console.error()
   console.error(errLines.join('\n'))
   console.error()
+}
+
+export interface JsonDepChange {
+  name: string
+  aliasName?: string
+  source: DepType
+  currentVersion: string
+  targetVersion: string
+  diff: DiffType
+  update: boolean
+  latestVersionAvailable?: string
+  currentVersionTime?: string
+  targetVersionTime?: string
+  error?: string
+}
+
+export interface JsonPackage {
+  name: string
+  type: PackageMeta['type']
+  filepath: string
+  relative: string
+  resolved: JsonDepChange[]
+}
+
+export interface JsonOutput {
+  packages: JsonPackage[]
+}
+
+export function getJsonOutput(resolvePkgs: PackageMeta[], options: CheckOptions): JsonOutput {
+  const packages = resolvePkgs.map((pkg): JsonPackage => {
+    const resolved = (options.all ? pkg.resolved : pkg.resolved.filter(i => i.update))
+      .map((change): JsonDepChange => ({
+        name: change.name,
+        ...(change.aliasName ? { aliasName: change.aliasName } : {}),
+        source: change.source,
+        currentVersion: change.currentVersion,
+        targetVersion: change.targetVersion,
+        diff: change.diff,
+        update: change.update,
+        ...(change.latestVersionAvailable ? { latestVersionAvailable: change.latestVersionAvailable } : {}),
+        ...(change.currentVersionTime ? { currentVersionTime: change.currentVersionTime } : {}),
+        ...(change.targetVersionTime ? { targetVersionTime: change.targetVersionTime } : {}),
+        ...(change.resolveError != null ? { error: change.resolveError.toString() } : {}),
+      }))
+
+    return {
+      // package names may contain ANSI colors (e.g. global packages)
+      name: stripVTControlCharacters(pkg.name ?? ''),
+      type: pkg.type,
+      filepath: pkg.filepath,
+      relative: pkg.relative,
+      resolved,
+    }
+  })
+
+  return { packages }
+}
+
+export function outputJson(resolvePkgs: PackageMeta[], options: CheckOptions) {
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(getJsonOutput(resolvePkgs, options), null, 2))
 }
 
 export function renderPackages(resolvePkgs: PackageMeta[], options: CheckOptions) {

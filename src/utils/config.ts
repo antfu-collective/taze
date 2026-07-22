@@ -1,6 +1,6 @@
 import type { CheckOptions } from '../types'
 import { toArray } from '@antfu/utils'
-import { satisfies } from 'semver-es'
+import { satisfies } from 'verkit'
 import { filterToRegex } from './dependenciesFilter'
 
 export function getPackageMode(pkgName: string, options: CheckOptions) {

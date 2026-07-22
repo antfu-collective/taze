@@ -9,7 +9,7 @@ import { resolvePackage } from '../../io/resolves'
 import { createMultiProgressBar } from '../../log'
 import { createDependenciesFilter } from '../../utils/dependenciesFilter'
 import { promptInteractive } from './interactive'
-import { outputErr, renderPackages } from './render'
+import { outputErr, outputJson, renderPackages } from './render'
 
 interface NpmOut {
   dependencies: {
@@ -38,7 +38,7 @@ export async function checkGlobal(options: CheckOptions) {
   ])
   const pkgs = globalPkgs.flat(1)
 
-  const bars = options.loglevel === 'silent'
+  const bars = (options.loglevel === 'silent' || options.json)
     ? null
     : createMultiProgressBar()
   await Promise.all(pkgs.map(async (pkg) => {
@@ -53,6 +53,18 @@ export async function checkGlobal(options: CheckOptions) {
   bars?.stop()
 
   resolvePkgs = pkgs
+
+  // In JSON mode we only report the resolved update info. `interactive` is
+  // ignored and no tables, tips, or install steps are printed.
+  if (options.json) {
+    outputJson(resolvePkgs, options)
+
+    const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
+    if (hasChanges && options.failOnOutdated)
+      exitCode = 1
+
+    return exitCode
+  }
 
   if (options.interactive)
     resolvePkgs = await promptInteractive(resolvePkgs, options) as GlobalPackageMeta[]

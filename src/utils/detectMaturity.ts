@@ -1,10 +1,10 @@
 import { promises as fs } from 'node:fs'
-import _debug from 'debug'
 import { up as findUp } from 'empathic/find'
+import { createDebug } from 'obug'
 import { detect } from 'package-manager-detector'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 
-const debug = _debug('taze:config')
+const debug = createDebug('taze:config')
 
 // pnpm v11+ enables `minimumReleaseAge` by default at 1440 minutes (1 day).
 // See https://pnpm.io/settings#minimumreleaseage
@@ -113,10 +113,15 @@ export async function detectMaturityConfig(cwd: string): Promise<DetectedMaturit
   const pnpmYamlPath = findUp('pnpm-workspace.yaml', { cwd })
   const pnpmYaml = await readYamlTop(pnpmYamlPath)
   const pnpmExclude = readStringList(pnpmYaml?.minimumReleaseAgeExclude)
-  if (pnpmYaml && typeof pnpmYaml.minimumReleaseAge === 'number' && pnpmYaml.minimumReleaseAge > 0) {
-    const days = pnpmYaml.minimumReleaseAge / 1440
-    debug(`maturityPeriod=${days}d from ${pnpmYamlPath} (minimumReleaseAge=${pnpmYaml.minimumReleaseAge}m, minimumReleaseAgeExclude=${JSON.stringify(pnpmExclude)})`)
-    return { maturityPeriod: days, maturityPeriodExclude: pnpmExclude }
+  if (pnpmYaml && typeof pnpmYaml.minimumReleaseAge === 'number') {
+    if (pnpmYaml.minimumReleaseAge > 0) {
+      const days = pnpmYaml.minimumReleaseAge / 1440
+      debug(`maturityPeriod=${days}d from ${pnpmYamlPath} (minimumReleaseAge=${pnpmYaml.minimumReleaseAge}m, minimumReleaseAgeExclude=${JSON.stringify(pnpmExclude)})`)
+      return { maturityPeriod: days, maturityPeriodExclude: pnpmExclude }
+    }
+
+    debug(`maturityPeriod disabled from ${pnpmYamlPath} (minimumReleaseAge=${pnpmYaml.minimumReleaseAge}m, minimumReleaseAgeExclude=${JSON.stringify(pnpmExclude)})`)
+    return { maturityPeriodExclude: pnpmExclude }
   }
 
   // 2. .yarnrc.yml → npmMinimalAgeGate (duration)

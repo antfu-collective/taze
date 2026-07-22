@@ -4,7 +4,6 @@ import process from 'node:process'
 import readline from 'node:readline'
 import { stripVTControlCharacters } from 'node:util'
 import c from 'ansis'
-import { SemVer } from 'semver-es'
 import { getDiff } from './io/resolves'
 
 import { DiffColorMap } from './utils/diff'
@@ -14,6 +13,9 @@ export const FIG_UNCHECK = c.gray('◌')
 export const FIG_POINTER = c.cyan('❯ ')
 export const FIG_NO_POINTER = '  '
 export const FIG_BLOCK = c.bold.dim.gray('┃')
+const ERASE_LINE_SUFFIX = '\u001B[K'
+const HIDE_CURSOR_SEQUENCE = '\u001B[?25l'
+const SHOW_CURSOR_SEQUENCE = '\u001B[?25h'
 
 export function visualLength(str: string) {
   if (str === '')
@@ -93,7 +95,7 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
 
   let diffType = null
   try {
-    diffType = getDiff(new SemVer(from), new SemVer(to))
+    diffType = getDiff(from, to)
   }
   catch {
   }
@@ -123,14 +125,49 @@ export function clearInteractiveScreen() {
   console.clear()
 }
 
-export function writeInteractiveScreen(lines: string[]) {
-  clearInteractiveScreen()
+export function hideInteractiveCursor() {
+  const hasTtyOutput = process.stdout.isTTY
 
-  const output = lines.join('\n')
-  if (output === '')
+  if (!hasTtyOutput)
     return
 
-  process.stdout.write(`${output}\n`)
+  process.stdout.write(HIDE_CURSOR_SEQUENCE)
+}
+
+export function showInteractiveCursor() {
+  const hasTtyOutput = process.stdout.isTTY
+
+  if (!hasTtyOutput)
+    return
+
+  process.stdout.write(SHOW_CURSOR_SEQUENCE)
+}
+
+export function writeInteractiveScreen(lines: string[]) {
+  const output = lines.join('\n')
+  const hasTtyOutput = process.stdout.isTTY
+
+  if (!hasTtyOutput) {
+    clearInteractiveScreen()
+
+    if (output === '')
+      return
+
+    process.stdout.write(`${output}\n`)
+
+    return
+  }
+
+  readline.cursorTo(process.stdout, 0, 0)
+
+  if (output !== '') {
+    const outputLines = lines.map(line => `${line}${ERASE_LINE_SUFFIX}`)
+    const ttyOutput = outputLines.join('\n')
+
+    process.stdout.write(`${ttyOutput}\n`)
+  }
+
+  readline.clearScreenDown(process.stdout)
 }
 
 export interface SliceRenderLine {

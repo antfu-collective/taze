@@ -134,6 +134,15 @@ export interface CheckOptions extends CommonOptions {
   all?: boolean
   sort?: SortOption
   interactive?: boolean
+  /**
+   * Output update info as JSON to stdout.
+   *
+   * When enabled, `interactive` is ignored and no progress bars,
+   * tables, or tips are printed.
+   *
+   * @default false
+   */
+  json?: boolean
   install?: boolean
   update?: boolean
   global?: boolean
@@ -143,6 +152,12 @@ export interface CheckOptions extends CommonOptions {
    * @default 10
    */
   concurrency?: number
+  /**
+   * Request timeout in milliseconds when fetching package metadata
+   *
+   * @default 5000
+   */
+  requestTimeout?: number
   /**
    * Retry behavior when fetching package metadata from the registry fails
    *
