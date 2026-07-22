@@ -169,7 +169,9 @@ export async function check(options: CheckOptions) {
       const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
 
       console.log(
-        c.yellow`ℹ changes written to ${fileTypeName}, run ${c.cyan`${packageManager} i`} to install updates.`,
+        packageManager
+          ? c.yellow`ℹ changes written to ${fileTypeName}, run ${c.cyan`${packageManager} i`} to install updates.`
+          : c.yellow`ℹ changes written to ${fileTypeName}, install updates with your preferred package manager.`,
       )
     }
 

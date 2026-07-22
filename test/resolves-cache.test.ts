@@ -36,7 +36,7 @@ it('dedupes concurrent requests for the same package', async () => {
   const secondRequest = getPackageData('typescript', 'npm', '/tmp', 15000)
 
   expect(fetchPackageMock).toHaveBeenCalledTimes(1)
-  expect(fetchPackageMock).toHaveBeenCalledWith('typescript', false, '/tmp', 15000)
+  expect(fetchPackageMock).toHaveBeenCalledWith('typescript', false, '/tmp', 15000, undefined)
 
   resolveFetch?.(packageData)
 
