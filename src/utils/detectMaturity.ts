@@ -1,10 +1,10 @@
 import { promises as fs } from 'node:fs'
-import _debug from 'debug'
 import { up as findUp } from 'empathic/find'
+import { createDebug } from 'obug'
 import { detect } from 'package-manager-detector'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 
-const debug = _debug('taze:config')
+const debug = createDebug('taze:config')
 
 // pnpm v11+ enables `minimumReleaseAge` by default at 1440 minutes (1 day).
 // See https://pnpm.io/settings#minimumreleaseage

@@ -1,5 +1,5 @@
 import type { Addon } from '../types'
-import { gt, minVersion as minVer } from 'semver-es'
+import { findMinimumForRange, isGreater } from 'verkit'
 
 /**
  * Sync VS Code engine with the version of `@types/vscode`
@@ -20,13 +20,13 @@ export const addonVSCode: Addon = {
       return
     }
 
-    const minEngineVersion = minVer(pkg.raw.engines.vscode)
-    const minVersion = minVer(version)
+    const minEngineVersion = findMinimumForRange(pkg.raw.engines.vscode)
+    const minVersion = findMinimumForRange(version)
     if (!minEngineVersion || !minVersion) {
       return
     }
 
-    if (gt(minVersion, minEngineVersion)) {
+    if (isGreater(minVersion, minEngineVersion)) {
       // eslint-disable-next-line no-console
       console.log(`[taze addon] Updated VS Code engine field to ${version}`)
       // If the version is not a range (fixed version), we prepend it with a caret

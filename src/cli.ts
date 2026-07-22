@@ -30,6 +30,7 @@ cli
   .option('--install, -i', 'install directly after bumping')
   .option('--update, -u', 'update directly after bumping')
   .option('--all, -a', 'show all packages up to date info')
+  .option('--json', 'output update info as JSON (implies non-interactive)')
   .option('--sort <type>', `sort by most outdated absolute or relative to dependency (${SORT_CHOICES.join('|')})`)
   .option('--group', 'group dependencies by source on display')
   .option('--include-locked, -l', 'include locked dependencies & devDependencies')
@@ -39,6 +40,7 @@ cli
   .option('--maturity-period [days]', 'wait period in days before upgrading to newly released packages (default: 7 when flag is used, 0 when not used)')
   .option('--maturity-period-exclude <deps>', 'dependencies to exclude from the maturity period filter')
   .option('--concurrency <requests>', 'number of concurrent requests when resolving dependencies', { default: 10 })
+  .option('--request-timeout <ms>', 'request timeout in milliseconds when fetching package metadata', { default: 5000 })
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {

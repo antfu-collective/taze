@@ -133,6 +133,11 @@
       "description": "Show all packages, including those that are up to date.",
       "default": false
     },
+    "json": {
+      "type": "boolean",
+      "description": "Output update info as JSON to stdout. When enabled, `interactive` is ignored and no progress bars, tables, or tips are printed.",
+      "default": false
+    },
     "sort": {
       "type": "string",
       "enum": ["time-asc", "time-desc", "diff-asc", "diff-desc", "name-asc", "name-desc"],
@@ -177,6 +182,12 @@
       "minimum": 1,
       "description": "Number of concurrent requests when resolving dependencies.",
       "default": 10
+    },
+    "requestTimeout": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Request timeout in milliseconds when fetching package metadata.",
+      "default": 5000
     }
   }
 }

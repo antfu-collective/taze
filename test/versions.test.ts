@@ -1,6 +1,5 @@
 import { expect, it } from 'vitest'
-import { getPackageData } from '../src/io/resolves'
-import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
+import { changeVersionRange, filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
 
 it('getVersionRange', () => {
   expect('~').toBe(getVersionRangePrefix('~1.2.3'))
@@ -27,8 +26,24 @@ it('getVersionRange', () => {
   expect('*').toBe(getVersionRangePrefix('x'))
 })
 
-it('getMaxSatisfying', async () => {
-  const { versions, tags } = await getPackageData('typescript')
+it('changeVersionRange', () => {
+  expect(changeVersionRange('^1.2.3', 'patch')).toBe('~1.2.3')
+  expect(changeVersionRange('>1.2.3', 'minor')).toBe('^1.2.4')
+  expect(changeVersionRange('not-a-range', 'minor')).toBeNull()
+})
+
+it('getMaxSatisfying', () => {
+  const versions = [
+    '5.9.0',
+    '6.0.1',
+    '6.1.0',
+    '7.0.0',
+    '7.1.0',
+    '8.0.0-beta.1',
+  ]
+  const tags = {
+    latest: '7.1.0',
+  }
   const latest = tags.latest
   const newest = versions.at(-1)
 
@@ -36,8 +51,8 @@ it('getMaxSatisfying', async () => {
   expect(getMaxSatisfying(versions, '', 'default', tags)).toBeUndefined()
   expect(getMaxSatisfying(versions, '*', 'default', tags)).toBeUndefined()
   expect(getMaxSatisfying(versions, '6.0.0', 'default', tags)).toBeUndefined()
-  expect(latest).toBe(getMaxSatisfying(versions, '^6.0.0', 'default', tags))
-  expect(latest).toBe(getMaxSatisfying(versions, '>6.0.0', 'default', tags))
+  expect(latest).toBe(getMaxSatisfying(versions, '^7.0.0', 'default', tags))
+  expect(latest).toBe(getMaxSatisfying(versions, '>7.0.0', 'default', tags))
 
   // major
   expect(getMaxSatisfying(versions, '', 'major', tags)).not.toBeUndefined()
@@ -114,7 +129,7 @@ it('getMaxSatisfying', async () => {
     rc: '4.2.1-rc.3',
     experimental: '0.0.0-experimental-4508873393-20240430',
   }))
-}, 10_000)
+})
 
 it('getMaxSatisfying - maturity period respects latest/next tags', () => {
   // maturity period: latest tag filtered out -> fall back to newest in filtered list

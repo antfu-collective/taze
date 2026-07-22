@@ -1,5 +1,5 @@
 import type { RangeMode } from '../types'
-import { gt, lte, minVersion, prerelease, satisfies, validRange } from 'semver-es'
+import { findMinimumForRange, getPrerelease, isGreater, isLessOrEqual, normalizeRange, satisfies } from 'verkit'
 
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
@@ -28,13 +28,13 @@ export function getVersionRangePrefix(v: string) {
 }
 
 export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'latest' | 'newest' | 'stable' | 'next'>) {
-  if (!validRange(version))
+  if (!normalizeRange(version))
     return null
 
   if (mode === 'default')
     return version
 
-  const min = minVersion(version)
+  const min = findMinimumForRange(version)
   if (!min)
     return null
 
@@ -72,15 +72,15 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       version = latest
     }
     else {
-      const currentMin = minVersion(current)
-      const currentIsPrerelease = !!(currentMin && prerelease(currentMin.toString()))
-      const latestIsPrerelease = !!(latest && prerelease(latest))
+      const currentMin = findMinimumForRange(current)
+      const currentIsPrerelease = !!(currentMin && getPrerelease(currentMin))
+      const latestIsPrerelease = !!(latest && getPrerelease(latest))
       // only consider prerelease candidates if either the currently installed
       // version or the registry's `latest` tag is itself on a prerelease track
       const allowPrerelease = currentIsPrerelease || latestIsPrerelease
 
       const candidates = versions.filter(ver =>
-        (allowPrerelease || !prerelease(ver)) && (!latest || lte(ver, latest)),
+        (allowPrerelease || !getPrerelease(ver)) && (!latest || isLessOrEqual(ver, latest)),
       )
 
       version = candidates.at(-1) ?? null
@@ -101,7 +101,7 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       .filter(ver => !ver.includes('-'))
       .forEach((ver) => {
         if (satisfies(ver, range)) {
-          if (!version || gt(ver, version))
+          if (!version || isGreater(ver, version))
             version = ver
         }
       })
@@ -120,8 +120,8 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
 
     versions.forEach((ver) => {
       if (satisfies(ver, range)) {
-        if (!maxVersion || lte(ver, maxVersion)) {
-          if (!version || gt(ver, version))
+        if (!maxVersion || isLessOrEqual(ver, maxVersion)) {
+          if (!version || isGreater(ver, version))
             version = ver
         }
       }
