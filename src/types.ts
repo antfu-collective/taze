@@ -150,6 +150,12 @@ export interface CheckOptions extends CommonOptions {
    */
   concurrency?: number
   /**
+   * Request timeout in milliseconds when fetching package metadata
+   *
+   * @default 5000
+   */
+  requestTimeout?: number
+  /**
    * Group dependencies by source, e.g. dependencies, devDependencies, etc.
    *
    * @default true
