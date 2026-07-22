@@ -133,6 +133,11 @@
       "description": "Show all packages, including those that are up to date.",
       "default": false
     },
+    "json": {
+      "type": "boolean",
+      "description": "Output update info as JSON to stdout. When enabled, `interactive` is ignored and no progress bars, tables, or tips are printed.",
+      "default": false
+    },
     "sort": {
       "type": "string",
       "enum": ["time-asc", "time-desc", "diff-asc", "diff-desc", "name-asc", "name-desc"],

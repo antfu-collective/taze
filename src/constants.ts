@@ -36,6 +36,7 @@ export const DEFAULT_CHECK_OPTIONS: CheckOptions = {
   install: false,
   update: false,
   all: false,
+  json: false,
   sort: 'diff-asc',
   group: true,
   includeLocked: false,

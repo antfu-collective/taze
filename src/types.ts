@@ -131,6 +131,15 @@ export interface CheckOptions extends CommonOptions {
   all?: boolean
   sort?: SortOption
   interactive?: boolean
+  /**
+   * Output update info as JSON to stdout.
+   *
+   * When enabled, `interactive` is ignored and no progress bars,
+   * tables, or tips are printed.
+   *
+   * @default false
+   */
+  json?: boolean
   install?: boolean
   update?: boolean
   global?: boolean
