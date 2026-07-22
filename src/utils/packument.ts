@@ -1,10 +1,11 @@
 import type { PackageVersionsInfoWithMetadata } from 'get-npm-meta'
-import type { JsrPackageMeta, PackageData } from '../types'
+import type { JsrPackageMeta, PackageData, RetryOptions } from '../types'
 import process from 'node:process'
 import { getVersions } from 'get-npm-meta'
 import { fetch as ofetch } from 'ofetch'
 
-const TIMEOUT = 5000
+const DEFAULT_REQUEST_TIMEOUT = 5000
+const DEFAULT_RETRIES = 4
 const JSR_API_REGISTRY = 'https://jsr.io/'
 const USER_AGENT = `taze@npm node/${process.version}`
 
@@ -48,19 +49,42 @@ const fetchWithUserAgent: typeof fetch = (input, init) => {
   return ofetch(input, { ...init, headers })
 }
 
-export async function fetchPackage(spec: string, force: boolean = false, cwd?: string): Promise<PackageData> {
-  const data = await Promise.race([
-    getVersions(spec, {
-      cwd,
-      force,
-      fetch: fetchWithUserAgent,
-      metadata: true,
-      throw: false,
-    }),
-    new Promise<Packument>(
-      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
-    ),
-  ]) as PackageVersionsInfoWithMetadata
+function createTimeoutError(name: string) {
+  return new Error(`Timeout requesting "${name}"`)
+}
+
+async function withRequestTimeout<T>(name: string, timeout: number, run: (signal: AbortSignal) => Promise<T>) {
+  const controller = new AbortController()
+  const timeoutError = createTimeoutError(name)
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(timeoutError)
+      controller.abort(timeoutError)
+    }, timeout)
+  })
+
+  try {
+    return await Promise.race([run(controller.signal), timeoutPromise])
+  }
+  finally {
+    if (timeoutId)
+      clearTimeout(timeoutId)
+
+    controller.abort(timeoutError)
+  }
+}
+
+export async function fetchPackage(spec: string, force: boolean = false, cwd?: string, requestTimeout: number = DEFAULT_REQUEST_TIMEOUT, retry: number | false | RetryOptions = DEFAULT_RETRIES): Promise<PackageData> {
+  const data = await withRequestTimeout(spec, requestTimeout, signal => getVersions(spec, {
+    cwd,
+    force,
+    fetch: (input, init) => fetchWithUserAgent(input, { ...init, signal }),
+    metadata: true,
+    throw: false,
+    // an object without an explicit count should still retry 4 times by default
+    retry: typeof retry === 'object' ? { retries: DEFAULT_RETRIES, ...retry } : retry,
+  })) as PackageVersionsInfoWithMetadata
 
   if ('error' in data)
     throw new Error(`Failed to fetch package "${spec}": ${data.error}`)
@@ -68,17 +92,13 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
   return toPackageData(data)
 }
 
-export async function fetchJsrPackageMeta(name: string): Promise<PackageData> {
-  const meta = await Promise.race([
-    fetchWithUserAgent(new URL(`${name}/meta.json`, JSR_API_REGISTRY), {
-      headers: {
-        accept: 'application/json',
-      },
-    }).then(r => r.json()),
-    new Promise<JsrPackageMeta>(
-      (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${name}"`)), TIMEOUT),
-    ),
-  ]) as JsrPackageMeta
+export async function fetchJsrPackageMeta(name: string, requestTimeout: number = DEFAULT_REQUEST_TIMEOUT): Promise<PackageData> {
+  const meta = await withRequestTimeout(name, requestTimeout, signal => fetchWithUserAgent(new URL(`${name}/meta.json`, JSR_API_REGISTRY), {
+    signal,
+    headers: {
+      accept: 'application/json',
+    },
+  }).then(r => r.json())) as JsrPackageMeta
 
   return {
     versions: Object.keys(meta.versions),

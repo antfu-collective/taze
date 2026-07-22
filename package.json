@@ -1,7 +1,7 @@
 {
   "name": "taze",
   "type": "module",
-  "version": "19.15.0",
+  "version": "19.16.0",
   "packageManager": "pnpm@11.15.1",
   "description": "A modern CLI tool that keeps your dependencies fresh in any repo and monorepo",
   "license": "MIT",
@@ -83,7 +83,7 @@
     "emoji-regex": "8.0.0",
     "empathic": "2.0.1",
     "fast-npm-meta": "2.2.0",
-    "get-npm-meta": "0.1.2",
+    "get-npm-meta": "0.2.2",
     "is-fullwidth-code-point": "3.0.0",
     "kleur": "4.1.5",
     "sisteransi": "1.0.5",

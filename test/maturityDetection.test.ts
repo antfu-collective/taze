@@ -86,6 +86,12 @@ describe('detectMaturityPeriod', () => {
       expect(await detectMaturityPeriod(cwd)).toBeUndefined()
     })
 
+    it('respects minimumReleaseAge 0 over pnpm@11 default', async () => {
+      write(cwd, 'package.json', JSON.stringify({ packageManager: 'pnpm@11.0.0' }))
+      write(cwd, 'pnpm-workspace.yaml', 'minimumReleaseAge: 0\n')
+      expect(await detectMaturityPeriod(cwd)).toBeUndefined()
+    })
+
     it('falls through when the yaml exists without the field', async () => {
       write(cwd, 'pnpm-workspace.yaml', 'packages:\n  - "!**/test/**"\n')
       expect(await detectMaturityPeriod(cwd)).toBeUndefined()

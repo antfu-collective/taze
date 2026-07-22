@@ -12,6 +12,49 @@ import { SORT_CHOICES } from './utils/sort'
 
 const cli: CAC = cac('taze')
 
+interface CliResolvedOption extends Omit<CheckOptions, 'retry'> {
+  /**
+   * `true` for a bare `--retry`, `false` for `--no-retry`
+   */
+  retry?: number | boolean
+  retryFactor?: number
+  retryMinTimeout?: number
+  retryMaxTimeout?: number
+  retryRandomize?: boolean
+}
+
+function resolveRetryOptions(options: CliResolvedOption): CheckOptions {
+  const {
+    retry,
+    retryFactor: factor,
+    retryMinTimeout: minTimeout,
+    retryMaxTimeout: maxTimeout,
+    retryRandomize: randomize,
+    ...resolved
+  } = options
+
+  if (retry !== false && (factor != null || minTimeout != null || maxTimeout != null || randomize != null)) {
+    // assemble the fine-grained `--retry-*` flags into a retry options object
+    return {
+      ...resolved,
+      retry: {
+        ...typeof retry === 'number' && { retries: retry },
+        ...factor != null && { factor },
+        ...minTimeout != null && { minTimeout },
+        ...maxTimeout != null && { maxTimeout },
+        ...randomize != null && { randomize },
+      },
+    }
+  }
+
+  if (typeof retry === 'number' || retry === false)
+    return { ...resolved, retry }
+
+  // a bare `--retry` (`retry === true`) means "enabled",
+  // fall back to the config file / default count
+  return resolved
+}
+
 cli
   .command('[mode]', `Update mode (version range to check). Available: ${MODE_CHOICES.join(' | ')}`)
   .option('--cwd, -C <cwd>', 'specify the current working directory')
@@ -30,6 +73,7 @@ cli
   .option('--install, -i', 'install directly after bumping')
   .option('--update, -u', 'update directly after bumping')
   .option('--all, -a', 'show all packages up to date info')
+  .option('--json', 'output update info as JSON (implies non-interactive)')
   .option('--sort <type>', `sort by most outdated absolute or relative to dependency (${SORT_CHOICES.join('|')})`)
   .option('--group', 'group dependencies by source on display')
   .option('--include-locked, -l', 'include locked dependencies & devDependencies')
@@ -39,7 +83,13 @@ cli
   .option('--maturity-period [days]', 'wait period in days before upgrading to newly released packages (default: 7 when flag is used, 0 when not used)')
   .option('--maturity-period-exclude <deps>', 'dependencies to exclude from the maturity period filter')
   .option('--concurrency <requests>', 'number of concurrent requests when resolving dependencies', { default: 10 })
-  .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
+  .option('--request-timeout <ms>', 'request timeout in milliseconds when fetching package metadata', { default: 5000 })
+  .option('--retry [times]', 'number of retries when fetching package metadata fails, use --no-retry to disable (default: 4)')
+  .option('--retry-factor <factor>', 'exponential backoff factor between retries (default: 2)')
+  .option('--retry-min-timeout <ms>', 'milliseconds before starting the first retry (default: 1000)')
+  .option('--retry-max-timeout <ms>', 'maximum milliseconds between two retries (default: Infinity)')
+  .option('--retry-randomize', 'randomize retry timeouts by a factor between 1 and 2')
+  .action(async (mode: RangeMode | undefined, options: CliResolvedOption) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
         console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join(' | ')}`)
@@ -52,7 +102,7 @@ cli
       options.maturityPeriod = 7
     }
 
-    const resolved = await resolveConfig(options)
+    const resolved = await resolveConfig(resolveRetryOptions(options))
 
     let exitCode
     if (options.global)
