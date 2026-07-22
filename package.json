@@ -83,7 +83,7 @@
     "emoji-regex": "8.0.0",
     "empathic": "2.0.1",
     "fast-npm-meta": "2.2.0",
-    "get-npm-meta": "0.2.0",
+    "get-npm-meta": "0.2.2",
     "is-fullwidth-code-point": "3.0.0",
     "kleur": "4.1.5",
     "sisteransi": "1.0.5",

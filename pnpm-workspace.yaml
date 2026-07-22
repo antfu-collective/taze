@@ -2,7 +2,7 @@ ignoreWorkspaceRootCheck: true
 minimumReleaseAgeExclude:
   - verkit@0.1.2
   - fast-npm-meta@2.2.0
-  - get-npm-meta@0.2.0
+  - get-npm-meta@0.2.2
 shellEmulator: true
 
 trustPolicy: no-downgrade
@@ -31,7 +31,7 @@ catalogs:
     deepmerge: ^4.3.1
     detect-indent: ^7.0.2
     empathic: ^2.0.1
-    get-npm-meta: ^0.2.0
+    get-npm-meta: ^0.2.2
   prod:
     '@antfu/ni': ^30.2.0
     '@henrygd/queue': ^1.2.0
