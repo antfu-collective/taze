@@ -36,8 +36,11 @@ export const DEFAULT_CHECK_OPTIONS: CheckOptions = {
   install: false,
   update: false,
   all: false,
+  json: false,
   sort: 'diff-asc',
+  requestTimeout: 5000,
   group: true,
   includeLocked: false,
   nodecompat: true,
+  retry: 4,
 }

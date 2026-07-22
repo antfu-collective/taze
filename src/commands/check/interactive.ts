@@ -5,7 +5,7 @@ import readline from 'node:readline'
 import { createControlledPromise, notNullish } from '@antfu/utils'
 import c from 'ansis'
 import { getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../../io/resolves'
-import { clearInteractiveScreen, colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable, sliceRenderLines, writeInteractiveScreen } from '../../render'
+import { clearInteractiveScreen, colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable, hideInteractiveCursor, showInteractiveCursor, sliceRenderLines, writeInteractiveScreen } from '../../render'
 import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { getPrefixedVersion } from '../../utils/versions'
@@ -38,15 +38,19 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     return []
 
   const promise = createControlledPromise<PackageMeta[]>()
+  let hasCleanedUp = false
+  let disposeInput = () => {}
 
   sortDeps()
   let renderer: InteractiveRenderer = createListRenderer()
 
   registerInput()
+  hideInteractiveCursor()
   renderer.render()
 
   return await promise
     .finally(() => {
+      cleanupInteractive()
       renderer = {
         render: () => {},
         onKey: () => false,
@@ -95,10 +99,11 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         switch (key.name) {
           case 'escape':
           case 'q':
-            process.exit()
+            exitInteractive()
           case 'enter':
           case 'return':
             clearInteractiveScreen()
+            cleanupInteractive()
             pkgs.forEach((pkg) => {
               pkg.resolved.forEach((dep) => {
                 dep.update = ctx.isChecked(dep)
@@ -237,16 +242,39 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     if (process.stdin.isTTY)
       process.stdin.setRawMode(true)
 
-    process.stdin.on('keypress', (str: string, key: TerminalKey) => {
+    const keypressHandler = (_str: string, key: TerminalKey) => {
       if ((key.ctrl && key.name === 'c'))
-        process.exit()
+        exitInteractive()
 
       const result = renderer.onKey(key)
       if (result && typeof result !== 'boolean')
         renderer = result
       if (result)
         renderer.render()
-    })
+    }
+
+    process.stdin.on('keypress', keypressHandler)
+
+    disposeInput = () => {
+      process.stdin.off('keypress', keypressHandler)
+      if (process.stdin.isTTY)
+        process.stdin.setRawMode(false)
+      process.stdin.pause()
+    }
+  }
+
+  function cleanupInteractive() {
+    if (hasCleanedUp)
+      return
+
+    hasCleanedUp = true
+    disposeInput()
+    showInteractiveCursor()
+  }
+
+  function exitInteractive() {
+    cleanupInteractive()
+    process.exit()
   }
 }
 

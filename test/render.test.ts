@@ -1,7 +1,7 @@
 import process from 'node:process'
 import readline from 'node:readline'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { formatTable, sliceRenderLines, writeInteractiveScreen } from '../src/render'
+import { formatTable, hideInteractiveCursor, showInteractiveCursor, sliceRenderLines, writeInteractiveScreen } from '../src/render'
 
 const originalIsTTYDescriptor = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY')
 
@@ -31,7 +31,7 @@ it('formatTable', () => {
   `)
 })
 
-it('writeInteractiveScreen uses cursor-based redraw for tty output', () => {
+it('writeInteractiveScreen overwrites tty output before clearing below', () => {
   Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value: true })
 
   const cursorToSpy = vi.spyOn(readline, 'cursorTo').mockImplementation(() => true)
@@ -40,9 +40,49 @@ it('writeInteractiveScreen uses cursor-based redraw for tty output', () => {
 
   writeInteractiveScreen(['first line', 'second line'])
 
+  const cursorToCallOrder = cursorToSpy.mock.invocationCallOrder[0]
+  const writeCallOrder = writeSpy.mock.invocationCallOrder[0]
+  const clearCallOrder = clearScreenDownSpy.mock.invocationCallOrder[0]
+
   expect(cursorToSpy).toHaveBeenCalledWith(process.stdout, 0, 0)
+  expect(writeSpy).toHaveBeenCalledWith('first line\u001B[K\nsecond line\u001B[K\n')
   expect(clearScreenDownSpy).toHaveBeenCalledWith(process.stdout)
-  expect(writeSpy).toHaveBeenCalledWith('first line\nsecond line\n')
+  expect(cursorToCallOrder).toBeLessThan(writeCallOrder)
+  expect(writeCallOrder).toBeLessThan(clearCallOrder)
+})
+
+it('writeInteractiveScreen clears tty output when frame is empty', () => {
+  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value: true })
+
+  const cursorToSpy = vi.spyOn(readline, 'cursorTo').mockImplementation(() => true)
+  const clearScreenDownSpy = vi.spyOn(readline, 'clearScreenDown').mockImplementation(() => true)
+  const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+
+  writeInteractiveScreen([])
+
+  expect(cursorToSpy).toHaveBeenCalledWith(process.stdout, 0, 0)
+  expect(writeSpy).not.toHaveBeenCalled()
+  expect(clearScreenDownSpy).toHaveBeenCalledWith(process.stdout)
+})
+
+it('hideInteractiveCursor writes the hide-cursor sequence for tty output', () => {
+  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value: true })
+
+  const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+
+  hideInteractiveCursor()
+
+  expect(writeSpy).toHaveBeenCalledWith('\u001B[?25l')
+})
+
+it('showInteractiveCursor writes the show-cursor sequence for tty output', () => {
+  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value: true })
+
+  const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+
+  showInteractiveCursor()
+
+  expect(writeSpy).toHaveBeenCalledWith('\u001B[?25h')
 })
 
 describe(sliceRenderLines, () => {

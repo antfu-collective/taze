@@ -2,7 +2,7 @@ import type { CheckOptions, DependencyFilter, RawDep, ResolvedDepChange } from '
 import process from 'node:process'
 import { expect, it } from 'vitest'
 import { resolveDependency } from '../src'
-import { getDiff, getLatestVersionAvailable, getVersionOfTag } from '../src/io/resolves'
+import { getDiff, getLatestVersionAvailable, getVersionOfTag, updateTargetVersion } from '../src/io/resolves'
 
 const filter: DependencyFilter = () => true
 
@@ -77,6 +77,61 @@ function makeResolvedDepForMaturityPeriod(): ResolvedDepChange {
         '1.0.0': twoDaysAgo.toISOString(),
         '1.1.0': twoDaysAgo.toISOString(),
         '1.2.0': now.toISOString(),
+      },
+    },
+  }
+}
+
+function makeResolvedDepWithMaturePrereleaseFallback(): ResolvedDepChange {
+  const now = new Date()
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+  return {
+    name: 'test-package',
+    currentVersion: '^1.2.5',
+    source: 'dependencies',
+    update: true,
+    targetVersion: '^1.2.5',
+    diff: null,
+    provenanceDowngraded: false,
+    pkgData: {
+      tags: {
+        latest: '1.3.0',
+        next: '1.3.0-rc.2',
+      },
+      versions: ['1.2.5', '1.3.0-rc.1', '1.3.0-rc.2', '1.3.0'],
+      time: {
+        '1.2.5': twoDaysAgo.toISOString(),
+        '1.3.0-rc.1': twoDaysAgo.toISOString(),
+        '1.3.0-rc.2': now.toISOString(),
+        '1.3.0': now.toISOString(),
+      },
+    },
+  }
+}
+
+function makeResolvedDepOnPrereleaseTrack(): ResolvedDepChange {
+  const now = new Date()
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+  return {
+    name: 'test-package',
+    currentVersion: '^2.0.0-rc.1',
+    source: 'dependencies',
+    update: true,
+    targetVersion: '^2.0.0-rc.1',
+    diff: null,
+    provenanceDowngraded: false,
+    pkgData: {
+      tags: {
+        latest: '2.0.0',
+      },
+      versions: ['2.0.0-rc.1', '2.0.0-rc.2', '2.0.0-rc.3', '2.0.0'],
+      time: {
+        '2.0.0-rc.1': twoDaysAgo.toISOString(),
+        '2.0.0-rc.2': twoDaysAgo.toISOString(),
+        '2.0.0-rc.3': twoDaysAgo.toISOString(),
+        '2.0.0': now.toISOString(),
       },
     },
   }
@@ -176,22 +231,54 @@ it('resolveDependency', async () => {
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript', 'npm:typescript@^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@5.0.0', '^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('foo@1>typescript', '^4.0.0'), options, filter)).update)
+  expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@>=4.0.0 <5.0.0', '^4.0.0'), options, filter)).update)
 
   // provenance downgrade
-  expect(await resolveDependency({
+  const provenanceResult = await resolveDependency({
     name: '@test-zone/provenance',
     currentVersion: '0.0.1',
     source: 'dependencies',
     update: true,
-  }, options, filter)).toMatchObject({
+  }, options, filter)
+
+  expect(provenanceResult).toMatchObject({
     name: '@test-zone/provenance',
     provenanceDowngraded: true,
     currentVersion: '0.0.1',
-    currentProvenance: true,
     targetVersion: '0.0.2',
     targetProvenance: undefined,
   })
+
+  expect([true, 'trustedPublisher']).toContain(provenanceResult.currentProvenance)
 }, 10000)
+
+it('marks trusted publisher provenance downgrade', () => {
+  const dep: ResolvedDepChange = {
+    name: 'trusted-publisher-package',
+    currentVersion: '1.0.0',
+    source: 'dependencies',
+    update: true,
+    targetVersion: '1.0.0',
+    diff: null,
+    provenanceDowngraded: false,
+    pkgData: {
+      tags: {
+        latest: '1.1.0',
+      },
+      versions: ['1.0.0', '1.1.0'],
+      provenance: {
+        '1.0.0': 'trustedPublisher',
+        '1.1.0': true,
+      },
+    },
+  }
+
+  updateTargetVersion(dep, '1.1.0', true, true)
+
+  expect(dep.currentProvenance).toBe('trustedPublisher')
+  expect(dep.targetProvenance).toBe(true)
+  expect(dep.provenanceDowngraded).toBe(true)
+})
 
 it('getDiff', () => {
   // normal
@@ -229,6 +316,28 @@ it('filters interactive candidate versions by maturity period', () => {
   expect(getVersionOfTag(dep, 'latest', maturityOptions)).toBe('1.1.0')
   expect(getVersionOfTag(dep, 'stable', maturityOptions)).toBe('1.1.0')
   expect(getVersionOfTag(dep, 'beta', maturityOptions)).toBeUndefined()
+})
+
+it('does not offer mature prereleases when stable latest is blocked by maturity period', () => {
+  const dep = makeResolvedDepWithMaturePrereleaseFallback()
+  const maturityOptions = {
+    ...options,
+    maturityPeriod: 1,
+  }
+
+  expect(getVersionOfTag(dep, 'latest', maturityOptions)).toBe('1.2.5')
+  expect(getLatestVersionAvailable(dep, '1.2.5', maturityOptions)).toBeUndefined()
+})
+
+it('offers mature prereleases when current is on a prerelease track and stable latest is blocked by maturity period', () => {
+  const dep = makeResolvedDepOnPrereleaseTrack()
+  const maturityOptions = {
+    ...options,
+    maturityPeriod: 1,
+  }
+
+  expect(getVersionOfTag(dep, 'latest', maturityOptions)).toBe('2.0.0-rc.3')
+  expect(getLatestVersionAvailable(dep, '2.0.0-rc.1', maturityOptions)).toBe('2.0.0-rc.3')
 })
 
 it('excludes packages from the maturity period filter', () => {
