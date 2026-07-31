@@ -1,4 +1,3 @@
-
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, Protocol, RangeMode, RawDep, ResolvedDepChange, RetryOptions } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
