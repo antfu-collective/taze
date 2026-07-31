@@ -111,6 +111,12 @@ export interface CommonOptions {
    */
   force?: boolean
   /**
+   * API endpoint for fetching npm package metadata
+   *
+   * @default 'https://npm.antfu.dev/'
+   */
+  apiEndpoint?: string
+  /**
    * Include peerDependencies in the update process
    */
   peer?: boolean

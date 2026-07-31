@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest'
+import { resolveDependency } from '../src/io/resolves'
 import { fetchPackage } from '../src/utils/packument'
 
 const { getVersionsMock, ofetchMock } = vi.hoisted(() => ({
@@ -91,4 +92,56 @@ it('clears the timeout after a successful request', async () => {
   })
 
   expect(vi.getTimerCount()).toBe(0)
+})
+
+it('passes the API endpoint to get-npm-meta', async () => {
+  getVersionsMock.mockResolvedValue({
+    name: 'example',
+    distTags: {
+      latest: '1.0.0',
+    },
+    versionsMeta: {
+      '1.0.0': {},
+    },
+    timeCreated: '2026-01-01T00:00:00.000Z',
+    timeModified: '2026-01-01T00:00:00.000Z',
+    lastSynced: Date.now(),
+    specifier: '',
+  })
+
+  await fetchPackage('example', false, undefined, undefined, undefined, 'https://npm.example.com/')
+
+  expect(getVersionsMock).toHaveBeenCalledWith('example', expect.objectContaining({
+    apiEndpoint: 'https://npm.example.com/',
+  }))
+})
+
+it('uses the configured API endpoint when resolving a dependency', async () => {
+  getVersionsMock.mockResolvedValue({
+    name: 'custom-endpoint-example',
+    distTags: {
+      latest: '1.0.0',
+    },
+    versionsMeta: {
+      '1.0.0': {},
+    },
+    timeCreated: '2026-01-01T00:00:00.000Z',
+    timeModified: '2026-01-01T00:00:00.000Z',
+    lastSynced: Date.now(),
+    specifier: '',
+  })
+
+  await resolveDependency({
+    name: 'custom-endpoint-example',
+    currentVersion: '^0.1.0',
+    source: 'dependencies',
+    update: true,
+  }, {
+    apiEndpoint: 'https://npm.example.com/',
+    mode: 'major',
+  })
+
+  expect(getVersionsMock).toHaveBeenCalledWith('custom-endpoint-example', expect.objectContaining({
+    apiEndpoint: 'https://npm.example.com/',
+  }))
 })

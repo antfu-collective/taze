@@ -1,3 +1,4 @@
+
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, Protocol, RangeMode, RawDep, ResolvedDepChange, RetryOptions } from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
@@ -59,9 +60,11 @@ export async function dumpCache() {
   }
 }
 
-export async function getPackageData(name: string, protocol: Protocol = 'npm', cwd?: string, requestTimeout?: number, retry?: number | false | RetryOptions): Promise<PackageData> {
+export async function getPackageData(name: string, protocol: Protocol = 'npm', cwd?: string, requestTimeout?: number, retry?: number | false | RetryOptions, apiEndpoint?: string): Promise<PackageData> {
   let error: any
-  const cacheName = `${protocol}:${name}`
+  const cacheName = protocol === 'npm' && apiEndpoint
+    ? `${protocol}:${apiEndpoint}:${name}`
+    : `${protocol}:${name}`
 
   if (cache[cacheName]) {
     if (ttl(cache[cacheName].cacheTime) < cacheTTL) {
@@ -85,7 +88,7 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm', c
       debug.resolve(`resolving ${cacheName}`)
       const data = protocol === 'jsr'
         ? await fetchJsrPackageMeta(name, requestTimeout)
-        : await fetchPackage(name, false, cwd, requestTimeout, retry)
+        : await fetchPackage(name, false, cwd, requestTimeout, retry, apiEndpoint)
 
       if (data) {
         cache[cacheName] = { data, cacheTime: now() }
@@ -297,7 +300,7 @@ export async function resolveDependency(
     resolvedName = packages.pop() ?? dep.name
   }
 
-  const pkgData = await getPackageData(resolvedName, dep.protocol, options.cwd, options.requestTimeout, options.retry)
+  const pkgData = await getPackageData(resolvedName, dep.protocol, options.cwd, options.requestTimeout, options.retry, options.apiEndpoint)
   const { error, deprecated } = pkgData
 
   dep.pkgData = pkgData
