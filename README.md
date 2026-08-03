@@ -70,6 +70,8 @@ taze --include lodash,webpack
 taze --include /react/ --exclude react-dom # regex is also supported
 ```
 
+Dependencies listed in pnpm's `update.ignoreDeps` in `pnpm-workspace.yaml` are automatically excluded, so packages you tell pnpm never to update are also skipped by taze.
+
 ### Locked Versions
 
 Locked (fixed version without `^` or `~`) packages are skipped by default, use `taze --include-locked` or `taze -l` to show them.
