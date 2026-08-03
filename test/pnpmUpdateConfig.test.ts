@@ -4,7 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { resolveConfig } from '../src/config'
-import { detectPnpmUpdateIgnores } from '../src/utils/detectMaturity'
+import { detectPnpmUpdateIgnores } from '../src/utils/inferConfigFromPnpmWorkspace'
 
 const tmpRoots: string[] = []
 
@@ -44,7 +44,7 @@ describe('detectPnpmUpdateIgnores', () => {
 
   it('unions and dedupes both keys', async () => {
     write(cwd, 'pnpm-workspace.yaml', 'updateConfig:\n  ignoreDependencies:\n    - react\n    - vue\nupdate:\n  ignoreDeps:\n    - vue\n    - svelte\n')
-    expect(await detectPnpmUpdateIgnores(cwd)).toEqual(['react', 'vue', 'svelte'])
+    expect(await detectPnpmUpdateIgnores(cwd)).toEqual(['vue', 'svelte', 'react'])
   })
 
   it('returns [] when the yaml exists without the fields', async () => {

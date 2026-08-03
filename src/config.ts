@@ -5,7 +5,8 @@ import deepmerge from 'deepmerge'
 import { createDebug } from 'obug'
 import { createConfigLoader } from 'unconfig'
 import { DEFAULT_CHECK_OPTIONS } from './constants'
-import { detectMaturityConfig, detectPnpmUpdateIgnores } from './utils/detectMaturity'
+import { detectMaturityConfig } from './utils/detectMaturity'
+import { detectPnpmUpdateIgnores } from './utils/inferConfigFromPnpmWorkspace'
 
 const debug = createDebug('taze:config')
 
