@@ -70,6 +70,14 @@ taze --include lodash,webpack
 taze --include /react/ --exclude react-dom # regex is also supported
 ```
 
+`--exclude` (and `--include`) also accepts a `name@range` selector to exclude only a specific version range of a package, instead of the whole package. This is useful to block a specific major version while still allowing other updates (including in interactive mode):
+
+```bash
+# skip typescript's major v7 (and later), but still offer v6 minor/patch updates
+taze --exclude typescript@7
+taze --exclude "typescript@^7||^8" # multiple ranges can be combined with ||
+```
+
 Dependencies listed in pnpm's `update.ignoreDeps` in `pnpm-workspace.yaml` are automatically excluded, so packages you tell pnpm never to update are also skipped by taze.
 
 ### Locked Versions

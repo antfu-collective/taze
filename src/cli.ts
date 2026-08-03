@@ -66,7 +66,7 @@ cli
   .option('--ignore-paths <paths>', 'ignore paths for search package.json')
   .option('--ignore-other-workspaces', 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)', { default: true })
   .option('--include, -n <deps>', 'only included dependencies will be checked for updates')
-  .option('--exclude, -x <deps>', 'exclude dependencies to be checked, will override --include options')
+  .option('--exclude, -x <deps>', 'exclude dependencies to be checked, will override --include options; supports `name@range` (e.g. typescript@7) to exclude only matching versions')
   .option('--write, -w', 'write to package.json')
   .option('--global, -g', 'update global packages')
   .option('--interactive, -I', 'interactive mode')
