@@ -47,8 +47,8 @@ describe('load config', () => {
       cwd: join(process.cwd(), 'test/fixtures/api-endpoint'),
       loglevel: 'silent',
     }
-    const { apiEndpoint } = await resolveConfig(options)
-    expect(apiEndpoint).toBe('https://npm.example.com/')
+    const { fastNpmMetaApiEndpoint } = await resolveConfig(options)
+    expect(fastNpmMetaApiEndpoint).toBe('https://npm.example.com/')
   })
 
   it('with packagemode', async () => {

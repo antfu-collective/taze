@@ -137,7 +137,7 @@ it('uses the configured API endpoint when resolving a dependency', async () => {
     source: 'dependencies',
     update: true,
   }, {
-    apiEndpoint: 'https://npm.example.com/',
+    fastNpmMetaApiEndpoint: 'https://npm.example.com/',
     mode: 'major',
   })
 

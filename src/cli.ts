@@ -63,7 +63,7 @@ cli
   .option('--silent, -s', 'complete silent')
   .option('--recursive, -r', 'recursively search for package.json in subdirectories')
   .option('--force, -f', 'force fetching from server, bypass cache')
-  .option('--api-endpoint <url>', 'API endpoint for fetching npm package metadata')
+  .option('--fast-npm-meta-api-endpoint <url>', 'API endpoint for fetching npm package metadata via fast-npm-meta')
   .option('--ignore-paths <paths>', 'ignore paths for search package.json')
   .option('--ignore-other-workspaces', 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)', { default: true })
   .option('--include, -n <deps>', 'only included dependencies will be checked for updates')

@@ -29,11 +29,11 @@ it('taze cli should accept --request-timeout option', async () => {
   expect(proc.exitCode).toBe(0)
 })
 
-it('taze cli should expose --api-endpoint option', async () => {
+it('taze cli should expose --fast-npm-meta-api-endpoint option', async () => {
   const binPath = resolve(__dirname, '../bin/taze.mjs')
 
   const proc = await exec(process.execPath, [binPath, '--help'], { throwOnError: false })
 
-  expect(proc.stdout).toContain('--api-endpoint <url>')
+  expect(proc.stdout).toContain('--fast-npm-meta-api-endpoint <url>')
   expect(proc.exitCode).toBe(0)
 })
