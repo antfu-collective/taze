@@ -159,3 +159,24 @@ export async function detectMaturityConfig(cwd: string): Promise<DetectedMaturit
 export async function detectMaturityPeriod(cwd: string): Promise<number | undefined> {
   return (await detectMaturityConfig(cwd))?.maturityPeriod
 }
+
+// Reads the pnpm "ignore on update" lists from the closest pnpm-workspace.yaml.
+// pnpm exposes this as `updateConfig.ignoreDependencies` (v10.x) and, after a
+// rename, as `update.ignoreDeps` (v11 & 12). Both are lists of package name
+// patterns (e.g. `load-json-file`, `@babel/*`) that should never be updated.
+// See https://pnpm.io/settings#updateconfig
+export async function detectPnpmUpdateIgnores(cwd: string): Promise<string[]> {
+  const pnpmYamlPath = findUp('pnpm-workspace.yaml', { cwd })
+  const pnpmYaml = await readYamlTop(pnpmYamlPath)
+  if (!pnpmYaml)
+    return []
+
+  const ignores = [
+    ...readStringList(pnpmYaml.updateConfig?.ignoreDependencies),
+    ...readStringList(pnpmYaml.update?.ignoreDeps),
+  ]
+  const deduped = [...new Set(ignores)]
+  if (deduped.length > 0)
+    debug(`pnpm update ignores from ${pnpmYamlPath}: ${JSON.stringify(deduped)}`)
+  return deduped
+}
