@@ -8,6 +8,10 @@
 
 <pre align="center">npx taze <b>-r</b></pre>
 
+<p align="center">or for <em>agents</em> to consume</p>
+
+<pre align="center">npx taze -r <b>--json</b></pre>
+
 <p align='center'>
 <img src='./screenshots/r-major.png' width='600' alt='Recursive mode' />
 </p>
@@ -17,6 +21,9 @@
 - Built-in support for monorepos
 - No installation required — `npx taze`
 - Safe by default — updates in the version range you are allowed
+- Interactive mode to select which packages to update
+- Respects `package.json`'s `engines` field and your package manager's config
+- Agents compatible JSON output
 
 ## Usage
 
