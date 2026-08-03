@@ -1,6 +1,12 @@
 import type { RangeMode } from '../types'
 import { findMinimumForRange, getPrerelease, isGreater, isLessOrEqual, normalizeRange, satisfies } from 'verkit'
 
+// `getPrerelease` returns an empty array for stable versions and `null` for
+// invalid ones, so a plain truthiness check is not enough
+function isPrerelease(version: string) {
+  return !!getPrerelease(version)?.length
+}
+
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
   const ver = v.trim()
@@ -73,14 +79,14 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
     }
     else {
       const currentMin = findMinimumForRange(current)
-      const currentIsPrerelease = !!(currentMin && getPrerelease(currentMin))
-      const latestIsPrerelease = !!(latest && getPrerelease(latest))
+      const currentIsPrerelease = !!currentMin && isPrerelease(currentMin)
+      const latestIsPrerelease = !!latest && isPrerelease(latest)
       // only consider prerelease candidates if either the currently installed
       // version or the registry's `latest` tag is itself on a prerelease track
       const allowPrerelease = currentIsPrerelease || latestIsPrerelease
 
       const candidates = versions.filter(ver =>
-        (allowPrerelease || !getPrerelease(ver)) && (!latest || isLessOrEqual(ver, latest)),
+        (allowPrerelease || !isPrerelease(ver)) && (!latest || isLessOrEqual(ver, latest)),
       )
 
       version = candidates.at(-1) ?? null

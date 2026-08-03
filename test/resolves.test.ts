@@ -2,7 +2,7 @@ import type { CheckOptions, DependencyFilter, RawDep, ResolvedDepChange } from '
 import process from 'node:process'
 import { expect, it } from 'vitest'
 import { resolveDependency } from '../src'
-import { getDiff, getLatestVersionAvailable, getVersionOfTag, updateTargetVersion } from '../src/io/resolves'
+import { getDiff, getLatestVersionAvailable, getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../src/io/resolves'
 
 const filter: DependencyFilter = () => true
 
@@ -136,6 +136,63 @@ function makeResolvedDepOnPrereleaseTrack(): ResolvedDepChange {
     },
   }
 }
+
+function makeResolvedDepWithMajors(): ResolvedDepChange {
+  return {
+    name: 'typescript',
+    currentVersion: '^6.0.0',
+    source: 'dependencies',
+    update: true,
+    targetVersion: '^6.0.0',
+    diff: null,
+    provenanceDowngraded: false,
+    pkgData: {
+      tags: {
+        latest: '7.1.0',
+      },
+      versions: ['6.0.0', '6.5.0', '7.0.0', '7.1.0'],
+    },
+  }
+}
+
+it('excludes a specific major version via `name@range` without excluding the whole package', () => {
+  const excludeOptions = {
+    ...options,
+    exclude: ['typescript@7'],
+  }
+
+  // major/latest resolution skips the excluded 7.x line and falls back to the highest 6.x
+  expect(getVersionOfRange(makeResolvedDepWithMajors(), 'major', excludeOptions)).toBe('6.5.0')
+  expect(getVersionOfRange(makeResolvedDepWithMajors(), 'latest', excludeOptions)).toBe('6.5.0')
+  expect(getVersionOfTag(makeResolvedDepWithMajors(), 'latest', excludeOptions)).toBe('6.5.0')
+
+  // minor/patch within the still-allowed major keep working normally
+  expect(getVersionOfRange(makeResolvedDepWithMajors(), 'minor', excludeOptions)).toBe('6.5.0')
+
+  // without the exclude, the excluded major would have been offered
+  expect(getVersionOfRange(makeResolvedDepWithMajors(), 'major', options)).toBe('7.1.0')
+})
+
+it('supports multiple `||`-combined ranges in a `name@range` exclude selector', () => {
+  const excludeOptions = {
+    ...options,
+    exclude: ['typescript@7||^8'],
+  }
+  const dep = makeResolvedDepWithMajors()
+  dep.pkgData.versions.push('8.0.0')
+  dep.pkgData.tags.latest = '8.0.0'
+
+  expect(getVersionOfRange(dep, 'major', excludeOptions)).toBe('6.5.0')
+})
+
+it('still fully excludes a package when no version is given in `exclude`', () => {
+  const excludeOptions = {
+    ...options,
+    exclude: ['typescript'],
+  }
+
+  expect(getVersionOfRange(makeResolvedDepWithMajors(), 'major', excludeOptions)).toBeUndefined()
+})
 
 it('resolveDependency', async () => {
   // default

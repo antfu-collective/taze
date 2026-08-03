@@ -5,7 +5,7 @@ import deepmerge from 'deepmerge'
 import { createDebug } from 'obug'
 import { createConfigLoader } from 'unconfig'
 import { DEFAULT_CHECK_OPTIONS } from './constants'
-import { detectMaturityConfig } from './utils/detectMaturity'
+import { inferConfig } from './utils/inferConfig'
 
 const debug = createDebug('taze:config')
 
@@ -63,12 +63,22 @@ export async function resolveConfig(
   }
 
   const checkMerged = merged as CheckOptions
-  if (!checkMerged.global && (checkMerged.maturityPeriod == null || !checkMerged.maturityPeriodExclude?.length)) {
-    const detected = await detectMaturityConfig(checkMerged.cwd || process.cwd())
-    if (checkMerged.maturityPeriod == null && detected?.maturityPeriod != null)
-      checkMerged.maturityPeriod = detected.maturityPeriod
-    if (!checkMerged.maturityPeriodExclude?.length && detected?.maturityPeriodExclude.length)
-      checkMerged.maturityPeriodExclude = detected.maturityPeriodExclude
+  if (!checkMerged.global) {
+    const inferred = await inferConfig(checkMerged.cwd || process.cwd())
+
+    // Maturity period is only inferred when the user hasn't set it.
+    if (checkMerged.maturityPeriod == null && inferred.maturityPeriod != null)
+      checkMerged.maturityPeriod = inferred.maturityPeriod
+    if (!checkMerged.maturityPeriodExclude?.length && inferred.maturityPeriodExclude.length)
+      checkMerged.maturityPeriodExclude = inferred.maturityPeriodExclude
+
+    // pnpm's update.ignoreDeps / updateConfig.ignoreDependencies mean "never
+    // update these packages". Fold them into `exclude` (additive) so they are
+    // always honored on top of the user's own config.
+    if (inferred.updateIgnores.length) {
+      const existing = toArray(checkMerged.exclude)
+      checkMerged.exclude = [...new Set([...existing, ...inferred.updateIgnores])]
+    }
   }
 
   return merged
