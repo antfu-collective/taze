@@ -40,7 +40,7 @@
       ]
     },
     "exclude": {
-      "description": "Dependencies to exclude from the check. Overrides `include`.",
+      "description": "Dependencies to exclude from the check. Overrides `include`. Accepts `name@range` (e.g. `typescript@7`) to exclude only matching versions instead of the whole package.",
       "anyOf": [
         { "type": "string" },
         { "type": "array", "items": { "type": "string" } }

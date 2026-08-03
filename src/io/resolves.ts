@@ -7,7 +7,7 @@ import { createDebug } from 'obug'
 import { resolve } from 'pathe'
 import { findMinimumForRange, isEqual, isGreater, isLess, satisfies } from 'verkit'
 import { diffSorter } from '../filters/diff-sorter'
-import { getMaturityPeriodExcludeRanges, getPackageMode, isVersionMaturityPeriodExcluded } from '../utils/config'
+import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, getPackageMode, isVersionInExcludedRanges } from '../utils/config'
 import { queueContext } from '../utils/context'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
@@ -136,6 +136,16 @@ export function getFilteredVersions(dep: ResolvedDepChange, options: CheckOption
     filteredVersions = filterDeprecatedVersions(filteredVersions, deprecated)
   }
 
+  // `--exclude typescript@7` (or `typescript@^7||^8`) excludes only the matching versions,
+  // leaving the rest of the package's versions (e.g. v6) available for updates/interactive mode.
+  const excludeVersionRanges = getExcludeVersionRanges(dep.name, options)
+  if (excludeVersionRanges === true) {
+    filteredVersions = []
+  }
+  else if (excludeVersionRanges.length > 0) {
+    filteredVersions = filteredVersions.filter(version => !isVersionInExcludedRanges(version, excludeVersionRanges))
+  }
+
   const maturityPeriodExclude = getMaturityPeriodExcludeRanges(dep.name, options)
   if (options.maturityPeriod && options.maturityPeriod > 0 && maturityPeriodExclude !== true) {
     const maturityCandidates = filteredVersions
@@ -145,7 +155,7 @@ export function getFilteredVersions(dep: ResolvedDepChange, options: CheckOption
       const filteredVersionSet = new Set(filteredVersions)
       filteredVersions = maturityCandidates.filter(version =>
         filteredVersionSet.has(version)
-        || isVersionMaturityPeriodExcluded(version, maturityPeriodExclude),
+        || isVersionInExcludedRanges(version, maturityPeriodExclude),
       )
     }
   }
