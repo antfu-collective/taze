@@ -152,6 +152,8 @@ export default defineConfig({
   ],
   // fetch latest package info from registry without cache
   force: true,
+  // use a custom fast-npm-meta compatible API endpoint
+  fastNpmMetaApiEndpoint: 'https://npm.example.com/',
   // retry behavior when fetching package metadata fails:
   // a number for retry count, `false` to disable, or an object for fine-grained
   // control, e.g. { retries: 4, factor: 2, minTimeout: 1000, maxTimeout: 30_000, randomize: false }
