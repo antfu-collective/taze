@@ -78,7 +78,9 @@ async function withRequestTimeout<T>(name: string, timeout: number, run: (signal
 export async function fetchPackage(spec: string, force: boolean = false, cwd?: string, requestTimeout: number = DEFAULT_REQUEST_TIMEOUT, retry: number | false | RetryOptions = DEFAULT_RETRIES, fastNpmMetaApiEndpoint?: string): Promise<PackageData> {
   const data = await withRequestTimeout(spec, requestTimeout, signal => getVersions(spec, {
     apiEndpoint: fastNpmMetaApiEndpoint,
-    cwd,
+    // an empty string counts as an explicit directory, which would resolve
+    // registry config against `''` instead of the directory being checked
+    cwd: cwd || process.cwd(),
     force,
     fetch: (input, init) => fetchWithUserAgent(input, { ...init, signal }),
     metadata: true,
