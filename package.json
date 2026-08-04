@@ -46,7 +46,6 @@
     "pathe": "catalog:prod",
     "pnpm-workspace-yaml": "catalog:prod",
     "restore-cursor": "catalog:prod",
-    "smol-toml": "catalog:prod",
     "tinyexec": "catalog:prod",
     "tinyglobby": "catalog:prod",
     "unconfig": "catalog:prod",
@@ -84,10 +83,11 @@
     "emoji-regex": "8.0.0",
     "empathic": "2.0.1",
     "fast-npm-meta": "2.2.0",
-    "get-npm-meta": "0.2.2",
+    "get-npm-meta": "0.3.0",
     "is-fullwidth-code-point": "3.0.0",
     "kleur": "4.1.5",
     "sisteransi": "1.0.5",
+    "smol-toml": "1.7.1",
     "string-width": "4.2.3",
     "strip-ansi": "6.0.1"
   }
