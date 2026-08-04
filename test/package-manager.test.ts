@@ -5,7 +5,7 @@ import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { CheckPackages } from '../src'
-import { writePackageJSON } from '../src/io/packageJson'
+import { loadPackageJSON, writePackageJSON } from '../src/io/packageJson'
 import { getHexHashFromIntegrity } from '../src/utils/sha'
 
 function getPkgInfo(name: string, result: ResolvedDepChange[]) {
@@ -26,6 +26,18 @@ const originalPkgJsonWithSha = {
   name: '@taze/package-manager-sha',
   private: true,
   packageManager: `pnpm@${pnpmVersion}+sha512.${pnpmHexHash}`,
+}
+
+const originalPkgJsonWithDevEngines = {
+  name: '@taze/dev-engines-package-manager',
+  private: true,
+  devEngines: {
+    packageManager: {
+      name: 'pnpm',
+      version: `^${pnpmVersion}`,
+      onFail: 'warn',
+    },
+  },
 }
 
 describe('get hex hash from integrity', () => {
@@ -79,6 +91,43 @@ describe('check package for packageManager', () => {
     expect(updatedPnpmInfo.currentVersion).not.toBe(`^${pnpmVersion}`)
     const pkgJson = JSON.parse(fs.readFileSync(path.join(tempDir, 'package.json'), 'utf-8'))
     expect(pkgJson.packageManager).toBe(`pnpm@${updatedPnpmInfo.currentVersion.slice(1)}`)
+  })
+
+  it('write updated devEngines.packageManager to package.json', async () => {
+    fs.writeFileSync(
+      path.join(tempDir, 'package.json'),
+      JSON.stringify(originalPkgJsonWithDevEngines, null, 2),
+    )
+    const options: CheckOptions = {
+      cwd: tempDir,
+      mode: 'default',
+      write: true,
+      force: true,
+    }
+    await CheckPackages(options, {})
+    const updatedResult = (await CheckPackages(options, {})).packages[0].resolved
+    const updatedPnpmInfo = getPkgInfo('pnpm', updatedResult)
+    const pkgJson = JSON.parse(fs.readFileSync(path.join(tempDir, 'package.json'), 'utf-8'))
+
+    expect(updatedPnpmInfo.update).toBe(false)
+    expect(pkgJson.packageManager).toBeUndefined()
+    expect(pkgJson.devEngines.packageManager).toEqual({
+      ...originalPkgJsonWithDevEngines.devEngines.packageManager,
+      version: updatedPnpmInfo.currentVersion,
+    })
+  })
+
+  it.each([
+    ['missing name', { devEngines: { packageManager: { version: '^10.0.0' } } }, undefined, undefined],
+    ['missing version', { devEngines: { packageManager: { name: 'pnpm' } } }, undefined, undefined],
+    ['incomplete fallback', { packageManager: 'npm@10.0.0', devEngines: { packageManager: { name: 'pnpm' } } }, 'npm', '^10.0.0'],
+    ['packageManager priority', { packageManager: 'npm@10.0.0', devEngines: { packageManager: { name: 'pnpm', version: '^10.0.0' } } }, 'npm', '^10.0.0'],
+  ])('%s', async (_, raw, name, version) => {
+    const [pkg] = await loadPackageJSON('package.json', {}, () => true, raw)
+    const packageManager = pkg.deps.find(dep => dep.source === 'packageManager')
+
+    expect(packageManager?.name).toBe(name)
+    expect(packageManager?.currentVersion).toBe(version)
   })
 })
 

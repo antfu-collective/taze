@@ -8,6 +8,10 @@
 
 <pre align="center">npx taze <b>-r</b></pre>
 
+<p align="center">or for <em>agents</em> to consume</p>
+
+<pre align="center">npx taze -r <b>--json</b></pre>
+
 <p align='center'>
 <img src='./screenshots/r-major.png' width='600' alt='Recursive mode' />
 </p>
@@ -17,6 +21,9 @@
 - Built-in support for monorepos
 - No installation required — `npx taze`
 - Safe by default — updates in the version range you are allowed
+- Interactive mode to select which packages to update
+- Respects `package.json`'s `engines` field and your package manager's config
+- Agents compatible JSON output
 
 ## Usage
 
@@ -69,6 +76,16 @@ You can filter out packages you want to check for upgrades by `--include` or `--
 taze --include lodash,webpack
 taze --include /react/ --exclude react-dom # regex is also supported
 ```
+
+`--exclude` (and `--include`) also accepts a `name@range` selector to exclude only a specific version range of a package, instead of the whole package. This is useful to block a specific major version while still allowing other updates (including in interactive mode):
+
+```bash
+# skip typescript's major v7 (and later), but still offer v6 minor/patch updates
+taze --exclude typescript@7
+taze --exclude "typescript@^7||^8" # multiple ranges can be combined with ||
+```
+
+Dependencies listed in pnpm's `update.ignoreDeps` in `pnpm-workspace.yaml` are automatically excluded, so packages you tell pnpm never to update are also skipped by taze.
 
 ### Locked Versions
 
@@ -135,6 +152,8 @@ export default defineConfig({
   ],
   // fetch latest package info from registry without cache
   force: true,
+  // use a custom fast-npm-meta compatible API endpoint
+  fastNpmMetaApiEndpoint: 'https://npm.example.com/',
   // retry behavior when fetching package metadata fails:
   // a number for retry count, `false` to disable, or an object for fine-grained
   // control, e.g. { retries: 4, factor: 2, minTimeout: 1000, maxTimeout: 30_000, randomize: false }

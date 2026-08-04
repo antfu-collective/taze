@@ -76,13 +76,14 @@ async function withRequestTimeout<T>(name: string, timeout: number, run: (signal
   }
 }
 
-export async function fetchPackage(spec: string, force: boolean = false, cwd?: string, requestTimeout: number = DEFAULT_REQUEST_TIMEOUT, retry: number | false | RetryOptions = DEFAULT_RETRIES): Promise<PackageData> {
+export async function fetchPackage(spec: string, force: boolean = false, cwd?: string, requestTimeout: number = DEFAULT_REQUEST_TIMEOUT, retry: number | false | RetryOptions = DEFAULT_RETRIES, fastNpmMetaApiEndpoint?: string): Promise<PackageData> {
   const registriesEnv = getRegistriesEnv(cwd)
   const env = Object.keys(registriesEnv).length > 0
     ? { ...process.env, ...registriesEnv }
     : undefined
 
   const data = await withRequestTimeout(spec, requestTimeout, signal => getVersions(spec, {
+    apiEndpoint: fastNpmMetaApiEndpoint,
     cwd,
     force,
     fetch: (input, init) => fetchWithUserAgent(input, { ...init, signal }),

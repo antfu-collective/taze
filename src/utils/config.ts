@@ -15,10 +15,14 @@ export function getPackageMode(pkgName: string, options: CheckOptions) {
   return undefined
 }
 
-export function getMaturityPeriodExcludeRanges(pkgName: string, options: CheckOptions): true | string[] {
+// Parses `name`/`name@range` selectors (e.g. `webpack`, `typescript@7`, `typescript@^7||^8`)
+// and resolves, for a given package name, either:
+// - `true` — the package name itself matched a selector with no version part, i.e. fully excluded
+// - `string[]` — the semver ranges (possibly empty) that should be treated as excluded versions
+function resolveNameVersionSelectors(pkgName: string, selectors: string[]): true | string[] {
   const ranges: string[] = []
 
-  for (const selector of toArray(options.maturityPeriodExclude).flatMap(item => item.split(','))) {
+  for (const selector of selectors) {
     const trimmed = selector.trim()
     if (!trimmed)
       continue
@@ -44,7 +48,18 @@ export function getMaturityPeriodExcludeRanges(pkgName: string, options: CheckOp
   return ranges
 }
 
-export function isVersionMaturityPeriodExcluded(version: string, ranges: string[]) {
+export function getMaturityPeriodExcludeRanges(pkgName: string, options: CheckOptions): true | string[] {
+  return resolveNameVersionSelectors(pkgName, toArray(options.maturityPeriodExclude).flatMap(item => item.split(',')))
+}
+
+// Supports `name@range` selectors in `--exclude`/`--include` (e.g. `typescript@7`) so a specific
+// major/minor/range of a package can be excluded from the candidate versions without excluding
+// the whole package from being checked/updated.
+export function getExcludeVersionRanges(pkgName: string, options: CheckOptions): true | string[] {
+  return resolveNameVersionSelectors(pkgName, toArray(options.exclude).flatMap(item => item.split(',')))
+}
+
+export function isVersionInExcludedRanges(version: string, ranges: string[]) {
   for (const range of ranges) {
     if (satisfies(version, range, { includePrerelease: true }))
       return true

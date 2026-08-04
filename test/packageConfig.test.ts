@@ -42,6 +42,15 @@ function getPkgInfo(name: string, result: ResolvedDepChange[]) {
 }
 
 describe('load config', () => {
+  it('with api endpoint', async () => {
+    const options: CommonOptions = {
+      cwd: join(process.cwd(), 'test/fixtures/api-endpoint'),
+      loglevel: 'silent',
+    }
+    const { fastNpmMetaApiEndpoint } = await resolveConfig(options)
+    expect(fastNpmMetaApiEndpoint).toBe('https://npm.example.com/')
+  })
+
   it('with packagemode', async () => {
     const options: CommonOptions = {
       cwd: join(process.cwd(), 'test/fixtures/pkgmode'),

@@ -16,6 +16,37 @@ const allDepsFields = [
   'overrides',
 ] as const satisfies DepType[]
 
+type PackageManagerDeclaration
+  = | { field: 'packageManager', name: string, version: string, hexHash?: string }
+    | { field: 'devEngines', name: string, version: string }
+
+function getPackageManagerDeclaration(raw: Record<string, any>): PackageManagerDeclaration | undefined {
+  if (typeof raw.packageManager === 'string') {
+    const [name, versionWithHash] = raw.packageManager.split('@')
+    if (name && versionWithHash) {
+      // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
+      const [version, hashPart] = versionWithHash.split('+')
+      if (version) {
+        return {
+          field: 'packageManager',
+          name,
+          version: `^${version}`,
+          hexHash: hashPart?.split('.')[1],
+        }
+      }
+    }
+  }
+
+  const packageManager = raw.devEngines?.packageManager
+  if (typeof packageManager?.name === 'string' && packageManager.name && typeof packageManager.version === 'string' && packageManager.version) {
+    return {
+      field: 'devEngines',
+      name: packageManager.name,
+      version: packageManager.version,
+    }
+  }
+}
+
 function isDepFieldEnabled(key: DepType, options: CommonOptions): boolean {
   if (options.depFields?.[key] === false)
     return false
@@ -39,12 +70,11 @@ export async function loadPackageJSON(
       continue
 
     if (key === 'packageManager') {
-      if (raw.packageManager) {
-        const [name, versionWithHash] = raw.packageManager.split('@')
-        // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
-        const [version, hashPart] = versionWithHash.split('+')
-        const hexHash = hashPart?.split('.')[1]
-        deps.push(parseDependency({ name, version: `^${version}`, type: 'packageManager', shouldUpdate, hexHash }))
+      const packageManager = getPackageManagerDeclaration(raw)
+      if (packageManager) {
+        const { name, version } = packageManager
+        const hexHash = packageManager.field === 'packageManager' ? packageManager.hexHash : undefined
+        deps.push(parseDependency({ name, version, type: 'packageManager', shouldUpdate, hexHash }))
       }
     }
     else {
@@ -79,25 +109,31 @@ export async function writePackageJSON(
 
     if (key === 'packageManager') {
       const value = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))[0]
-      if (value) {
+      const declaration = getPackageManagerDeclaration(pkg.raw || {})
+      if (value && declaration) {
         pkg.raw ||= {}
         const [name, versionWithCaret] = value
-        const version = versionWithCaret.replace('^', '')
-        let packageManagerValue = `${name}@${version}`
+        if (declaration.field === 'packageManager') {
+          const version = versionWithCaret.replace('^', '')
+          let packageManagerValue = `${name}@${version}`
 
-        const resolvedDep = pkg.resolved.find(dep => dep.source === 'packageManager' && dep.name === name)
-        if (resolvedDep?.hexHash) {
-          // `pkgData` may be undefined when the dep was filtered out (e.g. via
-          // `--include`) and the resolve path that fetches registry data was
-          // skipped. In that case there's no fresh integrity to refresh with.
-          const integrity = resolvedDep.pkgData?.integrity?.[version]
-          if (integrity) {
-            const newHexHash = getHexHashFromIntegrity(integrity)
-            packageManagerValue = `${packageManagerValue}+sha512.${newHexHash}`
+          const resolvedDep = pkg.resolved.find(dep => dep.source === 'packageManager' && dep.name === name)
+          if (resolvedDep?.hexHash) {
+            // `pkgData` may be undefined when the dep was filtered out (e.g. via
+            // `--include`) and the resolve path that fetches registry data was
+            // skipped. In that case there's no fresh integrity to refresh with.
+            const integrity = resolvedDep.pkgData?.integrity?.[version]
+            if (integrity) {
+              const newHexHash = getHexHashFromIntegrity(integrity)
+              packageManagerValue = `${packageManagerValue}+sha512.${newHexHash}`
+            }
           }
-        }
 
-        pkg.raw.packageManager = packageManagerValue
+          pkg.raw.packageManager = packageManagerValue
+        }
+        else {
+          pkg.raw.devEngines.packageManager.version = versionWithCaret
+        }
         changed = true
       }
     }

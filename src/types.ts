@@ -97,6 +97,14 @@ export interface CommonOptions {
   ignorePaths?: string | string[]
   ignoreOtherWorkspaces?: boolean
   include?: string | string[]
+  /**
+   * Dependencies to exclude from being checked/updated.
+   *
+   * Supports `name@range` to exclude only the matching versions (e.g. `typescript@7`
+   * or `typescript@^7||^8`) instead of excluding the whole package, so other
+   * major/minor/patch updates for that package are still offered (including in
+   * interactive mode).
+   */
   exclude?: string | string[]
   loglevel?: LogLevel
   failOnOutdated?: boolean
@@ -110,6 +118,12 @@ export interface CommonOptions {
    * Bypass cache
    */
   force?: boolean
+  /**
+   * API endpoint for fetching npm package metadata via `fast-npm-meta`
+   *
+   * @default 'https://npm.antfu.dev/'
+   */
+  fastNpmMetaApiEndpoint?: string
   /**
    * Include peerDependencies in the update process
    */
