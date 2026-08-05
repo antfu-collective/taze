@@ -50,8 +50,8 @@ catalogs:
       specifier: ^2.0.1
       version: 2.0.1
     get-npm-meta:
-      specifier: ^0.2.2
-      version: 0.2.2
+      specifier: ^0.3.0
+      version: 0.3.0
   prod:
     '@antfu/ni':
       specifier: ^30.3.0
@@ -189,7 +189,7 @@ importers:
         version: 10.8.0(jiti@2.6.1)
       get-npm-meta:
         specifier: catalog:inlined
-        version: 0.2.2
+        version: 0.3.0
       taze:
         specifier: workspace:*
         version: 'link:'
@@ -1756,8 +1756,8 @@ packages:
   fzf@0.5.2:
     resolution: {integrity: sha512-Tt4kuxLXFKHy8KT40zwsUPUkg1CrsgY25FxA2U/j/0WgEDCk3ddc/zLTCCcbSHX9FcKtLuVaDGtGE/STWC+j3Q==}
 
-  get-npm-meta@0.2.2:
-    resolution: {integrity: sha512-BprH1hB8bpaDCIshpELMNkUOiRRQNhqgK/2NdUnmictF/ymzl2zksa1IzVQ21ugaorrjCjZMcCOMirL317bThg==}
+  get-npm-meta@0.3.0:
+    resolution: {integrity: sha512-E6qOjUyfVkrJgpFFhr8lUlaoxSnNhiH6V9E4lwQDUh2ZblNe5kKndjfq0JjCT8b6g9MV3Lc6nhXK+01A26HOvQ==}
 
   get-tsconfig@4.13.7:
     resolution: {integrity: sha512-7tN6rFgBlMgpBML5j8typ92BKFi2sFQvIdpAqLA2beia5avZDrMs0FLZiM5etShWq5irVyGcGMEA1jcDaK7A/Q==}
@@ -2262,6 +2262,10 @@ packages:
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
+  smol-toml@1.7.1:
+    resolution: {integrity: sha512-PPlsspAZ4jbMBu5DMFhfUGDQLu/vrL4SyBROVS37x8ynnVmFIs1VPBz1Co8Xks3TvpIaZXmU85y4DrQ+UyVFoQ==}
+    engines: {node: '>= 18'}
+
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
@@ -2435,10 +2439,6 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
-
-  verkit@0.1.2:
-    resolution: {integrity: sha512-WqkT8n3hqizuCu71W3bUzf5fjBmkbXcudsehe/NbxA8PgqoKnSOY5K0Ba2ckg1qaRaSpSz7as/n9K1R9JXjQKg==}
-    engines: {node: '>=18.12.0'}
 
   verkit@0.3.1:
     resolution: {integrity: sha512-w2Eo8LSIIoW7qxNBzT7/17k+bh8plXo7G3dHjEIDqPlnluhzaxr9JX8F28VSYEtDvc1/a3WBDih6xNUZseebXg==}
@@ -3927,10 +3927,14 @@ snapshots:
 
   fzf@0.5.2: {}
 
-  get-npm-meta@0.2.2:
+  get-npm-meta@0.3.0:
     dependencies:
+      empathic: 2.0.1
       fast-npm-meta: 2.2.0
-      verkit: 0.1.2
+      package-manager-detector: 1.8.0
+      smol-toml: 1.7.1
+      verkit: 0.3.1
+      yaml: 2.9.0
 
   get-tsconfig@4.13.7:
     dependencies:
@@ -4619,6 +4623,8 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
+  smol-toml@1.7.1: {}
+
   source-map-js@1.2.1: {}
 
   spdx-exceptions@2.5.0: {}
@@ -4783,8 +4789,6 @@ snapshots:
       punycode: 2.3.1
 
   util-deprecate@1.0.2: {}
-
-  verkit@0.1.2: {}
 
   verkit@0.3.1: {}
 
