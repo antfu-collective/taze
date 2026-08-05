@@ -1,6 +1,6 @@
 ignoreWorkspaceRootCheck: true
 minimumReleaseAgeExclude:
-  - verkit@0.1.2
+  - verkit@0.3.2
   - fast-npm-meta@2.2.0
   - get-npm-meta@0.3.0
 shellEmulator: true
@@ -45,7 +45,7 @@ catalogs:
     tinyexec: ^1.3.0
     tinyglobby: ^0.2.17
     unconfig: ^7.5.0
-    verkit: ^0.3.1
+    verkit: ^0.3.2
     yaml: ^2.9.0
   types:
     '@types/cli-progress': ^3.11.6

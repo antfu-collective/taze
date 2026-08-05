@@ -1,11 +1,5 @@
 import type { RangeMode } from '../types'
-import { findMinimumForRange, getPrerelease, isGreater, isLessOrEqual, normalizeRange, satisfies } from 'verkit'
-
-// `getPrerelease` returns an empty array for stable versions and `null` for
-// invalid ones, so a plain truthiness check is not enough
-function isPrerelease(version: string) {
-  return !!getPrerelease(version)?.length
-}
+import { findMinimumForRange, isGreater, isLessOrEqual, isPrerelease, normalizeRange, satisfies } from 'verkit'
 
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
