@@ -19,10 +19,10 @@ export function timeDifference(from?: number | string, to = Date.now()) {
 
   const elapsed = to - from
 
-  if (elapsed < msPerDay)
-    return c.gray`~${Math.round(elapsed / msPerHour)}h`
+  if (elapsed < msPerHour)
+    return c.gray('<1h')
 
-  else if (elapsed < msPerDay * 5)
+  else if (elapsed < msPerHour * 100)
     return c.green`~${Math.round(elapsed / msPerHour)}h`
 
   else if (elapsed < msPerMonth)
