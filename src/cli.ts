@@ -1,5 +1,6 @@
 import type { CAC } from 'cac'
-import type { CheckOptions, GitHubActionStyle, RangeMode } from './types'
+import type { CliOptions } from './config'
+import type { RangeMode } from './types'
 import process from 'node:process'
 import { cac } from 'cac'
 import restoreCursor from 'restore-cursor'
@@ -11,63 +12,6 @@ import { LOG_LEVELS, MODE_CHOICES } from './constants'
 import { SORT_CHOICES } from './utils/sort'
 
 const cli: CAC = cac('taze')
-
-interface CliResolvedOption extends Omit<CheckOptions, 'retry'> {
-  /**
-   * `true` for a bare `--retry`, `false` for `--no-retry`
-   */
-  retry?: number | boolean
-  retryFactor?: number
-  retryMinTimeout?: number
-  retryMaxTimeout?: number
-  retryRandomize?: boolean
-  githubActionsStyle?: GitHubActionStyle
-}
-
-function resolveGitHubActionsOptions(options: CliResolvedOption): CliResolvedOption {
-  const { githubActionsStyle, ...resolved } = options
-
-  // `--no-github-actions` sets `githubActions` to `false`
-  if (resolved.githubActions === false)
-    return resolved
-
-  if (githubActionsStyle)
-    return { ...resolved, githubActions: { style: githubActionsStyle } }
-
-  return resolved
-}
-
-function resolveRetryOptions(options: CliResolvedOption): CheckOptions {
-  const {
-    retry,
-    retryFactor: factor,
-    retryMinTimeout: minTimeout,
-    retryMaxTimeout: maxTimeout,
-    retryRandomize: randomize,
-    ...resolved
-  } = options
-
-  if (retry !== false && (factor != null || minTimeout != null || maxTimeout != null || randomize != null)) {
-    // assemble the fine-grained `--retry-*` flags into a retry options object
-    return {
-      ...resolved,
-      retry: {
-        ...typeof retry === 'number' && { retries: retry },
-        ...factor != null && { factor },
-        ...minTimeout != null && { minTimeout },
-        ...maxTimeout != null && { maxTimeout },
-        ...randomize != null && { randomize },
-      },
-    }
-  }
-
-  if (typeof retry === 'number' || retry === false)
-    return { ...resolved, retry }
-
-  // a bare `--retry` (`retry === true`) means "enabled",
-  // fall back to the config file / default count
-  return resolved
-}
 
 cli
   .command('[mode]', `Update mode (version range to check). Available: ${MODE_CHOICES.join(' | ')}`)
@@ -106,7 +50,7 @@ cli
   .option('--retry-min-timeout <ms>', 'milliseconds before starting the first retry (default: 1000)')
   .option('--retry-max-timeout <ms>', 'maximum milliseconds between two retries (default: Infinity)')
   .option('--retry-randomize', 'randomize retry timeouts by a factor between 1 and 2')
-  .action(async (mode: RangeMode | undefined, options: CliResolvedOption) => {
+  .action(async (mode: RangeMode | undefined, options: CliOptions) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
         console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join(' | ')}`)
@@ -124,7 +68,7 @@ cli
       process.exit(1)
     }
 
-    const resolved = await resolveConfig(resolveRetryOptions(resolveGitHubActionsOptions(options)))
+    const resolved = await resolveConfig(options)
 
     let exitCode
     if (options.global)
