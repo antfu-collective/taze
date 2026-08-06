@@ -194,7 +194,7 @@ it('still fully excludes a package when no version is given in `exclude`', () =>
   expect(getVersionOfRange(makeResolvedDepWithMajors(), 'major', excludeOptions)).toBeUndefined()
 })
 
-it('resolveDependency', async () => {
+it('resolveDependency', { timeout: 20_000, retry: 2 }, async () => {
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
   expect(false).toBe((await resolveDependency(makePkg('*'), options, filter)).update)
@@ -289,8 +289,12 @@ it('resolveDependency', async () => {
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@5.0.0', '^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('foo@1>typescript', '^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@>=4.0.0 <5.0.0', '^4.0.0'), options, filter)).update)
+})
 
-  // provenance downgrade
+// Isolated into its own test (with a generous timeout and retries) so a slow
+// or transient npm registry response doesn't get starved by, or blow the
+// shared budget of, the many other real-network assertions in `resolveDependency` above.
+it('resolves a provenance downgrade for a real npm package', { timeout: 15_000, retry: 2 }, async () => {
   const provenanceResult = await resolveDependency({
     name: '@test-zone/provenance',
     currentVersion: '0.0.1',
@@ -307,7 +311,7 @@ it('resolveDependency', async () => {
   })
 
   expect([true, 'trustedPublisher']).toContain(provenanceResult.currentProvenance)
-}, 10000)
+})
 
 it('marks trusted publisher provenance downgrade', () => {
   const dep: ResolvedDepChange = {
