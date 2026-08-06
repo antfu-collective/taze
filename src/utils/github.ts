@@ -1,4 +1,5 @@
 import type { RangeMode } from '../types'
+import { spawnSync } from 'node:child_process'
 import process from 'node:process'
 import { createDebug } from 'obug'
 import { fetch as ofetch } from 'ofetch'
@@ -42,8 +43,40 @@ export interface GitHubActionTags {
   error?: string
 }
 
+let ghCliToken: string | undefined
+let ghCliTokenResolved = false
+
+/**
+ * Resolve a token from the `gh` CLI (`gh auth token`) as a fallback when no
+ * environment token is set. The result is cached (including a negative result)
+ * so `gh` is spawned at most once per process.
+ */
+function resolveGhCliToken(): string | undefined {
+  if (ghCliTokenResolved)
+    return ghCliToken
+
+  ghCliTokenResolved = true
+  try {
+    const result = spawnSync('gh', ['auth', 'token'], {
+      encoding: 'utf-8',
+      timeout: 5000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+    const token = result.status === 0 ? result.stdout?.trim() : undefined
+    if (token) {
+      debug('using token resolved from the gh CLI')
+      ghCliToken = token
+    }
+  }
+  catch {
+    // `gh` not installed or failed — fall back to unauthenticated requests
+  }
+
+  return ghCliToken
+}
+
 export function getGitHubToken(): string | undefined {
-  return process.env.GITHUB_TOKEN || process.env.GH_TOKEN || undefined
+  return process.env.GITHUB_TOKEN || process.env.GH_TOKEN || resolveGhCliToken()
 }
 
 function githubHeaders(): Record<string, string> {

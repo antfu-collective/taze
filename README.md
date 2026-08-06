@@ -165,6 +165,8 @@ Versions are fetched from the GitHub REST API. Set a `GITHUB_TOKEN` (or `GH_TOKE
 GITHUB_TOKEN=xxxx taze major
 ```
 
+If neither is set, taze falls back to a token from the [GitHub CLI](https://cli.github.com) (`gh auth token`) when you're logged in, so an authenticated `gh` needs no extra configuration.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.
