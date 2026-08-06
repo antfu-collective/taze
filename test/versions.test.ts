@@ -129,6 +129,17 @@ it('getMaxSatisfying', () => {
     rc: '4.2.1-rc.3',
     experimental: '0.0.0-experimental-4508873393-20240430',
   }))
+
+  // should cap prerelease ranges to the channel dist-tag when `latest` is stable,
+  // so a build-hash snapshot (semver-ranked above the numeric beta) doesn't win. see #256
+  expect('1.0.0-beta.20').toBe(getMaxSatisfying([
+    '1.0.0-beta.19',
+    '1.0.0-beta.20',
+    '1.0.0-beta.9-e89174b',
+  ], '^1.0.0-beta.20', 'default', {
+    latest: '0.45.2',
+    beta: '1.0.0-beta.20',
+  }))
 })
 
 it('getMaxSatisfying - maturity period respects latest/next tags', () => {
