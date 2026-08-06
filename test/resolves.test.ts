@@ -1,8 +1,51 @@
-import type { CheckOptions, DependencyFilter, RawDep, ResolvedDepChange } from '../src'
+import type { CheckOptions, DependencyFilter, PackageData, RawDep, ResolvedDepChange } from '../src'
 import process from 'node:process'
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { resolveDependency } from '../src'
 import { getDiff, getLatestVersionAvailable, getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../src/io/resolves'
+
+// `resolveDependency` fetches package metadata over the network. Mock it so
+// the test suite is deterministic and doesn't depend on (or hammer) the real
+// npm registry.
+const { fetchPackageMock } = vi.hoisted(() => ({
+  fetchPackageMock: vi.fn(),
+}))
+
+vi.mock('../src/utils/packument.ts', async importActual => ({
+  ...await importActual<typeof import('../src/utils/packument')>(),
+  fetchPackage: fetchPackageMock,
+}))
+
+// A synthetic, but semver-realistic, version ladder standing in for the real
+// `typescript` package: exact patch/minor/major bumps above `4.0.0` so every
+// range mode (`major`/`minor`/`patch`/`latest`/`newest`/`stable`) has a
+// qualifying target version to resolve to.
+const typescriptPackageData: PackageData = {
+  tags: { latest: '6.0.0' },
+  versions: ['3.9.0', '4.0.0', '4.0.1', '4.0.5', '4.1.0', '4.5.0', '4.9.5', '5.0.0', '5.5.0', '5.9.5', '6.0.0'],
+}
+
+// Mirrors the real `@test-zone/provenance` package on npm: `0.0.1` was
+// published with trusted-publisher provenance, `0.0.2` (the latest) was not
+// — a genuine provenance downgrade.
+const provenancePackageData: PackageData = {
+  tags: { latest: '0.0.2' },
+  versions: ['0.0.1', '0.0.2'],
+  provenance: { '0.0.1': 'trustedPublisher' },
+}
+
+fetchPackageMock.mockImplementation(async (spec: string) => {
+  // Some callers pass a raw `name@version`/`name@range` spec straight through
+  // (e.g. resolved from a yarn/pnpm override path); a real npm-arg parser
+  // would strip the version part off, so match on the package name prefix.
+  if (spec === 'typescript' || spec.startsWith('typescript@'))
+    return typescriptPackageData
+  if (spec === '@test-zone/provenance')
+    return provenancePackageData
+  if (spec === 'xyg-mdb')
+    throw new Error('Not found')
+  throw new Error(`No mock registered for package "${spec}"`)
+})
 
 const filter: DependencyFilter = () => true
 
@@ -289,8 +332,9 @@ it('resolveDependency', async () => {
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@5.0.0', '^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('foo@1>typescript', '^4.0.0'), options, filter)).update)
   expect(true).toBe((await resolveDependency(makePkgForPnpmOverrides('typescript@>=4.0.0 <5.0.0', '^4.0.0'), options, filter)).update)
+})
 
-  // provenance downgrade
+it('resolves a provenance downgrade for a package published without provenance after being trusted-published', async () => {
   const provenanceResult = await resolveDependency({
     name: '@test-zone/provenance',
     currentVersion: '0.0.1',
@@ -302,12 +346,11 @@ it('resolveDependency', async () => {
     name: '@test-zone/provenance',
     provenanceDowngraded: true,
     currentVersion: '0.0.1',
+    currentProvenance: 'trustedPublisher',
     targetVersion: '0.0.2',
     targetProvenance: undefined,
   })
-
-  expect([true, 'trustedPublisher']).toContain(provenanceResult.currentProvenance)
-}, 10000)
+})
 
 it('marks trusted publisher provenance downgrade', () => {
   const dep: ResolvedDepChange = {
