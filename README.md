@@ -23,6 +23,7 @@
 - Safe by default — updates in the version range you are allowed
 - Interactive mode to select which packages to update
 - Respects `package.json`'s `engines` field and your package manager's config
+- Updates GitHub Actions in your workflows, with optional SHA pinning
 - Agents compatible JSON output
 
 ## Usage
@@ -138,6 +139,34 @@ taze --json
 
 When `--json` is used, `--interactive` is ignored and no progress bars, tables, or tips are printed. By default only dependencies with an available update are included; combine it with `--all` to include up-to-date dependencies too. It can still be combined with `-w` to write the changes back to `package.json`.
 
+### GitHub Actions
+
+`taze` also checks the GitHub Actions used in your workflows. When a `.github/workflows` directory exists, it scans `.github/workflows/*.{yml,yaml}`, composite actions (`.github/actions/**/action.{yml,yaml}` and a repo-root `action.{yml,yaml}`), and reusable workflow calls, then reports newer versions alongside your npm dependencies. It works with every mode (`major`, `minor`, ...), `--interactive`, `--json`, and `-w`.
+
+```bash
+taze major -w      # also updates outdated actions, e.g. actions/checkout@v3 -> @v4
+taze --no-github-actions   # opt out
+```
+
+References are updated in place while preserving the granularity you wrote (`@v4` → `@v5`, `@v4.1.1` → `@v4.2.0`). By default the existing style of each action is kept: tag references stay tags, while SHA-pinned references stay pinned (with a refreshed `# vX.Y.Z` comment). Choose a style explicitly with `--github-actions-style <auto|tag|sha>`:
+
+```yaml
+# style: sha — pin to an immutable commit for supply-chain safety
+- uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+# style: tag
+- uses: actions/checkout@v5
+```
+
+Only `v`-prefixed version tags are considered; branch refs (`@main`), non-`v` tags, `docker://` and local (`./`) actions are left untouched. Filtering (`--include`/`--exclude`/`packageMode`), the maturity-period cool-down, and mode all apply, matched by the action's `owner/repo` name.
+
+Versions are fetched from the GitHub REST API. Set a `GITHUB_TOKEN` (or `GH_TOKEN`) to raise the rate limit from 60 to 5000 requests/hour:
+
+```bash
+GITHUB_TOKEN=xxxx taze major
+```
+
+If neither is set, taze falls back to a token from the [GitHub CLI](https://cli.github.com) (`gh auth token`) when you're logged in, so an authenticated `gh` needs no extra configuration.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.
@@ -184,6 +213,11 @@ export default defineConfig({
   // disable checking for "overrides" package.json field
   depFields: {
     overrides: false
+  },
+  // GitHub Actions updates: `true` (default) | `false` to opt out | options object
+  githubActions: {
+    // 'auto' (preserve existing style) | 'tag' | 'sha'
+    style: 'auto'
   }
 })
 ```
@@ -200,6 +234,8 @@ They work well but have different focuses and feature sets, try them out as well
 ## Thanks
 
 Great thanks to [@sinoon](https://github.com/sinoon) who helped a lot with idea brainstorming and feedback discussion.
+
+The GitHub Actions updating feature is inspired by and credits [actions-up](https://github.com/azat-io/actions-up) by [Azat S.](https://azat.io), which pioneered the interactive SHA-pinning workflow this builds upon.
 
 ## License
 

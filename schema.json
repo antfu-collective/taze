@@ -188,6 +188,25 @@
       "minimum": 1,
       "description": "Request timeout in milliseconds when fetching package metadata.",
       "default": 5000
+    },
+    "githubActions": {
+      "description": "Check and update GitHub Actions referenced in .github/workflows/*.yml and composite action.yml files. Auto-enabled when a .github/workflows directory exists. Set to false to opt out, or pass an object to configure the behavior.",
+      "default": true,
+      "anyOf": [
+        { "type": "boolean" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "style": {
+              "type": "string",
+              "enum": ["auto", "tag", "sha"],
+              "default": "auto",
+              "description": "How to write updated `uses:` references. 'auto' preserves each action's existing style (tags stay tags, SHA pins stay SHA pins with a refreshed # vX.Y.Z comment), 'tag' always writes a tag reference, 'sha' always pins to a commit SHA with a version comment."
+            }
+          }
+        }
+      ]
     }
   }
 }

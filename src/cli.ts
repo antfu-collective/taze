@@ -1,5 +1,6 @@
 import type { CAC } from 'cac'
-import type { CheckOptions, RangeMode } from './types'
+import type { CliOptions } from './config'
+import type { RangeMode } from './types'
 import process from 'node:process'
 import { cac } from 'cac'
 import restoreCursor from 'restore-cursor'
@@ -12,49 +13,6 @@ import { SORT_CHOICES } from './utils/sort'
 
 const cli: CAC = cac('taze')
 
-interface CliResolvedOption extends Omit<CheckOptions, 'retry'> {
-  /**
-   * `true` for a bare `--retry`, `false` for `--no-retry`
-   */
-  retry?: number | boolean
-  retryFactor?: number
-  retryMinTimeout?: number
-  retryMaxTimeout?: number
-  retryRandomize?: boolean
-}
-
-function resolveRetryOptions(options: CliResolvedOption): CheckOptions {
-  const {
-    retry,
-    retryFactor: factor,
-    retryMinTimeout: minTimeout,
-    retryMaxTimeout: maxTimeout,
-    retryRandomize: randomize,
-    ...resolved
-  } = options
-
-  if (retry !== false && (factor != null || minTimeout != null || maxTimeout != null || randomize != null)) {
-    // assemble the fine-grained `--retry-*` flags into a retry options object
-    return {
-      ...resolved,
-      retry: {
-        ...typeof retry === 'number' && { retries: retry },
-        ...factor != null && { factor },
-        ...minTimeout != null && { minTimeout },
-        ...maxTimeout != null && { maxTimeout },
-        ...randomize != null && { randomize },
-      },
-    }
-  }
-
-  if (typeof retry === 'number' || retry === false)
-    return { ...resolved, retry }
-
-  // a bare `--retry` (`retry === true`) means "enabled",
-  // fall back to the config file / default count
-  return resolved
-}
-
 cli
   .command('[mode]', `Update mode (version range to check). Available: ${MODE_CHOICES.join(' | ')}`)
   .option('--cwd, -C <cwd>', 'specify the current working directory')
@@ -66,6 +24,8 @@ cli
   .option('--fast-npm-meta-api-endpoint <url>', 'API endpoint for fetching npm package metadata via fast-npm-meta')
   .option('--ignore-paths <paths>', 'ignore paths for search package.json')
   .option('--ignore-other-workspaces', 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)', { default: true })
+  .option('--no-github-actions', 'disable checking GitHub Actions in .github/workflows and composite action.yml files')
+  .option('--github-actions-style <style>', 'how to write updated actions: auto (preserve) | tag | sha')
   .option('--include, -n <deps>', 'only included dependencies will be checked for updates')
   .option('--exclude, -x <deps>', 'exclude dependencies to be checked, will override --include options; supports `name@range` (e.g. typescript@7) to exclude only matching versions')
   .option('--write, -w', 'write to package.json')
@@ -90,7 +50,7 @@ cli
   .option('--retry-min-timeout <ms>', 'milliseconds before starting the first retry (default: 1000)')
   .option('--retry-max-timeout <ms>', 'maximum milliseconds between two retries (default: Infinity)')
   .option('--retry-randomize', 'randomize retry timeouts by a factor between 1 and 2')
-  .action(async (mode: RangeMode | undefined, options: CliResolvedOption) => {
+  .action(async (mode: RangeMode | undefined, options: CliOptions) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
         console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join(' | ')}`)
@@ -103,7 +63,12 @@ cli
       options.maturityPeriod = 7
     }
 
-    const resolved = await resolveConfig(resolveRetryOptions(options))
+    if (options.githubActionsStyle && !['auto', 'tag', 'sha'].includes(options.githubActionsStyle)) {
+      console.error(`Invalid --github-actions-style: ${options.githubActionsStyle}. Please use one of: auto | tag | sha`)
+      process.exit(1)
+    }
+
+    const resolved = await resolveConfig(options)
 
     let exitCode
     if (options.global)

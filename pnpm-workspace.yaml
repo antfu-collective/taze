@@ -20,7 +20,7 @@ catalogs:
     bumpp: ^12.1.1
     eslint: ^10.8.0
     tsdown: ^0.22.14
-    tsx: ^4.23.1
+    tsx: ^4.23.6
     typescript: ^6.0.3
     vitest: ^4.1.10
   inlined:

@@ -1,0 +1,118 @@
+import type { Scalar } from 'yaml'
+import type { CommonOptions, GitHubActionMeta, GitHubActionsOptions, GitHubActionStyle, PackageMeta, RawDep } from '../types'
+import { readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'pathe'
+import { isScalar, parseDocument, visit } from 'yaml'
+import { formatUses, parseUses } from '../utils/github'
+
+function resolveStyle(options: CommonOptions): GitHubActionStyle {
+  const config = options.githubActions
+  if (config && typeof config === 'object')
+    return (config as GitHubActionsOptions).style ?? 'auto'
+  return 'auto'
+}
+
+export function isGitHubActionsEnabled(options: CommonOptions): boolean {
+  return options.githubActions !== false
+}
+
+export async function loadGitHubAction(
+  relative: string,
+  options: CommonOptions,
+  shouldUpdate: (name: string) => boolean,
+): Promise<PackageMeta[]> {
+  const filepath = resolve(options.cwd ?? '', relative)
+  const content = await readFile(filepath, 'utf-8')
+  const doc = parseDocument(content)
+
+  if (doc.errors.length)
+    return []
+
+  const deps: RawDep[] = []
+
+  visit(doc, {
+    Pair(_, pair: any) {
+      const key = pair.key
+      const value = pair.value
+      if (!key || key.value !== 'uses' || !isScalar(value) || typeof value.value !== 'string')
+        return
+
+      const parsed = parseUses(value.value, value.comment)
+      if (!parsed)
+        return
+
+      deps.push({
+        name: parsed.repo,
+        currentVersion: parsed.tag,
+        source: 'github-actions',
+        update: shouldUpdate(parsed.repo),
+        githubAction: {
+          repo: parsed.repo,
+          subpath: parsed.subpath,
+          style: parsed.style,
+          sha: parsed.sha,
+          node: value as Scalar,
+        },
+      })
+    },
+  })
+
+  if (!deps.length)
+    return []
+
+  return [
+    {
+      name: relative,
+      private: false,
+      version: '',
+      type: 'github-action',
+      relative,
+      filepath,
+      get raw() {
+        return doc.toJS() as Record<string, unknown>
+      },
+      yamlDocument: doc,
+      deps,
+      resolved: [],
+    } satisfies GitHubActionMeta,
+  ]
+}
+
+export async function writeGitHubAction(
+  pkg: PackageMeta,
+  options: CommonOptions,
+) {
+  if (pkg.type !== 'github-action')
+    throw new Error('Package type is not supported')
+
+  const configuredStyle = resolveStyle(options)
+  let changed = false
+
+  for (const dep of pkg.resolved) {
+    if (!dep.update || !dep.githubAction)
+      continue
+
+    const { repo, subpath, node, targetSha } = dep.githubAction
+    if (!node)
+      continue
+
+    const effectiveStyle = configuredStyle === 'auto' ? dep.githubAction.style : configuredStyle
+
+    if (effectiveStyle === 'sha') {
+      if (!targetSha)
+        continue // cannot pin without a resolved SHA; leave untouched
+      node.value = formatUses(repo, subpath, targetSha)
+      node.comment = ` ${dep.targetVersion}`
+    }
+    else {
+      node.value = formatUses(repo, subpath, dep.targetVersion)
+      // drop any stale version comment when writing a tag reference
+      node.comment = undefined
+    }
+
+    changed = true
+  }
+
+  if (changed)
+    await writeFile(pkg.filepath, pkg.yamlDocument.toString(), 'utf-8')
+}
