@@ -24,6 +24,7 @@ export const DEFAULT_COMMON_OPTIONS: CommonOptions = {
   include: '',
   exclude: '',
   depFields: {},
+  githubActions: true,
 }
 
 export const DEFAULT_CHECK_OPTIONS: CheckOptions = {

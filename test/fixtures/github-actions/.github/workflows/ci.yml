@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4.0.0
+        with:
+          node-version: 20
+      - uses: actions/cache@1111111111111111111111111111111111111111 # v3.3.1
+      - uses: ./.github/actions/local
+      - uses: docker://alpine:3.18
+      - run: echo "hello"
+
+  call:
+    uses: org/repo/.github/workflows/release.yml@v1
+    with:
+      env: production

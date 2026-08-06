@@ -5,10 +5,11 @@ import process from 'node:process'
 import { newQueue } from '@henrygd/queue'
 import { createDebug } from 'obug'
 import { resolve } from 'pathe'
-import { findMinimumForRange, isEqual, isGreater, isLess, satisfies } from 'verkit'
+import { coerce, findMinimumForRange, isEqual, isGreater, isLess, isValid, satisfies } from 'verkit'
 import { diffSorter } from '../filters/diff-sorter'
 import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, getPackageMode, isVersionInExcludedRanges } from '../utils/config'
 import { queueContext } from '../utils/context'
+import { fetchActionTags, fetchCommitDate, selectTarget } from '../utils/github'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
 
@@ -115,6 +116,151 @@ export async function getPackageData(name: string, protocol: Protocol = 'npm', c
   finally {
     inflightRequests.delete(cacheName)
   }
+}
+
+export async function getGitHubActionData(repo: string, requestTimeout?: number): Promise<PackageData> {
+  const cacheName = `gha:${repo}`
+
+  if (cache[cacheName]) {
+    if (ttl(cache[cacheName].cacheTime) < cacheTTL) {
+      debug.cache(`cache hit for ${cacheName}`)
+      return cache[cacheName].data
+    }
+    else {
+      delete cache[cacheName]
+    }
+  }
+
+  const inflightRequest = inflightRequests.get(cacheName)
+  if (inflightRequest) {
+    debug.cache(`in-flight hit for ${cacheName}`)
+    return inflightRequest
+  }
+
+  const request = (async () => {
+    debug.resolve(`resolving ${cacheName}`)
+    const { versions, shaMap, error } = await fetchActionTags(repo, requestTimeout)
+    const data: PackageData = {
+      versions,
+      tags: versions.length ? { latest: versions[versions.length - 1] } : {},
+      shaMap,
+      error,
+    }
+    if (!error) {
+      cache[cacheName] = { data, cacheTime: now() }
+      cacheChanged = true
+    }
+    return data
+  })()
+
+  inflightRequests.set(cacheName, request)
+
+  try {
+    return await request
+  }
+  finally {
+    inflightRequests.delete(cacheName)
+  }
+}
+
+export async function resolveGitHubAction(
+  raw: RawDep,
+  options: CheckOptions,
+  filter: DependencyFilter = () => true,
+): Promise<ResolvedDepChange> {
+  const dep = { ...raw } as ResolvedDepChange
+  dep.provenanceDowngraded = false
+
+  const info = raw.githubAction
+  const configMode = getPackageMode(raw.name, options)
+  const optionMode = options.mode ?? 'default'
+  const mode = (configMode
+    ? (configMode === optionMode
+        ? optionMode
+        : optionMode === 'default' ? configMode : 'ignore')
+    : optionMode) as RangeMode | 'ignore'
+
+  const noUpdate = (): ResolvedDepChange => {
+    dep.diff = null
+    dep.targetVersion = raw.currentVersion
+    dep.update = false
+    return dep
+  }
+
+  if (!info || !raw.update || mode === 'ignore' || !await Promise.resolve(filter(raw)))
+    return noUpdate()
+
+  const excludeRanges = getExcludeVersionRanges(raw.name, options)
+  if (excludeRanges === true)
+    return noUpdate()
+
+  const pkgData = await getGitHubActionData(info.repo, options.requestTimeout)
+  dep.pkgData = pkgData
+
+  if (pkgData.error) {
+    dep.diff = 'error'
+    dep.update = false
+    dep.resolveError = pkgData.error
+    return dep
+  }
+
+  const maturityExclude = getMaturityPeriodExcludeRanges(raw.name, options)
+  const maturityDays = options.maturityPeriod ?? 0
+  const cutoff = maturityDays > 0 ? Date.now() - maturityDays * 24 * 60 * 60 * 1000 : 0
+
+  const rejectedForMaturity = new Set<string>()
+  let target: { tag: string, resolvedTag: string } | undefined
+
+  while (true) {
+    const candidateTags = pkgData.versions.filter(t => !rejectedForMaturity.has(t))
+    const picked = selectTarget(raw.currentVersion, candidateTags, mode as RangeMode, {
+      reject: (parsed) => {
+        if (excludeRanges.length > 0) {
+          const coerced = coerce(parsed.raw)
+          if (coerced && isVersionInExcludedRanges(coerced, excludeRanges))
+            return true
+        }
+        return false
+      },
+    })
+
+    if (!picked)
+      break
+
+    // supply-chain cool-down: skip versions whose commit is younger than the
+    // configured maturity period, stepping down to the next candidate
+    if (cutoff > 0 && maturityExclude !== true) {
+      const coerced = coerce(picked.resolvedTag)
+      const isMaturityExcluded = coerced && maturityExclude.length > 0
+        && isVersionInExcludedRanges(coerced, maturityExclude)
+      if (!isMaturityExcluded) {
+        const sha = pkgData.shaMap?.[picked.resolvedTag]
+        const date = sha ? await fetchCommitDate(info.repo, sha, options.requestTimeout) : undefined
+        if (date && new Date(date).getTime() > cutoff) {
+          rejectedForMaturity.add(picked.resolvedTag)
+          continue
+        }
+        if (date)
+          dep.targetVersionTime = date
+      }
+    }
+
+    target = picked
+    break
+  }
+
+  if (!target || target.tag === raw.currentVersion)
+    return noUpdate()
+
+  dep.targetVersion = target.tag
+  dep.diff = getDiff(raw.currentVersion, target.tag)
+  dep.update = dep.diff !== null && dep.diff !== 'error'
+  dep.githubAction = {
+    ...info,
+    targetSha: pkgData.shaMap?.[target.tag] ?? pkgData.shaMap?.[target.resolvedTag],
+  }
+
+  return dep
 }
 
 export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, options: CheckOptions) {
@@ -237,6 +383,13 @@ export function updateTargetVersion(
 }
 
 export function getDiff(current: string, target: string): DiffType {
+  // GitHub Action tags may be partial (e.g. `v4`), which `verkit` cannot parse
+  // directly; coerce them to a full semver so the diff can still be computed.
+  if (!isValid(current))
+    current = coerce(current) ?? current
+  if (!isValid(target))
+    target = coerce(target) ?? target
+
   if (isEqual(current, target))
     return null
 
@@ -265,6 +418,9 @@ export async function resolveDependency(
   options: CheckOptions,
   filter: DependencyFilter = () => true,
 ) {
+  if (raw.source === 'github-actions')
+    return resolveGitHubAction(raw, options, filter)
+
   const dep = { ...raw } as ResolvedDepChange
 
   const configMode = getPackageMode(dep.name, options)

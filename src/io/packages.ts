@@ -8,6 +8,7 @@ import { glob } from 'tinyglobby'
 import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { loadBunWorkspace, writeBunWorkspace } from './bunWorkspaces'
+import { isGitHubActionsEnabled, loadGitHubAction, writeGitHubAction } from './githubActions'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
 import { loadPackageYAML, writePackageYAML } from './packageYaml'
 import { loadPnpmWorkspace, writePnpmWorkspace } from './pnpmWorkspaces'
@@ -39,9 +40,49 @@ export async function writePackage(
       return writeBunWorkspace(pkg, options)
     case '.yarnrc.yml':
       return writeYarnWorkspace(pkg, options)
+    case 'github-action':
+      return writeGitHubAction(pkg, options)
     default:
       throw new Error(`Unsupported package type: ${pkg.type}`)
   }
+}
+
+const GITHUB_ACTIONS_FILE_RE = /(?:^|\/)\.github\/workflows\/[^/]+\.ya?ml$/
+const GITHUB_ACTION_MANIFEST_RE = /(?:^|\/)action\.ya?ml$/
+
+export function isGitHubActionsPath(relative: string): boolean {
+  return GITHUB_ACTIONS_FILE_RE.test(relative) || GITHUB_ACTION_MANIFEST_RE.test(relative)
+}
+
+async function loadGitHubActionsFiles(options: CommonOptions): Promise<string[]> {
+  const ignore = DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || [])
+  const patterns = options.recursive
+    ? [
+        '**/.github/workflows/*.yml',
+        '**/.github/workflows/*.yaml',
+        '**/.github/actions/**/action.yml',
+        '**/.github/actions/**/action.yaml',
+        '**/action.yml',
+        '**/action.yaml',
+      ]
+    : [
+        '.github/workflows/*.yml',
+        '.github/workflows/*.yaml',
+        '.github/actions/**/action.yml',
+        '.github/actions/**/action.yaml',
+        'action.yml',
+        'action.yaml',
+      ]
+
+  const files = await glob(patterns, {
+    cwd: resolve(options.cwd || process.cwd()),
+    ignore,
+    onlyFiles: true,
+    dot: true,
+    expandDirectories: false,
+  })
+
+  return [...new Set(files)].sort((a, b) => a.localeCompare(b))
 }
 
 export async function loadPackage(
@@ -49,6 +90,9 @@ export async function loadPackage(
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
 ): Promise<PackageMeta[]> {
+  if (isGitHubActionsPath(relative))
+    return loadGitHubAction(relative, options, shouldUpdate)
+
   if (relative.endsWith('pnpm-workspace.yaml'))
     return loadPnpmWorkspace(relative, options, shouldUpdate)
 
@@ -168,6 +212,11 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
 
   if (existsSync(join(cwd, '.yarnrc.yml'))) {
     packagesNames.unshift('.yarnrc.yml')
+  }
+
+  if (isGitHubActionsEnabled(options)) {
+    const actionFiles = await loadGitHubActionsFiles(options)
+    packagesNames.push(...actionFiles)
   }
 
   const packages = (await Promise.all(

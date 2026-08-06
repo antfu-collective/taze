@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import type { CheckOptions, RangeMode } from './types'
+import type { CheckOptions, GitHubActionStyle, RangeMode } from './types'
 import process from 'node:process'
 import { cac } from 'cac'
 import restoreCursor from 'restore-cursor'
@@ -21,6 +21,20 @@ interface CliResolvedOption extends Omit<CheckOptions, 'retry'> {
   retryMinTimeout?: number
   retryMaxTimeout?: number
   retryRandomize?: boolean
+  githubActionsStyle?: GitHubActionStyle
+}
+
+function resolveGitHubActionsOptions(options: CliResolvedOption): CliResolvedOption {
+  const { githubActionsStyle, ...resolved } = options
+
+  // `--no-github-actions` sets `githubActions` to `false`
+  if (resolved.githubActions === false)
+    return resolved
+
+  if (githubActionsStyle)
+    return { ...resolved, githubActions: { style: githubActionsStyle } }
+
+  return resolved
 }
 
 function resolveRetryOptions(options: CliResolvedOption): CheckOptions {
@@ -66,6 +80,8 @@ cli
   .option('--fast-npm-meta-api-endpoint <url>', 'API endpoint for fetching npm package metadata via fast-npm-meta')
   .option('--ignore-paths <paths>', 'ignore paths for search package.json')
   .option('--ignore-other-workspaces', 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)', { default: true })
+  .option('--no-github-actions', 'disable checking GitHub Actions in .github/workflows and composite action.yml files')
+  .option('--github-actions-style <style>', 'how to write updated actions: auto (preserve) | tag | sha')
   .option('--include, -n <deps>', 'only included dependencies will be checked for updates')
   .option('--exclude, -x <deps>', 'exclude dependencies to be checked, will override --include options; supports `name@range` (e.g. typescript@7) to exclude only matching versions')
   .option('--write, -w', 'write to package.json')
@@ -103,7 +119,12 @@ cli
       options.maturityPeriod = 7
     }
 
-    const resolved = await resolveConfig(resolveRetryOptions(options))
+    if (options.githubActionsStyle && !['auto', 'tag', 'sha'].includes(options.githubActionsStyle)) {
+      console.error(`Invalid --github-actions-style: ${options.githubActionsStyle}. Please use one of: auto | tag | sha`)
+      process.exit(1)
+    }
+
+    const resolved = await resolveConfig(resolveRetryOptions(resolveGitHubActionsOptions(options)))
 
     let exitCode
     if (options.global)
