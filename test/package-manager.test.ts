@@ -1,20 +1,42 @@
-import type { CheckOptions, PackageMeta, ResolvedDepChange } from '../src'
+import type { CheckOptions, PackageData, PackageMeta, ResolvedDepChange } from '../src'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CheckPackages } from '../src'
 import { loadPackageJSON, writePackageJSON } from '../src/io/packageJson'
 import { getHexHashFromIntegrity } from '../src/utils/sha'
+
+const { fetchPackageMock } = vi.hoisted(() => ({
+  fetchPackageMock: vi.fn(),
+}))
+
+vi.mock('../src/utils/packument.ts', async importActual => ({
+  ...await importActual<typeof import('../src/utils/packument')>(),
+  fetchPackage: fetchPackageMock,
+}))
 
 function getPkgInfo(name: string, result: ResolvedDepChange[]) {
   return result.filter(r => r.name === name)[0]
 }
 
 const pnpmVersion = '10.23.0'
+const updatedPnpmVersion = '10.24.0'
 const pnpmIntegrity = 'sha512-IcTlaYACrel+Tv6Li0qJqN48haN5GflX56DzDzj7xbvdBZgP/ikXmy+25uaRJC4JjZRdFgF3LK0P71+2QR4qSw=='
+const updatedPnpmIntegrity = 'sha512-dXBkYXRlZC1wbnBtLWludGVncml0eQ=='
 const pnpmHexHash = '21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b'
+
+const pnpmPackageData: PackageData = {
+  tags: { latest: updatedPnpmVersion },
+  versions: [pnpmVersion, updatedPnpmVersion],
+  integrity: {
+    [pnpmVersion]: pnpmIntegrity,
+    [updatedPnpmVersion]: updatedPnpmIntegrity,
+  },
+}
+
+fetchPackageMock.mockResolvedValue(pnpmPackageData)
 
 const originalPkgJson = {
   name: '@taze/package-manager',
