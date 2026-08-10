@@ -237,6 +237,23 @@ it('still fully excludes a package when no version is given in `exclude`', () =>
   expect(getVersionOfRange(makeResolvedDepWithMajors(), 'major', excludeOptions)).toBeUndefined()
 })
 
+it('keeps locked dependencies within patch range in patch mode', async () => {
+  const patchOptions = {
+    ...options,
+    mode: 'patch' as const,
+    includeLocked: true,
+  }
+
+  const patchUpdate = await resolveDependency(makePkg('4.0.0'), patchOptions, filter)
+  expect(patchUpdate.targetVersion).toBe('4.0.5')
+  expect(patchUpdate.update).toBe(true)
+
+  const noPatchUpdate = await resolveDependency(makePkg('4.0.5'), patchOptions, filter)
+  expect(noPatchUpdate.targetVersion).toBe('4.0.5')
+  expect(noPatchUpdate.update).toBe(false)
+  expect(noPatchUpdate.latestVersionAvailable).toBe('6.0.0')
+})
+
 it('resolveDependency', async () => {
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)

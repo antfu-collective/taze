@@ -353,18 +353,6 @@ export function updateTargetVersion(
     = !!(dep.currentProvenance && !dep.targetProvenance) // trusted -> none, provenance -> none
       || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
 
-  if (versionLocked && isEqual(dep.currentVersion, dep.targetVersion)) {
-    // for example: `taze`/`taze -P` is default mode (and it matched from patch to minor)
-    // - but this mode will always ignore the locked pkgs
-    // - so we need to reset the target
-    const { versions, time = {}, tags } = dep.pkgData
-    const targetVersion = getMaxSatisfying(dep.filteredVersions ?? versions, dep.currentVersion, 'minor', tags)
-    if (targetVersion) {
-      dep.targetVersion = targetVersion
-      dep.targetVersionTime = time[dep.targetVersion]
-    }
-  }
-
   try {
     const current = findMinimumForRange(dep.currentVersion)!
     const target = findMinimumForRange(dep.targetVersion)!
