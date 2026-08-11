@@ -469,7 +469,14 @@ export async function resolveDependency(
         return dep
       }
 
-      target = getVersionOfRange(dep, mergeMode as RangeMode, options)
+      const versionLocked = /^\d+/.test(dep.currentVersion)
+      // Bare `--include-locked` historically checks exact versions within the minor range.
+      // Explicit modes and per-package modes must keep their selected range.
+      const targetMode = options.includeLocked && versionLocked && mergeMode === 'default'
+        ? 'minor'
+        : mergeMode
+
+      target = getVersionOfRange(dep, targetMode as RangeMode, options)
 
       if (!target) {
         dep.diff = null

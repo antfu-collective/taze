@@ -254,6 +254,23 @@ it('keeps locked dependencies within patch range in patch mode', async () => {
   expect(noPatchUpdate.latestVersionAvailable).toBe('6.0.0')
 })
 
+it('includes locked dependencies within minor range in default mode', async () => {
+  const defaultOptions = {
+    ...options,
+    mode: 'default' as const,
+    includeLocked: true,
+  }
+
+  const minorUpdate = await resolveDependency(makePkg('4.0.0'), defaultOptions, filter)
+  expect(minorUpdate.targetVersion).toBe('4.9.5')
+  expect(minorUpdate.update).toBe(true)
+
+  const noMinorUpdate = await resolveDependency(makePkg('4.9.5'), defaultOptions, filter)
+  expect(noMinorUpdate.targetVersion).toBe('4.9.5')
+  expect(noMinorUpdate.update).toBe(false)
+  expect(noMinorUpdate.latestVersionAvailable).toBe('6.0.0')
+})
+
 it('resolveDependency', async () => {
   // default
   expect(false).toBe((await resolveDependency(makePkg(''), options, filter)).update)
