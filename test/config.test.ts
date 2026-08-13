@@ -2,7 +2,8 @@ import type { CheckOptions, CommonOptions } from '../src'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import process from 'node:process'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resolveConfig } from '../src/config'
 
 const tmpRoots: string[] = []
@@ -79,5 +80,45 @@ describe('resolveConfig infers maturity settings', () => {
     const options: CheckOptions = { cwd, loglevel: 'silent', maturityPeriod: 7 }
     const { maturityPeriod } = (await resolveConfig(options)) as CheckOptions
     expect(maturityPeriod).toBe(7)
+  })
+})
+
+describe('resolveConfig honors DO_NOT_TRACK for the fast-npm-meta endpoint', () => {
+  let cwd: string
+
+  beforeEach(() => {
+    cwd = makeTmp()
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('clears fastNpmMetaApiEndpoint when DO_NOT_TRACK is set', async () => {
+    vi.stubEnv('DO_NOT_TRACK', '1')
+    const options: CommonOptions = { cwd, fastNpmMetaApiEndpoint: 'https://example.com/meta' }
+    const { fastNpmMetaApiEndpoint } = await resolveConfig(options)
+    expect(fastNpmMetaApiEndpoint).toBeUndefined()
+  })
+
+  it('preserves fastNpmMetaApiEndpoint when DO_NOT_TRACK is unset', async () => {
+    vi.stubEnv('DO_NOT_TRACK', '')
+    const options: CommonOptions = { cwd, fastNpmMetaApiEndpoint: 'https://example.com/meta' }
+    const { fastNpmMetaApiEndpoint } = await resolveConfig(options)
+    expect(fastNpmMetaApiEndpoint).toBe('https://example.com/meta')
+  })
+
+  it('preserves fastNpmMetaApiEndpoint when DO_NOT_TRACK is absent', async () => {
+    delete process.env.DO_NOT_TRACK
+    const options: CommonOptions = { cwd, fastNpmMetaApiEndpoint: 'https://example.com/meta' }
+    const { fastNpmMetaApiEndpoint } = await resolveConfig(options)
+    expect(fastNpmMetaApiEndpoint).toBe('https://example.com/meta')
+  })
+
+  it('does not mutate the input options object', async () => {
+    vi.stubEnv('DO_NOT_TRACK', '1')
+    const options: CommonOptions = { cwd, fastNpmMetaApiEndpoint: 'https://example.com/meta' }
+    await resolveConfig(options)
+    expect(options.fastNpmMetaApiEndpoint).toBe('https://example.com/meta')
   })
 })
