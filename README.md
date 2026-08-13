@@ -24,6 +24,7 @@
 - Interactive mode to select which packages to update
 - Respects `package.json`'s `engines` field and your package manager's config
 - Updates GitHub Actions in your workflows, with optional SHA pinning
+- Updates Node.js versions declared in `.node-version`
 - Agents compatible JSON output
 
 ## Usage
@@ -137,7 +138,30 @@ Pass `--json` to output the resolved update info as JSON to stdout instead of th
 taze --json
 ```
 
-When `--json` is used, `--interactive` is ignored and no progress bars, tables, or tips are printed. By default only dependencies with an available update are included; combine it with `--all` to include up-to-date dependencies too. It can still be combined with `-w` to write the changes back to `package.json`.
+When `--json` is used, `--interactive` is ignored and no progress bars, tables, or tips are printed. By default only dependencies with an available update are included; combine it with `--all` to include up-to-date dependencies too. It can still be combined with `-w` to write changes back to their declaration files.
+
+### Node.js versions
+
+`taze` checks a `.node-version` file in the current directory. With `-r`, it also checks nested `.node-version` files while honoring `ignorePaths` and `ignoreOtherWorkspaces`. The file does not need a neighboring `package.json`.
+
+```bash
+taze                   # stay on the current Node.js major
+taze patch             # stay on the current major and minor
+taze major -w          # allow a newer major and write the file
+taze --no-node-version # opt out
+```
+
+Only stable numeric references with an optional `v` prefix are supported: `22`, `22.14`, and `v22.14.0`. Aliases, ranges, prereleases, and other content are left unchanged. Taze preserves the prefix, the number of numeric segments, surrounding whitespace, and the final newline. A major-only reference such as `22` already floats within Node.js 22 in the default mode, while `taze major` can update it to a newer major.
+
+| Mode | Allowed Node.js releases |
+| --- | --- |
+| `patch` | Current major and minor |
+| default, `minor`, `stable` | Current major |
+| `major`, `latest`, `newest`, `next` | All newer stable releases |
+
+Versions and release dates come from the official [Node.js distribution index](https://nodejs.org/dist/index.json), so `maturityPeriod` and version-specific exclusions also apply. Filters use the dependency name `node`, including `--include node`, `--exclude node`, and `packageMode.node`. `--include-locked` does not change `.node-version` behavior.
+
+Writing the file does not install or switch the active Node.js runtime. `--install` and `--update` keep their existing package-manager meaning.
 
 ### GitHub Actions
 
@@ -187,16 +211,16 @@ export default defineConfig({
   // a number for retry count, `false` to disable, or an object for fine-grained
   // control, e.g. { retries: 4, factor: 2, minTimeout: 1000, maxTimeout: 30_000, randomize: false }
   retry: 4,
-  // write to package.json
+  // write changes to supported declaration files
   write: true,
   // run `npm install` or `yarn install` right after bumping
   install: true,
-  // ignore paths for looking for package.json in monorepo
+  // ignore paths when searching supported files in a monorepo
   ignorePaths: [
     '**/node_modules/**',
     '**/test/**',
   ],
-  // ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)
+  // ignore files in other workspaces (with their own .git, pnpm-workspace.yaml, etc.)
   ignoreOtherWorkspaces: true,
   // override with different bumping mode for each package
   packageMode: {
@@ -218,7 +242,9 @@ export default defineConfig({
   githubActions: {
     // 'auto' (preserve existing style) | 'tag' | 'sha'
     style: 'auto'
-  }
+  },
+  // .node-version updates are enabled by default
+  nodeVersion: true
 })
 ```
 

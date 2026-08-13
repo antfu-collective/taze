@@ -1,8 +1,8 @@
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RawDep } from '../types'
 import { newQueue } from '@henrygd/queue'
 import { loadPackages, writePackage } from '../io/packages'
-import { dumpCache, loadCache, resolvePackage } from '../io/resolves'
-import { queueContext } from '../utils/context'
+import { dumpCache, getNodeReleaseData, invalidateNodeReleaseCache, loadCache, resolvePackage } from '../io/resolves'
+import { nodeReleaseDataContext, queueContext } from '../utils/context'
 
 export interface CheckEventCallbacks {
   afterPackagesLoaded?: (pkgs: PackageMeta[]) => void
@@ -22,13 +22,20 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
   const packages = await loadPackages(options)
   callbacks.afterPackagesLoaded?.(packages)
 
+  const hasNodeVersion = packages.some(pkg => pkg.type === 'node-version')
+  if (hasNodeVersion && options.force)
+    invalidateNodeReleaseCache()
+  const nodeReleaseData = hasNodeVersion
+    ? getNodeReleaseData(options.requestTimeout)
+    : undefined
+
   const privatePackageNames = packages
     .filter(i => i.private)
     .map(i => i.name)
     .filter(i => i)
 
   // to filter out private dependency in monorepo
-  const filter = (dep: RawDep) => !privatePackageNames.includes(dep.name)
+  const filter = (dep: RawDep) => dep.source === 'node-version' || !privatePackageNames.includes(dep.name)
 
   let resolvedCount = 0
   const onDependencyResolved: DependencyResolvedCallback = (pkgName, name, progress, total) => {
@@ -38,7 +45,7 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
 
   const queue = newQueue(options.concurrency || 10)
 
-  await queueContext.run(queue, () => {
+  const resolvePackages = () => queueContext.run(queue, () => {
     // run all CheckSingleProject in parallel
     // the actual resolveDependencies within CheckSingleProject -> resolvePackage -> resolveDependencies is
     // actually limited by the queueContext/queue, so it won't overwhelm the npm meta server.
@@ -48,6 +55,10 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
       callbacks.afterPackageEnd?.(pkg)
     }))
   })
+  if (nodeReleaseData)
+    await nodeReleaseDataContext.run(nodeReleaseData, resolvePackages)
+  else
+    await resolvePackages()
 
   callbacks.afterPackagesEnd?.(packages)
 

@@ -4,11 +4,10 @@ import process from 'node:process'
 import readline from 'node:readline'
 import { createControlledPromise, notNullish } from '@antfu/utils'
 import c from 'ansis'
-import { getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../../io/resolves'
+import { formatResolvedTargetVersion, getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../../io/resolves'
 import { clearInteractiveScreen, colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable, hideInteractiveCursor, showInteractiveCursor, sliceRenderLines, writeInteractiveScreen } from '../../render'
 import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
-import { getPrefixedVersion } from '../../utils/versions'
 import { renderChanges } from './render'
 
 export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptions) {
@@ -29,13 +28,14 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
         // Set `update` flag to true to render option in the list,
         // but don't check it by default.
         dep.update = true
-        updateTargetVersion(dep, dep.latestVersionAvailable, undefined, options.includeLocked)
+        const resolvedVersion = dep.latestVersionAvailableResolved ?? dep.latestVersionAvailable
+        updateTargetVersion(dep, resolvedVersion, undefined, options.includeLocked)
       }
     })
   })
 
   if (flatDeps().length === 0)
-    return []
+    return pkgs
 
   const promise = createControlledPromise<PackageMeta[]>()
   let hasCleanedUp = false
@@ -158,14 +158,14 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
       .map(([name, version]) => {
         if (!version)
           return undefined
-        const targetVersion = getPrefixedVersion(dep.currentVersion, version)
+        const targetVersion = formatResolvedTargetVersion(dep, version)
         if (!targetVersion || targetVersion === dep.currentVersion)
           return undefined
         return {
           name,
           version,
           time: dep.pkgData.time?.[version],
-          targetVersion: getPrefixedVersion(dep.currentVersion, version)!,
+          targetVersion,
         }
       })
       .filter(notNullish)

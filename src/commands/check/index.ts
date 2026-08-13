@@ -81,11 +81,14 @@ export async function check(options: CheckOptions) {
   const { lines, errLines } = renderPackages(resolvePkgs, options)
 
   const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
+  const hasPackageManagerChanges = resolvePkgs.some(pkg =>
+    pkg.resolved.some(dep => dep.update && dep.source !== 'node-version'),
+  )
   if (!hasChanges) {
     if (errLines.length)
       outputErr(errLines)
     else
-      console.log(c.green('dependencies are already up-to-date'))
+      console.log(c.green('everything is already up-to-date'))
 
     return exitCode
   }
@@ -104,9 +107,9 @@ export async function check(options: CheckOptions) {
     const last = resolvePkgs.length - counter
 
     if (last === 1)
-      console.log(c.green('dependencies are already up-to-date in one package\n'))
+      console.log(c.green('everything is already up-to-date in one file\n'))
     else if (last > 0)
-      console.log(c.green(`dependencies are already up-to-date in ${last} packages\n`))
+      console.log(c.green(`everything is already up-to-date in ${last} files\n`))
   }
 
   if (errLines.length)
@@ -118,7 +121,7 @@ export async function check(options: CheckOptions) {
         name: 'write',
         type: 'confirm',
         initial: true,
-        message: c.green('write to package.json'),
+        message: c.green('write changes'),
       },
     ]).then(r => r.write)
   }
@@ -144,49 +147,27 @@ export async function check(options: CheckOptions) {
       if (options.failOnOutdated)
         exitCode = 1
 
-      // Determine the most common package file type for the message
-      const fileTypes = resolvePkgs
-        .filter(pkg => pkg.resolved.some(dep => dep.update))
-        .map(pkg => pkg.type)
-      const hasPackageYaml = fileTypes.includes('package.yaml')
-      const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
-
-      console.log(`Add ${c.green('-w')} to write to ${fileTypeName}`)
+      console.log(`Add ${c.green('-w')} to write changes`)
     }
 
     console.log()
   }
   else if (hasChanges) {
     let packageManager: Agent | undefined
-    if (!options.install && !options.update && !options.interactive) {
+    if (!options.install && !options.update && !options.interactive && hasPackageManagerChanges) {
       packageManager = await detect()
-
-      // Determine the most common package file type for the message
-      const fileTypes = resolvePkgs
-        .filter(pkg => pkg.resolved.some(dep => dep.update))
-        .map(pkg => pkg.type)
-      const hasPackageYaml = fileTypes.includes('package.yaml')
-      const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
 
       console.log(
         packageManager
-          ? c.yellow`ℹ changes written to ${fileTypeName}, run ${c.cyan`${packageManager} i`} to install updates.`
-          : c.yellow`ℹ changes written to ${fileTypeName}, install updates with your preferred package manager.`,
+          ? c.yellow`ℹ changes written, run ${c.cyan`${packageManager} i`} to install dependency updates.`
+          : c.yellow`ℹ changes written, install dependency updates with your preferred package manager.`,
       )
     }
-
-    if (options.install || options.update || options.interactive) {
-      // Determine the most common package file type for the message
-      const fileTypes = resolvePkgs
-        .filter(pkg => pkg.resolved.some(dep => dep.update))
-        .map(pkg => pkg.type)
-      const hasPackageYaml = fileTypes.includes('package.yaml')
-      const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
-
-      console.log(c.yellow(`ℹ changes written to ${fileTypeName}`))
+    else {
+      console.log(c.yellow('ℹ changes written'))
     }
 
-    if (options.interactive && !options.install) {
+    if (options.interactive && !options.install && hasPackageManagerChanges) {
       options.install = await prompts([
         {
           name: 'install',

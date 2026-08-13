@@ -1,8 +1,10 @@
 import type { RangeMode } from '../types'
+import type { ParsedVersionReference } from './versionReference'
 import { spawnSync } from 'node:child_process'
 import process from 'node:process'
 import { createDebug } from 'obug'
 import { fetch as ofetch } from 'ofetch'
+import { compareVersionReferences, parseVersionReference, selectVersionTarget } from './versionReference'
 
 const debug = createDebug('taze:github')
 
@@ -10,17 +12,7 @@ const GITHUB_API = 'https://api.github.com'
 const USER_AGENT = `taze@npm node/${process.version}`
 const MAX_TAG_PAGES = 10
 const SHA_RE = /^[0-9a-f]{40}$/i
-const VERSION_TAG_RE = /^v(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:[-+].*)?$/
-
-export interface ParsedTag {
-  raw: string
-  major: number
-  minor: number
-  patch: number
-  /** number of numeric segments present in the tag (1 for `v4`, 3 for `v4.1.1`) */
-  segments: number
-  prerelease: boolean
-}
+export type ParsedTag = ParsedVersionReference
 
 export interface ParsedUses {
   /** `owner/repo` */
@@ -97,32 +89,7 @@ function githubHeaders(): Record<string, string> {
  * bare numeric tags, `latest`, ...) returns `null` and is skipped.
  */
 export function parseVersionTag(tag: string): ParsedTag | null {
-  const match = VERSION_TAG_RE.exec(tag)
-  if (!match)
-    return null
-
-  const segments = match[3] != null ? 3 : match[2] != null ? 2 : 1
-  return {
-    raw: tag,
-    major: Number(match[1]),
-    minor: Number(match[2] ?? 0),
-    patch: Number(match[3] ?? 0),
-    segments,
-    prerelease: /-/.test(tag),
-  }
-}
-
-function compareParsed(a: ParsedTag, b: ParsedTag): number {
-  if (a.major !== b.major)
-    return a.major - b.major
-  if (a.minor !== b.minor)
-    return a.minor - b.minor
-  if (a.patch !== b.patch)
-    return a.patch - b.patch
-  // stable releases sort after their prereleases
-  if (a.prerelease !== b.prerelease)
-    return a.prerelease ? -1 : 1
-  return a.raw.localeCompare(b.raw)
+  return parseVersionReference(tag, true)
 }
 
 /**
@@ -201,54 +168,18 @@ export function selectTarget(
   mode: RangeMode,
   options: SelectTargetOptions = {},
 ): SelectedTarget | undefined {
-  const current = parseVersionTag(currentTag)
-  if (!current)
-    return undefined
-
-  const allowPrerelease = mode === 'newest' || mode === 'next' || current.prerelease
-  const parsed = tags
-    .map(parseVersionTag)
-    .filter((t): t is ParsedTag => !!t)
-
-  const known = new Set(tags)
-
-  const candidates = parsed.filter((t) => {
-    if (!allowPrerelease && t.prerelease)
-      return false
-    if (options.reject?.(t))
-      return false
-    // must be strictly newer than the current ref
-    if (compareParsed(t, { ...current, prerelease: false, raw: current.raw }) <= 0)
-      return false
-
-    switch (mode) {
-      case 'patch':
-        return t.major === current.major && t.minor === current.minor
-      case 'minor':
-      case 'default':
-        return t.major === current.major
-      default:
-        return true
-    }
+  const selected = selectVersionTarget(currentTag, tags, mode, {
+    reject: options.reject,
+    requireExistingTarget: true,
+    requireV: true,
   })
+  if (!selected)
+    return
 
-  if (!candidates.length)
-    return undefined
-
-  candidates.sort(compareParsed)
-  const best = candidates[candidates.length - 1]
-
-  const prec = Math.min(current.segments, 3)
-  const desired = prec === 1
-    ? `v${best.major}`
-    : prec === 2
-      ? `v${best.major}.${best.minor}`
-      : `v${best.major}.${best.minor}.${best.patch}`
-
-  // prefer a moving tag matching the current granularity if it actually exists,
-  // otherwise fall back to the concrete tag we resolved
-  const tag = known.has(desired) ? desired : best.raw
-  return { tag, resolvedTag: best.raw }
+  return {
+    tag: selected.target,
+    resolvedTag: selected.resolvedVersion,
+  }
 }
 
 export async function fetchActionTags(repo: string, requestTimeout?: number): Promise<GitHubActionTags> {
@@ -293,7 +224,7 @@ export async function fetchActionTags(repo: string, requestTimeout?: number): Pr
     return { versions: [], shaMap, error: error?.message || String(error) }
   }
 
-  parsed.sort(compareParsed)
+  parsed.sort(compareVersionReferences)
   return {
     versions: parsed.map(t => t.raw),
     shaMap,

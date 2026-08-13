@@ -17,11 +17,11 @@
     },
     "recursive": {
       "type": "boolean",
-      "description": "Recursively search for package.json in subdirectories.",
+      "description": "Recursively search for supported files in subdirectories.",
       "default": false
     },
     "ignorePaths": {
-      "description": "Glob patterns to ignore when searching for package.json files.",
+      "description": "Glob patterns to ignore when searching for supported files.",
       "anyOf": [
         { "type": "string" },
         { "type": "array", "items": { "type": "string" } }
@@ -29,7 +29,12 @@
     },
     "ignoreOtherWorkspaces": {
       "type": "boolean",
-      "description": "Ignore package.json files in other workspaces (those with their own .git, pnpm-workspace.yaml, etc.).",
+      "description": "Ignore files in other workspaces (those with their own .git, pnpm-workspace.yaml, etc.).",
+      "default": true
+    },
+    "nodeVersion": {
+      "type": "boolean",
+      "description": "Check Node.js versions in .node-version files.",
       "default": true
     },
     "include": {
@@ -94,18 +99,18 @@
       "description": "Override bumping mode for specific dependencies. Keys are package names; values are the mode to use (or `\"ignore\"` to skip).",
       "additionalProperties": {
         "type": "string",
-        "enum": ["major", "minor", "patch", "latest", "newest", "next", "ignore"]
+        "enum": ["major", "minor", "patch", "latest", "newest", "stable", "next", "ignore"]
       }
     },
     "mode": {
       "type": "string",
-      "enum": ["default", "major", "minor", "patch", "latest", "newest", "next"],
+      "enum": ["default", "major", "minor", "patch", "latest", "newest", "stable", "next"],
       "description": "Update mode (version range to check).",
       "default": "default"
     },
     "write": {
       "type": "boolean",
-      "description": "Write changes back to package.json.",
+      "description": "Write changes back to their declaration files.",
       "default": false
     },
     "global": {

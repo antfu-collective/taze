@@ -8,10 +8,12 @@ import { resolve } from 'pathe'
 import { coerce, findMinimumForRange, isEqual, isGreater, isLess, isValid, satisfies } from 'verkit'
 import { diffSorter } from '../filters/diff-sorter'
 import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, getPackageMode, isVersionInExcludedRanges } from '../utils/config'
-import { queueContext } from '../utils/context'
+import { nodeReleaseDataContext, queueContext } from '../utils/context'
 import { fetchActionTags, fetchCommitDate, selectTarget } from '../utils/github'
+import { fetchNodeReleases } from '../utils/node'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
+import { compareVersionReferences, formatVersionReference, parseVersionReference, selectVersionTarget } from '../utils/versionReference'
 
 import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
 
@@ -34,6 +36,11 @@ function now() {
 
 function ttl(n: number) {
   return now() - n
+}
+
+export function invalidateNodeReleaseCache() {
+  delete cache.node
+  cacheChanged = true
 }
 
 export async function loadCache() {
@@ -163,6 +170,47 @@ export async function getGitHubActionData(repo: string, requestTimeout?: number)
   }
 }
 
+export async function getNodeReleaseData(requestTimeout?: number, force = false): Promise<PackageData> {
+  const cacheName = 'node'
+
+  if (force)
+    invalidateNodeReleaseCache()
+
+  if (cache[cacheName] && ttl(cache[cacheName].cacheTime) < cacheTTL) {
+    debug.cache(`cache hit for ${cacheName}`)
+    return cache[cacheName].data
+  }
+
+  const inflightRequest = inflightRequests.get(cacheName)
+  if (inflightRequest)
+    return inflightRequest
+
+  const request = (async () => {
+    try {
+      debug.resolve(`resolving ${cacheName}`)
+      const data = await fetchNodeReleases(requestTimeout)
+      cache[cacheName] = { data, cacheTime: now() }
+      cacheChanged = true
+      return data
+    }
+    catch (error: any) {
+      return {
+        tags: {},
+        versions: [],
+        error: error?.statusCode?.toString() || error?.message || error,
+      }
+    }
+  })()
+
+  inflightRequests.set(cacheName, request)
+  try {
+    return await request
+  }
+  finally {
+    inflightRequests.delete(cacheName)
+  }
+}
+
 export async function resolveGitHubAction(
   raw: RawDep,
   options: CheckOptions,
@@ -263,6 +311,96 @@ export async function resolveGitHubAction(
   return dep
 }
 
+function getEffectiveMode(name: string, options: CheckOptions): RangeMode | 'ignore' {
+  const configMode = getPackageMode(name, options)
+  const optionMode = options.mode ?? 'default'
+  return configMode
+    ? configMode === optionMode
+      ? optionMode
+      : optionMode === 'default' ? configMode : 'ignore'
+    : optionMode
+}
+
+function getNodeRangeMode(mode: RangeMode): RangeMode {
+  return mode === 'stable' ? 'minor' : mode
+}
+
+interface LatestNodeVersionAvailable {
+  resolvedVersion: string
+  targetVersion: string
+}
+
+function getLatestNodeVersionAvailable(
+  dep: ResolvedDepChange,
+  targetVersion: string,
+  options: CheckOptions,
+): LatestNodeVersionAvailable | undefined {
+  const resolvedVersion = getVersionOfRange(dep, 'latest', options)
+  const latest = resolvedVersion && parseVersionReference(resolvedVersion)
+  const target = parseVersionReference(targetVersion)
+  if (!resolvedVersion || !latest || !target || compareVersionReferences(latest, target) <= 0)
+    return
+
+  const formattedTarget = formatResolvedTargetVersion(dep, resolvedVersion)
+  if (!formattedTarget)
+    return
+
+  return {
+    resolvedVersion,
+    targetVersion: formattedTarget,
+  }
+}
+
+export function formatResolvedTargetVersion(dep: Pick<ResolvedDepChange, 'currentVersion' | 'source'>, version: string): string | undefined {
+  if (dep.source !== 'node-version')
+    return getPrefixedVersion(dep.currentVersion, version) ?? undefined
+
+  const current = parseVersionReference(dep.currentVersion)
+  const target = parseVersionReference(version)
+  return current && target ? formatVersionReference(target, current) : undefined
+}
+
+export async function resolveNodeVersion(
+  raw: RawDep,
+  options: CheckOptions,
+  filter: DependencyFilter = () => true,
+): Promise<ResolvedDepChange> {
+  const dep = { ...raw, provenanceDowngraded: false } as ResolvedDepChange
+  const mode = getEffectiveMode(raw.name, options)
+  const noUpdate = (): ResolvedDepChange => {
+    dep.diff = null
+    dep.targetVersion = raw.currentVersion
+    dep.update = false
+    return dep
+  }
+
+  if (!raw.update || mode === 'ignore' || !await Promise.resolve(filter(raw)))
+    return noUpdate()
+
+  if (getExcludeVersionRanges(raw.name, options) === true)
+    return noUpdate()
+
+  dep.pkgData = await (nodeReleaseDataContext.getStore() ?? getNodeReleaseData(options.requestTimeout, options.force))
+  if (dep.pkgData.error) {
+    dep.diff = 'error'
+    dep.targetVersion = raw.currentVersion
+    dep.update = false
+    dep.resolveError = dep.pkgData.error
+    return dep
+  }
+
+  const target = getVersionOfRange(dep, getNodeRangeMode(mode), options)
+  const latest = getLatestNodeVersionAvailable(dep, target ?? raw.currentVersion, options)
+  dep.latestVersionAvailable = latest?.targetVersion
+  dep.latestVersionAvailableResolved = latest?.resolvedVersion
+
+  if (!target)
+    return noUpdate()
+
+  updateTargetVersion(dep, target)
+  return dep
+}
+
 export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, options: CheckOptions) {
   const { tags } = dep.pkgData
   const filteredVersions = getFilteredVersions(dep, options)
@@ -272,6 +410,10 @@ export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, opti
   }
 
   dep.filteredVersions = filteredVersions
+
+  if (dep.source === 'node-version') {
+    return selectVersionTarget(dep.currentVersion, filteredVersions, getNodeRangeMode(range))?.resolvedVersion
+  }
 
   return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
 }
@@ -326,6 +468,9 @@ export function getVersionOfTag(dep: ResolvedDepChange, tag: string, options: Ch
 }
 
 export function getLatestVersionAvailable(dep: ResolvedDepChange, targetVersion: string, options: CheckOptions) {
+  if (dep.source === 'node-version')
+    return getLatestNodeVersionAvailable(dep, targetVersion, options)?.targetVersion
+
   const version = getVersionOfRange(dep, 'latest', options)
   return version && isGreater(version, targetVersion) ? version : undefined
 }
@@ -336,6 +481,30 @@ export function updateTargetVersion(
   forgiving = true,
   includeLocked = false,
 ) {
+  if (dep.source === 'node-version') {
+    const targetVersion = formatResolvedTargetVersion(dep, version)
+    const current = parseVersionReference(dep.currentVersion)
+    const target = parseVersionReference(version)
+    if (!targetVersion || !current || !target) {
+      dep.targetVersion = dep.currentVersion
+      dep.diff = 'error'
+      dep.update = false
+      return
+    }
+
+    dep.targetVersion = targetVersion
+    dep.targetVersionTime = dep.pkgData.time?.[version]
+    const currentRelease = current.segments === 3
+      ? `${current.prefix || 'v'}${current.major}.${current.minor}.${current.patch}`
+      : undefined
+    dep.currentVersionTime = currentRelease ? dep.pkgData.time?.[currentRelease] : undefined
+    dep.diff = getDiff(dep.currentVersion, dep.targetVersion)
+    dep.update = dep.diff !== null && dep.diff !== 'error'
+      && compareVersionReferences(target, current) > 0
+      && dep.targetVersion !== dep.currentVersion
+    return
+  }
+
   const versionLocked = /^\d+/.test(dep.currentVersion)
   if (versionLocked && !includeLocked) {
     dep.targetVersion = dep.currentVersion
@@ -408,6 +577,8 @@ export async function resolveDependency(
 ) {
   if (raw.source === 'github-actions')
     return resolveGitHubAction(raw, options, filter)
+  if (raw.source === 'node-version')
+    return resolveNodeVersion(raw, options, filter)
 
   const dep = { ...raw } as ResolvedDepChange
 

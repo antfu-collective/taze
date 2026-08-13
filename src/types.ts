@@ -22,6 +22,7 @@ export type DepType
     | 'bun-workspace'
     | 'yarn-workspace'
     | 'github-actions'
+    | 'node-version'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -36,6 +37,7 @@ export const DependenciesTypeShortMap = {
   'bun-workspace': 'bun-workspace',
   'yarn-workspace': 'yarn-workspace',
   'github-actions': 'github-actions',
+  'node-version': 'node-version',
 }
 
 export type Protocol = 'npm' | 'jsr'
@@ -132,6 +134,7 @@ export interface JsrPackageVersionMeta {
 
 export interface ResolvedDepChange extends RawDep {
   latestVersionAvailable?: string
+  latestVersionAvailableResolved?: string
   targetVersion: string
   targetVersionTime?: string
   currentVersionTime?: string
@@ -205,6 +208,12 @@ export interface CommonOptions {
    * @default true
    */
   githubActions?: boolean | GitHubActionsOptions
+  /**
+   * Check and update a `.node-version` file when one exists.
+   *
+   * @default true
+   */
+  nodeVersion?: boolean
 }
 
 export type DepFieldOptions = Partial<Record<DepType, boolean>>
@@ -383,6 +392,16 @@ export interface GitHubActionMeta extends BasePackageMeta {
   yamlDocument: Document
 }
 
+export interface NodeVersionFileRaw extends Record<string, unknown> {
+  leading: string
+  trailing: string
+}
+
+export interface NodeVersionMeta extends BasePackageMeta {
+  type: 'node-version'
+  raw: NodeVersionFileRaw
+}
+
 export type PackageMeta
   = | PackageJsonMeta
     | GlobalPackageMeta
@@ -391,6 +410,7 @@ export type PackageMeta
     | YarnWorkspaceMeta
     | PackageYamlMeta
     | GitHubActionMeta
+    | NodeVersionMeta
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void

@@ -9,6 +9,7 @@ import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { loadBunWorkspace, writeBunWorkspace } from './bunWorkspaces'
 import { isGitHubActionsEnabled, loadGitHubAction, writeGitHubAction } from './githubActions'
+import { loadNodeVersion, writeNodeVersion } from './nodeVersion'
 import { loadPackageJSON, writePackageJSON } from './packageJson'
 import { loadPackageYAML, writePackageYAML } from './packageYaml'
 import { loadPnpmWorkspace, writePnpmWorkspace } from './pnpmWorkspaces'
@@ -42,6 +43,8 @@ export async function writePackage(
       return writeYarnWorkspace(pkg, options)
     case 'github-action':
       return writeGitHubAction(pkg, options)
+    case 'node-version':
+      return writeNodeVersion(pkg, options)
     default:
       throw new Error(`Unsupported package type: ${pkg.type}`)
   }
@@ -90,6 +93,9 @@ export async function loadPackage(
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
 ): Promise<PackageMeta[]> {
+  if (relative === '.node-version' || relative.endsWith('/.node-version'))
+    return loadNodeVersion(relative, options, shouldUpdate)
+
   if (isGitHubActionsPath(relative))
     return loadGitHubAction(relative, options, shouldUpdate)
 
@@ -177,6 +183,17 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
   }
   else {
     packagesNames = await glob('package.{yaml,json}', { cwd })
+  }
+
+  if (options.nodeVersion !== false) {
+    const nodeVersionFiles = await glob(options.recursive ? '**/.node-version' : '.node-version', {
+      ignore: DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || []),
+      cwd,
+      onlyFiles: true,
+      dot: true,
+      expandDirectories: false,
+    })
+    packagesNames.push(...nodeVersionFiles)
   }
 
   packagesNames = packagesNames.sort((a, b) => a.localeCompare(b))
