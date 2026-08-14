@@ -222,6 +222,41 @@ export default defineConfig({
 })
 ```
 
+### Custom Manifests
+
+taze discovers, reads and writes each kind of dependency file through a
+`Manifest` (package.json, package.yaml, pnpm/bun/yarn catalogs, GitHub
+workflows). You can register your own to support extra file types, via the
+`manifests` option in your config or programmatically. Custom manifests are
+merged ahead of the built-ins, so they can also override how an existing file
+type is handled.
+
+```ts
+import type { Manifest } from 'taze'
+import { defineConfig } from 'taze'
+
+const myManifest: Manifest = {
+  name: 'my-manifest',
+  type: 'my-manifest',
+  // glob/find the files this manifest owns
+  discover: async () => ['my-deps.json'],
+  // claim a discovered file (receives the absolute path)
+  match: filepath => filepath.endsWith('my-deps.json'),
+  // parse it into one or more packages of dependencies
+  async load(relative, options, shouldUpdate) {
+    return [/* PackageMeta[] */]
+  },
+  // write the resolved updates back
+  async write(pkg, options) {},
+}
+
+export default defineConfig({
+  manifests: [myManifest],
+})
+```
+
+> Only available from a JS/TS config file or programmatically, not from `.tazerc.json`.
+
 ## Alternatives
 
 `taze` is inspired by the following tools.
