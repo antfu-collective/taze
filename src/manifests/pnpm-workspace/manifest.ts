@@ -96,7 +96,7 @@ export const pnpmWorkspaceManifest: Manifest = {
   name: 'pnpm-workspace.yaml',
   type: 'pnpm-workspace.yaml',
   order: -1,
-  match: relative => relative.endsWith('pnpm-workspace.yaml'),
+  match: filepath => filepath.endsWith('pnpm-workspace.yaml'),
   async discover(options) {
     const cwd = resolve(options.cwd || process.cwd())
     return existsSync(join(cwd, 'pnpm-workspace.yaml')) ? ['pnpm-workspace.yaml'] : []

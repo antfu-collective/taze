@@ -52,14 +52,14 @@ describe('manifests (file-source axis)', () => {
     ])
   })
 
-  it('routes discovered paths to the right manifest via match()', () => {
-    const owner = (relative: string) => manifests.find(m => m.match(relative))?.name
-    expect(owner('package.json')).toBe('package.json')
-    expect(owner('packages/a/package.yaml')).toBe('package.yaml')
-    expect(owner('pnpm-workspace.yaml')).toBe('pnpm-workspace.yaml')
-    expect(owner('.yarnrc.yml')).toBe('.yarnrc.yml')
-    expect(owner('.github/workflows/ci.yml')).toBe('github-action')
-    expect(owner('action.yml')).toBe('github-action')
+  it('routes discovered files to the right manifest via match() on the full path', () => {
+    const owner = (filepath: string) => manifests.find(m => m.match(filepath))?.name
+    expect(owner('/repo/package.json')).toBe('package.json')
+    expect(owner('/repo/packages/a/package.yaml')).toBe('package.yaml')
+    expect(owner('/repo/pnpm-workspace.yaml')).toBe('pnpm-workspace.yaml')
+    expect(owner('/repo/.yarnrc.yml')).toBe('.yarnrc.yml')
+    expect(owner('/repo/.github/workflows/ci.yml')).toBe('github-action')
+    expect(owner('/repo/action.yml')).toBe('github-action')
   })
 
   it('orders catalog files before package files and github actions after', () => {

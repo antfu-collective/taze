@@ -50,7 +50,8 @@ export async function loadPackage(
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
 ): Promise<PackageMeta[]> {
-  const manifest = manifests.find(m => isManifestEnabled(m, options) && m.match(relative))
+  const filepath = resolve(options.cwd ?? '', relative)
+  const manifest = manifests.find(m => isManifestEnabled(m, options) && m.match(filepath))
     ?? packageJsonManifest
   return manifest.load(relative, options, shouldUpdate)
 }

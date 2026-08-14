@@ -24,11 +24,12 @@ export interface Manifest {
   type: PackageMeta['type'] | PackageMeta['type'][]
 
   /**
-   * Whether a discovered relative path belongs to this manifest, used to route
-   * loads. Manifests that are only reached indirectly (e.g. bun catalogs, which
-   * are emitted while loading a package.json) return `false`.
+   * Whether a discovered file belongs to this manifest, used to route loads.
+   * Receives the absolute filepath. Manifests that are only reached indirectly
+   * (e.g. bun catalogs, which are emitted while loading a package.json) return
+   * `false`.
    */
-  match: (relative: string) => boolean
+  match: (filepath: string) => boolean
 
   /**
    * Parse a file into one or more {@link PackageMeta}. `raw` may be provided to

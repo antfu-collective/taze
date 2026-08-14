@@ -90,7 +90,7 @@ export const yarnWorkspaceManifest: Manifest = {
   name: '.yarnrc.yml',
   type: '.yarnrc.yml',
   order: -2,
-  match: relative => relative.endsWith('.yarnrc.yml'),
+  match: filepath => filepath.endsWith('.yarnrc.yml'),
   async discover(options) {
     const cwd = resolve(options.cwd || process.cwd())
     return existsSync(join(cwd, '.yarnrc.yml')) ? ['.yarnrc.yml'] : []

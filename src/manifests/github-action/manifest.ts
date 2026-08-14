@@ -23,8 +23,8 @@ function isGitHubActionsEnabled(options: CommonOptions): boolean {
 const GITHUB_ACTIONS_FILE_RE = /(?:^|\/)\.github\/workflows\/[^/]+\.ya?ml$/
 const GITHUB_ACTION_MANIFEST_RE = /(?:^|\/)action\.ya?ml$/
 
-function isGitHubActionsPath(relative: string): boolean {
-  return GITHUB_ACTIONS_FILE_RE.test(relative) || GITHUB_ACTION_MANIFEST_RE.test(relative)
+function isGitHubActionsPath(filepath: string): boolean {
+  return GITHUB_ACTIONS_FILE_RE.test(filepath) || GITHUB_ACTION_MANIFEST_RE.test(filepath)
 }
 
 async function loadGitHubActionsFiles(options: CommonOptions): Promise<string[]> {
