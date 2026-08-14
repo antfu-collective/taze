@@ -37,7 +37,7 @@ export async function readYAML(filepath: string): Promise<DocumentType> {
   return document
 }
 
-export async function writeYAML(filepath: string, data: DocumentType | Record<string, unknown>) {
+async function writeYAML(filepath: string, data: DocumentType | Record<string, unknown>) {
   const { amount, type } = await fs.readFile(filepath, 'utf-8')
     .then(detectIndent)
     .catch(Object.create)
@@ -53,7 +53,7 @@ export async function writeYAML(filepath: string, data: DocumentType | Record<st
   return fs.writeFile(filepath, yamlContent, 'utf-8')
 }
 
-export async function loadPackageYAML(
+async function loadPackageYAML(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,

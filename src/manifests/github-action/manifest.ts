@@ -16,18 +16,18 @@ function resolveStyle(options: CommonOptions): GitHubActionStyle {
   return 'auto'
 }
 
-export function isGitHubActionsEnabled(options: CommonOptions): boolean {
+function isGitHubActionsEnabled(options: CommonOptions): boolean {
   return options.githubActions !== false
 }
 
 const GITHUB_ACTIONS_FILE_RE = /(?:^|\/)\.github\/workflows\/[^/]+\.ya?ml$/
 const GITHUB_ACTION_MANIFEST_RE = /(?:^|\/)action\.ya?ml$/
 
-export function isGitHubActionsPath(relative: string): boolean {
+function isGitHubActionsPath(relative: string): boolean {
   return GITHUB_ACTIONS_FILE_RE.test(relative) || GITHUB_ACTION_MANIFEST_RE.test(relative)
 }
 
-export async function loadGitHubActionsFiles(options: CommonOptions): Promise<string[]> {
+async function loadGitHubActionsFiles(options: CommonOptions): Promise<string[]> {
   const ignore = DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || [])
   const patterns = options.recursive
     ? [
@@ -58,7 +58,7 @@ export async function loadGitHubActionsFiles(options: CommonOptions): Promise<st
   return [...new Set(files)].sort((a, b) => a.localeCompare(b))
 }
 
-export async function loadGitHubAction(
+async function loadGitHubAction(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
@@ -121,7 +121,7 @@ export async function loadGitHubAction(
   ]
 }
 
-export async function writeGitHubAction(
+async function writeGitHubAction(
   pkg: PackageMeta,
   options: CommonOptions,
 ) {

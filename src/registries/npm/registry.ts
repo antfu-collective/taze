@@ -79,7 +79,7 @@ export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, opti
   return getMaxSatisfying(filteredVersions, dep.currentVersion, range, tags)
 }
 
-export function getFilteredVersions(dep: ResolvedDepChange, options: CheckOptions) {
+function getFilteredVersions(dep: ResolvedDepChange, options: CheckOptions) {
   const { versions, deprecated, time } = dep.pkgData
   let filteredVersions = versions
 
@@ -181,7 +181,7 @@ export function isLocalPackage(currentVersion: string) {
   return /^(?:link|file|workspace|catalog):/.test(currentVersion)
 }
 
-export function isAliasedPackage(currentVersion: string) {
+function isAliasedPackage(currentVersion: string) {
   return /^(?:npm|jsr):/.test(currentVersion)
 }
 
@@ -211,7 +211,7 @@ function parseAliasedPackage(currentVersion: string): { protocol: Protocol, name
   }
 }
 
-export async function resolveNpmDependency(
+async function resolveNpmDependency(
   raw: RawDep,
   options: CheckOptions,
   filter: DependencyFilter = () => true,

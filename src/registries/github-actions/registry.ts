@@ -5,7 +5,7 @@ import { fetchActionTags, fetchCommitDate, selectTarget } from '../../utils/gith
 import { cache, cacheTTL, debug, inflightRequests, markCacheChanged, now, ttl } from '../cache'
 import { getDiff as getSemverDiff, mergeMode } from '../shared'
 
-export async function getGitHubActionData(repo: string, requestTimeout?: number): Promise<PackageData> {
+async function getGitHubActionData(repo: string, requestTimeout?: number): Promise<PackageData> {
   const cacheName = `gha:${repo}`
 
   if (cache[cacheName]) {
@@ -64,7 +64,7 @@ export function getGitHubActionDiff(current: string, target: string): DiffType {
   return getSemverDiff(current, target)
 }
 
-export async function resolveGitHubAction(
+async function resolveGitHubAction(
   raw: RawDep,
   options: CheckOptions,
   filter: DependencyFilter = () => true,

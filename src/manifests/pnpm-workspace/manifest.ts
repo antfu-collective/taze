@@ -8,7 +8,7 @@ import { join, resolve } from 'pathe'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import { dumpDependencies, parseDependency } from '../dependencies'
 
-export async function loadPnpmWorkspace(
+async function loadPnpmWorkspace(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
@@ -88,7 +88,7 @@ export async function writePnpmWorkspace(
   }
 }
 
-export function writeYaml(pkg: PnpmWorkspaceMeta, document: PnpmWorkspaceYaml) {
+function writeYaml(pkg: PnpmWorkspaceMeta, document: PnpmWorkspaceYaml) {
   return writeFile(pkg.filepath, document.toString(), 'utf8')
 }
 

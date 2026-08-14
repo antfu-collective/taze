@@ -8,22 +8,17 @@ import { npmRegistry } from './npm'
 
 export { dumpCache, loadCache } from './cache'
 
-export { githubActionsRegistry } from './github-actions'
-export { getGitHubActionData, getGitHubActionDiff, resolveGitHubAction } from './github-actions/registry'
-export { npmRegistry } from './npm'
+export { getGitHubActionDiff } from './github-actions/registry'
 export {
-  getFilteredVersions,
   getLatestVersionAvailable,
   getPackageData,
   getVersionOfRange,
   getVersionOfTag,
-  isAliasedPackage,
   isLocalPackage,
   isUrlPackage,
-  resolveNpmDependency,
   updateTargetVersion,
 } from './npm/registry'
-export { getDiff, mergeMode } from './shared'
+export { getDiff } from './shared'
 export type { Registry } from './types'
 
 /**

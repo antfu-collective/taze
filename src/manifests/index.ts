@@ -14,7 +14,6 @@ import { pnpmWorkspaceManifest } from './pnpm-workspace'
 import { yarnWorkspaceManifest } from './yarn-workspace'
 
 export { dumpDependencies, parseDependencies } from './dependencies'
-export { readJSON, writeJSON } from './json'
 export type { Manifest } from './types'
 
 /**

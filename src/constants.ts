@@ -12,7 +12,7 @@ export const DEFAULT_IGNORE_PATHS = [
   '**/fixtures/**',
 ]
 
-export const DEFAULT_COMMON_OPTIONS: CommonOptions = {
+const DEFAULT_COMMON_OPTIONS: CommonOptions = {
   cwd: '',
   loglevel: 'info',
   failOnOutdated: false,

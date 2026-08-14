@@ -24,7 +24,7 @@ import { sortDepChanges } from '../../utils/sort'
 
 import { timeDifference } from '../../utils/time'
 
-export function renderChange(
+function renderChange(
   change: ResolvedDepChange,
   interactive?: InteractiveContext,
   grouped = false,

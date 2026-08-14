@@ -167,7 +167,7 @@ export function parseUses(uses: string, comment?: string | null): ParsedUses | n
   return null
 }
 
-export function extractVersionFromComment(comment?: string | null): string | undefined {
+function extractVersionFromComment(comment?: string | null): string | undefined {
   if (!comment)
     return undefined
   const match = /(?:^|\s)(v\d+(?:\.\d+)*(?:[-+][\w.]+)?)/.exec(comment)
