@@ -79,11 +79,48 @@ interface RawDep {
 If you previously distinguished GitHub Actions via `source === 'github-actions'`,
 that still works; `packageType === 'github-actions'` is the new, preferred check.
 
+## Custom manifests
+
+You can now register your own file sources by passing `manifests` to
+`CheckPackages` or your `taze.config.ts`. Custom manifests are merged ahead of
+the built-ins, so they can add new file types or override how an existing one is
+handled. Provide a `discover` hook if the file should be found during a normal
+run.
+
+```ts
+import type { Manifest } from 'taze'
+// taze.config.ts
+import { defineConfig } from 'taze'
+
+const myManifest: Manifest = {
+  name: 'my-manifest',
+  type: 'my-manifest',
+  order: 1,
+  match: filepath => filepath.endsWith('my-deps.json'),
+  discover: async () => ['my-deps.json'],
+  async load(relative, options, shouldUpdate) {
+    /* return PackageMeta[] */
+    return []
+  },
+  async write(pkg, options) {
+    /* persist pkg.resolved */
+  },
+}
+
+export default defineConfig({
+  manifests: [myManifest],
+})
+```
+
+`manifests` is only available programmatically or from a JS/TS config file, not
+from `.tazerc.json`. The built-in list is exported as `builtinManifests`, and
+`getManifests(options)` returns the effective merged list.
+
 ## The two interfaces
 
-Both are exported as types. Registration of new manifests/registries is
-currently internal (there is no public plugin API yet), but the interfaces are
-public so you can type against them.
+Both `Manifest` and `Registry` are exported as types. Custom manifests are
+supported (above); custom registries (new ecosystems) remain internal for now,
+but the `Registry` interface is public so you can type against it.
 
 ```ts
 interface Manifest {

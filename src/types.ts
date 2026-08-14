@@ -3,6 +3,7 @@ import type { Agent } from 'package-manager-detector'
 import type { PnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import type { Document, Scalar } from 'yaml'
 import type { MODE_CHOICES } from './constants'
+import type { Manifest } from './manifests/types'
 import type { SortOption } from './utils/sort'
 
 export type { RetryOptions }
@@ -213,6 +214,18 @@ export interface CommonOptions {
    * @default builtin addons
    */
   addons?: Addon[]
+  /**
+   * Custom manifests (file sources) to check, merged with the built-in ones.
+   *
+   * Custom manifests take precedence over the built-ins when matching a file or
+   * routing a write, so they can extend taze with new file types or override
+   * how an existing one is handled. To be discovered, a custom manifest should
+   * provide a `discover` hook.
+   *
+   * Only available programmatically or from a JS/TS config file
+   * (`taze.config.ts`), not from `.tazerc.json`.
+   */
+  manifests?: Manifest[]
   /**
    * Check and update GitHub Actions referenced in `.github/workflows/*.yml`
    * and composite `action.yml` files.

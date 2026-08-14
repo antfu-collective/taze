@@ -17,10 +17,11 @@ export { dumpDependencies, parseDependencies } from './dependencies'
 export type { Manifest } from './types'
 
 /**
- * All available manifests — the file-source axis. Register a new file source by
- * adding it here; discovery and write routing pick it up automatically.
+ * The built-in manifests — the file-source axis. Register a new built-in file
+ * source by adding it here; discovery and write routing pick it up
+ * automatically. Users can supply extra ones via `options.manifests`.
  */
-export const manifests: Manifest[] = [
+export const builtinManifests: Manifest[] = [
   yarnWorkspaceManifest,
   pnpmWorkspaceManifest,
   packageJsonManifest,
@@ -28,6 +29,17 @@ export const manifests: Manifest[] = [
   bunWorkspaceManifest,
   githubActionsManifest,
 ]
+
+/**
+ * The effective manifest list for the given options: user-provided custom
+ * manifests first (so they take precedence when matching / routing writes),
+ * followed by the built-ins.
+ */
+export function getManifests(options: CommonOptions): Manifest[] {
+  return options.manifests?.length
+    ? [...options.manifests, ...builtinManifests]
+    : builtinManifests
+}
 
 function isManifestEnabled(manifest: Manifest, options: CommonOptions): boolean {
   return manifest.enabled?.(options) ?? true
@@ -37,7 +49,7 @@ export async function writePackage(
   pkg: PackageMeta,
   options: CommonOptions,
 ) {
-  const manifest = manifests.find(m =>
+  const manifest = getManifests(options).find(m =>
     Array.isArray(m.type) ? m.type.includes(pkg.type as any) : m.type === pkg.type,
   )
   if (!manifest)
@@ -51,7 +63,7 @@ export async function loadPackage(
   shouldUpdate: (name: string) => boolean,
 ): Promise<PackageMeta[]> {
   const filepath = resolve(options.cwd ?? '', relative)
-  const manifest = manifests.find(m => isManifestEnabled(m, options) && m.match(filepath))
+  const manifest = getManifests(options).find(m => isManifestEnabled(m, options) && m.match(filepath))
     ?? packageJsonManifest
   return manifest.load(relative, options, shouldUpdate)
 }
@@ -145,7 +157,7 @@ export async function loadPackages(options: CommonOptions): Promise<PackageMeta[
     { order: 0, paths: await discoverPackageFiles(options) },
   ]
 
-  for (const manifest of manifests) {
+  for (const manifest of getManifests(options)) {
     if (!manifest.discover || !isManifestEnabled(manifest, options))
       continue
     groups.push({ order: manifest.order ?? 0, paths: await manifest.discover(options) })
