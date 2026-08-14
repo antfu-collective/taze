@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { parseDependencies } from '../src/io/dependencies'
-import { isLocalPackage, isUrlPackage } from '../src/io/resolves'
+import { parseDependencies } from '../src/manifests/dependencies'
+import { isLocalPackage, isUrlPackage } from '../src/registries'
 
 describe('parseDependencies', () => {
   it('parse package `dependencies`', () => {
@@ -14,23 +14,25 @@ describe('parseDependencies', () => {
     }
     const result = parseDependencies(myPackage, 'dependencies', () => true)
     expect(result).toMatchInlineSnapshot(`
-        [
-          {
-            "currentVersion": "^4.13.19",
-            "name": "@taze/not-exists",
-            "parents": [],
-            "source": "dependencies",
-            "update": true,
-          },
-          {
-            "currentVersion": "npm:@types/web@^0.0.80",
-            "name": "@typescript/lib-dom",
-            "parents": [],
-            "source": "dependencies",
-            "update": true,
-          },
-        ]
-      `)
+      [
+        {
+          "currentVersion": "^4.13.19",
+          "name": "@taze/not-exists",
+          "packageType": "npm",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@types/web@^0.0.80",
+          "name": "@typescript/lib-dom",
+          "packageType": "npm",
+          "parents": [],
+          "source": "dependencies",
+          "update": true,
+        },
+      ]
+    `)
   })
 
   it('parse package `devDependencies`', () => {
@@ -44,23 +46,25 @@ describe('parseDependencies', () => {
     }
     const result = parseDependencies(myPackage, 'devDependencies', () => true)
     expect(result).toMatchInlineSnapshot(`
-        [
-          {
-            "currentVersion": "^4.13.19",
-            "name": "@taze/not-exists",
-            "parents": [],
-            "source": "devDependencies",
-            "update": true,
-          },
-          {
-            "currentVersion": "npm:@types/web@^0.0.80",
-            "name": "@typescript/lib-dom",
-            "parents": [],
-            "source": "devDependencies",
-            "update": true,
-          },
-        ]
-      `)
+      [
+        {
+          "currentVersion": "^4.13.19",
+          "name": "@taze/not-exists",
+          "packageType": "npm",
+          "parents": [],
+          "source": "devDependencies",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@types/web@^0.0.80",
+          "name": "@typescript/lib-dom",
+          "packageType": "npm",
+          "parents": [],
+          "source": "devDependencies",
+          "update": true,
+        },
+      ]
+    `)
   })
 
   it('parse package `dependencies` should exclude URL version', () => {
@@ -82,6 +86,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "^4.13.19",
           "name": "@taze/not-exists",
+          "packageType": "npm",
           "parents": [],
           "source": "dependencies",
           "update": true,
@@ -89,6 +94,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "npm:@types/web@^0.0.80",
           "name": "@typescript/lib-dom",
+          "packageType": "npm",
           "parents": [],
           "source": "dependencies",
           "update": true,
@@ -96,6 +102,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "https://example.com/packages/my-lib1-1.0.0.tgz",
           "name": "my-lib1",
+          "packageType": "npm",
           "parents": [],
           "source": "dependencies",
           "update": true,
@@ -103,6 +110,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "git+https://github.com/user/my-lib2.git",
           "name": "my-lib2",
+          "packageType": "npm",
           "parents": [],
           "source": "dependencies",
           "update": true,
@@ -110,6 +118,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "github:user/my-lib3#v1.2.3",
           "name": "my-lib3",
+          "packageType": "npm",
           "parents": [],
           "source": "dependencies",
           "update": true,
@@ -117,6 +126,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "file:../my-lib4",
           "name": "my-lib4",
+          "packageType": "npm",
           "parents": [],
           "source": "dependencies",
           "update": true,
@@ -132,6 +142,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "^4.13.19",
           "name": "@taze/not-exists",
+          "packageType": "npm",
           "parents": [],
           "source": "dependencies",
           "update": true,
@@ -139,6 +150,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "npm:@types/web@^0.0.80",
           "name": "@typescript/lib-dom",
+          "packageType": "npm",
           "parents": [],
           "source": "dependencies",
           "update": true,
@@ -160,23 +172,25 @@ describe('parseDependencies', () => {
     }
     const result = parseDependencies(myPackage, 'pnpm.overrides', () => true)
     expect(result).toMatchInlineSnapshot(`
-        [
-          {
-            "currentVersion": "^4.13.19",
-            "name": "@taze/not-exists",
-            "parents": [],
-            "source": "pnpm.overrides",
-            "update": true,
-          },
-          {
-            "currentVersion": "npm:@types/web@^0.0.80",
-            "name": "@typescript/lib-dom",
-            "parents": [],
-            "source": "pnpm.overrides",
-            "update": true,
-          },
-        ]
-      `)
+      [
+        {
+          "currentVersion": "^4.13.19",
+          "name": "@taze/not-exists",
+          "packageType": "npm",
+          "parents": [],
+          "source": "pnpm.overrides",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@types/web@^0.0.80",
+          "name": "@typescript/lib-dom",
+          "packageType": "npm",
+          "parents": [],
+          "source": "pnpm.overrides",
+          "update": true,
+        },
+      ]
+    `)
   })
 
   it('parse package `resolutions`', () => {
@@ -192,37 +206,41 @@ describe('parseDependencies', () => {
     }
     const result = parseDependencies(myPackage, 'resolutions', () => true)
     expect(result).toMatchInlineSnapshot(`
-        [
-          {
-            "currentVersion": "^4.13.19",
-            "name": "@taze/not-exists",
-            "parents": [],
-            "source": "resolutions",
-            "update": true,
-          },
-          {
-            "currentVersion": "npm:@types/web@^0.0.80",
-            "name": "@typescript/lib-dom",
-            "parents": [],
-            "source": "resolutions",
-            "update": true,
-          },
-          {
-            "currentVersion": "^1.0.0",
-            "name": "@taze/pkg/@taze/nested-foo",
-            "parents": [],
-            "source": "resolutions",
-            "update": true,
-          },
-          {
-            "currentVersion": "^1.0.0",
-            "name": "@taze/pkg/@taze/nested-foo@2.0.0",
-            "parents": [],
-            "source": "resolutions",
-            "update": true,
-          },
-        ]
-      `)
+      [
+        {
+          "currentVersion": "^4.13.19",
+          "name": "@taze/not-exists",
+          "packageType": "npm",
+          "parents": [],
+          "source": "resolutions",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@types/web@^0.0.80",
+          "name": "@typescript/lib-dom",
+          "packageType": "npm",
+          "parents": [],
+          "source": "resolutions",
+          "update": true,
+        },
+        {
+          "currentVersion": "^1.0.0",
+          "name": "@taze/pkg/@taze/nested-foo",
+          "packageType": "npm",
+          "parents": [],
+          "source": "resolutions",
+          "update": true,
+        },
+        {
+          "currentVersion": "^1.0.0",
+          "name": "@taze/pkg/@taze/nested-foo@2.0.0",
+          "packageType": "npm",
+          "parents": [],
+          "source": "resolutions",
+          "update": true,
+        },
+      ]
+    `)
   })
 
   it('parse package `overrides`', () => {
@@ -242,42 +260,46 @@ describe('parseDependencies', () => {
     }
     const result = parseDependencies(myPackage, 'overrides', () => true)
     expect(result).toMatchInlineSnapshot(`
-        [
-          {
-            "currentVersion": "^4.13.19",
-            "name": "@taze/not-exists",
-            "parents": [],
-            "source": "overrides",
-            "update": true,
-          },
-          {
-            "currentVersion": "npm:@types/web@^0.0.80",
-            "name": "@typescript/lib-dom",
-            "parents": [],
-            "source": "overrides",
-            "update": true,
-          },
-          {
-            "currentVersion": "^1.0.0",
-            "name": "@taze/nested-foo",
-            "parents": [
-              "@taze/pkg",
-            ],
-            "source": "overrides",
-            "update": true,
-          },
-          {
-            "currentVersion": "npm:@taze/override",
-            "name": "@taze/nested-lvl2",
-            "parents": [
-              "@taze/pkg",
-              "@taze/nested-bar",
-            ],
-            "source": "overrides",
-            "update": true,
-          },
-        ]
-      `)
+      [
+        {
+          "currentVersion": "^4.13.19",
+          "name": "@taze/not-exists",
+          "packageType": "npm",
+          "parents": [],
+          "source": "overrides",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@types/web@^0.0.80",
+          "name": "@typescript/lib-dom",
+          "packageType": "npm",
+          "parents": [],
+          "source": "overrides",
+          "update": true,
+        },
+        {
+          "currentVersion": "^1.0.0",
+          "name": "@taze/nested-foo",
+          "packageType": "npm",
+          "parents": [
+            "@taze/pkg",
+          ],
+          "source": "overrides",
+          "update": true,
+        },
+        {
+          "currentVersion": "npm:@taze/override",
+          "name": "@taze/nested-lvl2",
+          "packageType": "npm",
+          "parents": [
+            "@taze/pkg",
+            "@taze/nested-bar",
+          ],
+          "source": "overrides",
+          "update": true,
+        },
+      ]
+    `)
   })
 
   it('parse package `peerDependencies`', () => {
@@ -295,6 +317,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "^4.13.19",
           "name": "@taze/not-exists",
+          "packageType": "npm",
           "parents": [],
           "source": "peerDependencies",
           "update": true,
@@ -302,6 +325,7 @@ describe('parseDependencies', () => {
         {
           "currentVersion": "npm:@types/web@^0.0.80",
           "name": "@typescript/lib-dom",
+          "packageType": "npm",
           "parents": [],
           "source": "peerDependencies",
           "update": true,

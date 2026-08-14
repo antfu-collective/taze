@@ -12,7 +12,7 @@ interface Options {
   loglevel: LogLevel
 }
 
-export function shouldLog(level: LogLevel, messageLevel: LogLevel) {
+function shouldLog(level: LogLevel, messageLevel: LogLevel) {
   return LOG_LEVELS.indexOf(level) <= LOG_LEVELS.indexOf(messageLevel)
 }
 

@@ -1,4 +1,4 @@
-import type { DepType, RawDep, ResolvedDepChange } from '../types'
+import type { DepType, PackageType, RawDep, ResolvedDepChange } from '../types'
 
 interface FlattenPkgData { [key: string]: { version: string, parents: string[] } }
 
@@ -40,6 +40,7 @@ export function parseDependency({
   name,
   version,
   type,
+  packageType = 'npm',
   shouldUpdate,
   parents,
   hexHash,
@@ -47,6 +48,7 @@ export function parseDependency({
   name: string
   version: string
   type: DepType
+  packageType?: PackageType
   shouldUpdate: (name: string) => boolean
   parents?: string[]
   hexHash?: string
@@ -56,6 +58,7 @@ export function parseDependency({
     currentVersion: version,
     parents,
     source: type,
+    packageType,
     // when `updated` marked to `false`, it will be bypassed on resolving
     update: shouldUpdate(name),
   }

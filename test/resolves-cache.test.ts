@@ -31,7 +31,7 @@ it('dedupes concurrent requests for the same package', async () => {
 
   fetchPackageMock.mockReturnValue(pendingFetch)
 
-  const { getPackageData } = await import('../src/io/resolves')
+  const { getPackageData } = await import('../src/registries')
   const firstRequest = getPackageData('typescript', 'npm', '/tmp', 15000)
   const secondRequest = getPackageData('typescript', 'npm', '/tmp', 15000)
 

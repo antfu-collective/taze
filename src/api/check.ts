@@ -1,7 +1,7 @@
 import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, PackageMeta, RawDep } from '../types'
 import { newQueue } from '@henrygd/queue'
-import { loadPackages, writePackage } from '../io/packages'
-import { dumpCache, loadCache, resolvePackage } from '../io/resolves'
+import { loadPackages, writePackage } from '../manifests'
+import { dumpCache, loadCache, resolvePackage } from '../registries'
 import { queueContext } from '../utils/context'
 
 export interface CheckEventCallbacks {

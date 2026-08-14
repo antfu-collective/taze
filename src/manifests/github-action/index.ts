@@ -1,0 +1,1 @@
+export { githubActionsManifest } from './manifest'

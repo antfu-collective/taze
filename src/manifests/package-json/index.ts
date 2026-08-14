@@ -1,0 +1,1 @@
+export { packageJsonManifest } from './manifest'

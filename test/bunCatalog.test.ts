@@ -2,7 +2,7 @@ import type { BunWorkspaceMeta, CheckOptions } from '../src/types'
 import process from 'node:process'
 import { afterEach, beforeEach, describe, expect, it, vi, vitest } from 'vitest'
 import { CheckPackages } from '../src'
-import * as bunWorkspaces from '../src/io/bunWorkspaces'
+import * as bunWorkspaces from '../src/manifests/bun-workspace/manifest'
 
 // output that should be written to the package.json file
 let output: string | undefined
@@ -28,7 +28,7 @@ vitest.mock('../src/utils/npm.ts', () => ({
   parseNpmConfig: vitest.fn().mockResolvedValue({}),
 }))
 
-vitest.mock('../src/io/resolves.ts', async (importOriginal) => {
+vitest.mock('../src/registries', async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual as any,

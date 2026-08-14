@@ -3,7 +3,7 @@ import process from 'node:process'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import { afterEach, beforeEach, describe, expect, it, vi, vitest } from 'vitest'
 import { CheckPackages } from '../src'
-import * as pnpmWorkspaces from '../src/io/pnpmWorkspaces'
+import * as pnpmWorkspaces from '../src/manifests/pnpm-workspace/manifest'
 
 // output that should be written to the pnpm-workspace.yaml file
 let output: string | undefined

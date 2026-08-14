@@ -45,7 +45,7 @@ export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'la
   }[mode] + min
 }
 
-export function applyVersionRangePrefix(version: string | null, prefix: string | null) {
+function applyVersionRangePrefix(version: string | null, prefix: string | null) {
   if (version == null || prefix == null)
     return null
 
@@ -68,7 +68,7 @@ export function getPrefixedVersion(current: string, target: string) {
  * `1.0.0-beta.20` or `1.0.0-beta.9-e89174b`, or `rc` from `1.0.0-rc.1`.
  * Returns undefined when there is no alphabetic prerelease identifier.
  */
-export function getPrereleaseChannel(version: string): string | undefined {
+function getPrereleaseChannel(version: string): string | undefined {
   const dashIndex = version.indexOf('-')
   if (dashIndex === -1)
     return undefined

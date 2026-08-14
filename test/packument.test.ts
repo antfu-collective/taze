@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { resolveDependency } from '../src/io/resolves'
+import { resolveDependency } from '../src/registries'
 import { fetchPackage } from '../src/utils/packument'
 
 const { getVersionsMock, ofetchMock } = vi.hoisted(() => ({

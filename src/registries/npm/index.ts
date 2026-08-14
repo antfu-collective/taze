@@ -1,0 +1,1 @@
+export { npmRegistry } from './registry'

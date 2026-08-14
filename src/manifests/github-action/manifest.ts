@@ -1,9 +1,13 @@
 import type { Scalar } from 'yaml'
-import type { CommonOptions, GitHubActionMeta, GitHubActionsOptions, GitHubActionStyle, PackageMeta, RawDep } from '../types'
+import type { CommonOptions, GitHubActionMeta, GitHubActionsOptions, GitHubActionStyle, PackageMeta, RawDep } from '../../types'
+import type { Manifest } from '../types'
 import { readFile, writeFile } from 'node:fs/promises'
+import process from 'node:process'
 import { resolve } from 'pathe'
+import { glob } from 'tinyglobby'
 import { isScalar, parseDocument, visit } from 'yaml'
-import { formatUses, parseUses } from '../utils/github'
+import { DEFAULT_IGNORE_PATHS } from '../../constants'
+import { formatUses, parseUses } from '../../utils/github'
 
 function resolveStyle(options: CommonOptions): GitHubActionStyle {
   const config = options.githubActions
@@ -12,11 +16,49 @@ function resolveStyle(options: CommonOptions): GitHubActionStyle {
   return 'auto'
 }
 
-export function isGitHubActionsEnabled(options: CommonOptions): boolean {
+function isGitHubActionsEnabled(options: CommonOptions): boolean {
   return options.githubActions !== false
 }
 
-export async function loadGitHubAction(
+const GITHUB_ACTIONS_FILE_RE = /(?:^|\/)\.github\/workflows\/[^/]+\.ya?ml$/
+const GITHUB_ACTION_MANIFEST_RE = /(?:^|\/)action\.ya?ml$/
+
+function isGitHubActionsPath(filepath: string): boolean {
+  return GITHUB_ACTIONS_FILE_RE.test(filepath) || GITHUB_ACTION_MANIFEST_RE.test(filepath)
+}
+
+async function loadGitHubActionsFiles(options: CommonOptions): Promise<string[]> {
+  const ignore = DEFAULT_IGNORE_PATHS.concat(options.ignorePaths || [])
+  const patterns = options.recursive
+    ? [
+        '**/.github/workflows/*.yml',
+        '**/.github/workflows/*.yaml',
+        '**/.github/actions/**/action.yml',
+        '**/.github/actions/**/action.yaml',
+        '**/action.yml',
+        '**/action.yaml',
+      ]
+    : [
+        '.github/workflows/*.yml',
+        '.github/workflows/*.yaml',
+        '.github/actions/**/action.yml',
+        '.github/actions/**/action.yaml',
+        'action.yml',
+        'action.yaml',
+      ]
+
+  const files = await glob(patterns, {
+    cwd: resolve(options.cwd || process.cwd()),
+    ignore,
+    onlyFiles: true,
+    dot: true,
+    expandDirectories: false,
+  })
+
+  return [...new Set(files)].sort((a, b) => a.localeCompare(b))
+}
+
+async function loadGitHubAction(
   relative: string,
   options: CommonOptions,
   shouldUpdate: (name: string) => boolean,
@@ -45,6 +87,7 @@ export async function loadGitHubAction(
         name: parsed.repo,
         currentVersion: parsed.tag,
         source: 'github-actions',
+        packageType: 'github-actions',
         update: shouldUpdate(parsed.repo),
         githubAction: {
           repo: parsed.repo,
@@ -78,7 +121,7 @@ export async function loadGitHubAction(
   ]
 }
 
-export async function writeGitHubAction(
+async function writeGitHubAction(
   pkg: PackageMeta,
   options: CommonOptions,
 ) {
@@ -115,4 +158,15 @@ export async function writeGitHubAction(
 
   if (changed)
     await writeFile(pkg.filepath, pkg.yamlDocument.toString(), 'utf-8')
+}
+
+export const githubActionsManifest: Manifest = {
+  name: 'github-action',
+  type: 'github-action',
+  order: 1,
+  enabled: isGitHubActionsEnabled,
+  match: isGitHubActionsPath,
+  discover: loadGitHubActionsFiles,
+  load: loadGitHubAction,
+  write: (pkg, options) => writeGitHubAction(pkg, options),
 }

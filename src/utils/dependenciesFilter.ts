@@ -14,7 +14,7 @@ export function filterToRegex(str: string) {
   return new RegExp(`^${escapeRegExp(str).replace(/\*+/g, '.*?')}$`)
 }
 
-export function parseFilter(str?: string | string[], defaultValue = true): ((name: string) => boolean) {
+function parseFilter(str?: string | string[], defaultValue = true): ((name: string) => boolean) {
   if (!str || str.length === 0)
     return () => defaultValue
 

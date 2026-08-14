@@ -5,7 +5,7 @@ import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CheckPackages } from '../src'
-import { loadPackageJSON, writePackageJSON } from '../src/io/packageJson'
+import { loadPackageJSON, writePackageJSON } from '../src/manifests/package-json/manifest'
 import { getHexHashFromIntegrity } from '../src/utils/sha'
 
 const { fetchPackageMock } = vi.hoisted(() => ({
