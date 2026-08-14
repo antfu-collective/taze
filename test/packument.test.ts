@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { resolveDependency } from '../src/registries'
-import { fetchPackage } from '../src/utils/packument'
+import { fetchJsrPackageMeta, fetchPackage } from '../src/utils/packument'
 
 const { getVersionsMock, ofetchMock } = vi.hoisted(() => ({
   getVersionsMock: vi.fn(),
@@ -144,4 +144,42 @@ it('uses the configured API endpoint when resolving a dependency', async () => {
   expect(getVersionsMock).toHaveBeenCalledWith('custom-endpoint-example', expect.objectContaining({
     apiEndpoint: 'https://npm.example.com/',
   }))
+})
+
+it('throws a clear error when a JSR package is not found', async () => {
+  // JSR answers unknown packages with a plain-text `404 - Not Found` body,
+  // which must not reach JSON.parse.
+  ofetchMock.mockResolvedValue({
+    ok: false,
+    status: 404,
+    statusText: 'Not Found',
+    json: async () => {
+      throw new Error('should never parse a 404 body')
+    },
+  })
+
+  await expect(fetchJsrPackageMeta('@std/nope')).rejects.toThrow(
+    'Failed to fetch JSR package "@std/nope": 404 Not Found',
+  )
+})
+
+it('drops yanked versions from JSR metadata', async () => {
+  ofetchMock.mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      scope: 'std',
+      name: 'cli',
+      latest: '1.0.2',
+      versions: {
+        '1.0.0': {},
+        '1.0.1': { yanked: true },
+        '1.0.2': {},
+      },
+    }),
+  })
+
+  await expect(fetchJsrPackageMeta('@std/cli')).resolves.toEqual({
+    versions: ['1.0.0', '1.0.2'],
+    tags: { latest: '1.0.2' },
+  })
 })

@@ -96,15 +96,25 @@ export async function fetchPackage(spec: string, force: boolean = false, cwd?: s
 }
 
 export async function fetchJsrPackageMeta(name: string, requestTimeout: number = DEFAULT_REQUEST_TIMEOUT): Promise<PackageData> {
-  const meta = await withRequestTimeout(name, requestTimeout, signal => fetchWithUserAgent(new URL(`${name}/meta.json`, JSR_API_REGISTRY), {
-    signal,
-    headers: {
-      accept: 'application/json',
-    },
-  }).then(r => r.json())) as JsrPackageMeta
+  const meta = await withRequestTimeout(name, requestTimeout, async (signal) => {
+    const res = await fetchWithUserAgent(new URL(`${name}/meta.json`, JSR_API_REGISTRY), {
+      signal,
+      headers: {
+        accept: 'application/json',
+      },
+    })
+    // JSR returns a plain-text `404 - Not Found` body for unknown packages,
+    // which would otherwise blow up JSON parsing with an opaque SyntaxError.
+    if (!res.ok)
+      throw new Error(`Failed to fetch JSR package "${name}": ${res.status} ${res.statusText}`)
+    return await res.json() as JsrPackageMeta
+  })
 
   return {
-    versions: Object.keys(meta.versions),
+    // Yanked versions are unpublished-in-place; never offer them as targets.
+    versions: Object.entries(meta.versions)
+      .filter(([, info]) => !info?.yanked)
+      .map(([version]) => version),
     tags: { latest: meta.latest },
   }
 }

@@ -167,6 +167,23 @@ GITHUB_TOKEN=xxxx taze major
 
 If neither is set, taze falls back to a token from the [GitHub CLI](https://cli.github.com) (`gh auth token`) when you're logged in, so an authenticated `gh` needs no extra configuration.
 
+### JSR
+
+`taze` checks [JSR](https://jsr.io) dependencies alongside your npm ones. Both ways of declaring a JSR package are supported:
+
+```jsonc
+{
+  "dependencies": {
+    // native jsr: protocol (pnpm / deno) — versions come from jsr.io
+    "@std/cli": "jsr:^1.0.0",
+    // npm-compat form written by `npx/bunx jsr add` — needs `@jsr:registry=https://npm.jsr.io` in .npmrc
+    "@std/encoding": "npm:@jsr/std__encoding@^1.0.0"
+  }
+}
+```
+
+`jsr:` specifiers are resolved against the JSR registry (yanked versions are skipped) and written back in place preserving the `jsr:` prefix. All modes, filtering, and `-w` apply as usual.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.

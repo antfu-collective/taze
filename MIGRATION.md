@@ -8,7 +8,7 @@ two orthogonal axes, each behind an interface:
   pnpm/bun/yarn catalogs, GitHub workflow files).
 - **Registries** (`src/registries/*`) — _package types_: how a dependency's
   versions are fetched and resolved for a given ecosystem (`npm`,
-  `github-actions`).
+  `github-actions`, `jsr`).
 
 **The CLI behaves exactly as before** — no flags, config, or output changed. The
 breaking changes are limited to the programmatic API and the source layout.
@@ -54,7 +54,7 @@ registries axis — but the import path (`'taze'`) and the names are unchanged.
 import type { Manifest, PackageType, Registry } from 'taze'
 ```
 
-- `PackageType` — `'npm' | 'github-actions'`, the ecosystem/resolution axis.
+- `PackageType` — `'npm' | 'github-actions' | 'jsr'`, the ecosystem/resolution axis.
 - `Manifest` — the file-source interface.
 - `Registry` — the package-type interface.
 
@@ -74,7 +74,8 @@ interface RawDep {
 - `source` is unchanged and still drives grouping/labelling and catalog identity.
 - `packageType` is optional and defaults to `'npm'` when omitted, so existing
   code that constructs `RawDep` objects keeps working. GitHub Actions
-  dependencies now carry `packageType: 'github-actions'`.
+  dependencies now carry `packageType: 'github-actions'`, and `jsr:` specifiers
+  carry `packageType: 'jsr'`.
 
 If you previously distinguished GitHub Actions via `source === 'github-actions'`,
 that still works; `packageType === 'github-actions'` is the new, preferred check.
