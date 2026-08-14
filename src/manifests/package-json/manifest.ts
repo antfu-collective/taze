@@ -41,6 +41,17 @@ function getPackageManagerDeclaration(raw: Record<string, any>): PackageManagerD
   }
 }
 
+/**
+ * Locate the `devEngines.runtime` entry that pins Node.js (`runtime` may be a
+ * single object or an array). Returns the live object so writes can mutate its
+ * `version` in place; `undefined` when there's no usable node runtime.
+ */
+function getNodeRuntime(raw: Record<string, any>): { name: string, version: string } | undefined {
+  const runtime = raw?.devEngines?.runtime
+  const entries = Array.isArray(runtime) ? runtime : runtime ? [runtime] : []
+  return entries.find(e => e?.name === 'node' && typeof e.version === 'string' && e.version)
+}
+
 export async function loadPackageJSON(
   relative: string,
   options: CommonOptions,
@@ -58,6 +69,19 @@ export async function loadPackageJSON(
     const hexHash = packageManager.field === 'packageManager' ? packageManager.hexHash : undefined
     return parseDependency({ name, version, type: 'packageManager', shouldUpdate, hexHash })
   })
+
+  // `devEngines.runtime` Node.js pin, resolved by the `node` registry. Shares
+  // the `.node-version` opt-out since it's the same kind of update.
+  const runtime = options.nodeVersion !== false ? getNodeRuntime(raw) : undefined
+  if (runtime) {
+    deps.push(parseDependency({
+      name: 'node',
+      version: runtime.version,
+      type: 'devEngines.runtime',
+      packageType: 'node',
+      shouldUpdate,
+    }))
+  }
 
   return [
     {
@@ -78,7 +102,7 @@ export async function writePackageJSON(
   pkg: PackageMeta,
   options: CommonOptions,
 ) {
-  const changed = dumpDependencyFields(pkg.resolved, options, {
+  let changed = dumpDependencyFields(pkg.resolved, options, {
     has: key => !!getByPath(pkg.raw, key),
     set: (key, values) => setByPath(pkg.raw, key, values),
     setPackageManager: () => {
@@ -113,6 +137,16 @@ export async function writePackageJSON(
       return true
     },
   })
+
+  // Write the resolved `devEngines.runtime` Node.js version back in place.
+  const runtimeDep = pkg.resolved.find(dep => dep.source === 'devEngines.runtime' && dep.update)
+  if (runtimeDep) {
+    const runtime = getNodeRuntime(pkg.raw || {})
+    if (runtime) {
+      runtime.version = runtimeDep.targetVersion
+      changed = true
+    }
+  }
 
   if (changed) {
     for (const addon of (options.addons || builtinAddons)) {

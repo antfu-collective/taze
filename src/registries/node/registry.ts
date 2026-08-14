@@ -3,6 +3,7 @@ import { coerce } from 'verkit'
 import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../../utils/config'
 import { fetchNodeReleases } from '../../utils/node'
 import { parseVersionReference, selectVersionTarget } from '../../utils/versionReference'
+import { getMaxSatisfying, getPrefixedVersion } from '../../utils/versions'
 import { getCachedData } from '../cache'
 import { getDiff, mergeMode } from '../shared'
 
@@ -19,7 +20,7 @@ function nodeMode(mode: RangeMode): RangeMode {
   return mode === 'stable' ? 'minor' : mode
 }
 
-/** Node references coerce cleanly to semver (`22` -> `22.0.0`, `v22.14.0` -> `22.14.0`). */
+/** Node references coerce cleanly to semver (`22` -> `22.0.0`, `>=20` -> `20.0.0`). */
 export function getNodeDiff(current: string, target: string): DiffType {
   return getDiff(coerce(current) ?? current, coerce(target) ?? target)
 }
@@ -30,7 +31,7 @@ async function resolveNodeVersion(
   filter: DependencyFilter = () => true,
 ): Promise<ResolvedDepChange> {
   const dep = { ...raw, provenanceDowngraded: false } as ResolvedDepChange
-  const mode = mergeMode(raw.name, options, options.mode ?? 'default')
+  const mode = mergeMode(raw.name, options, options.mode ?? 'default') as RangeMode | 'ignore'
   const exclude = getExcludeVersionRanges(raw.name, options)
 
   const noUpdate = (): ResolvedDepChange => {
@@ -40,11 +41,8 @@ async function resolveNodeVersion(
     return dep
   }
 
-  if (!raw.update || mode === 'ignore' || exclude === true
-    || !parseVersionReference(raw.currentVersion)
-    || !await Promise.resolve(filter(raw))) {
+  if (!raw.update || mode === 'ignore' || exclude === true || !await Promise.resolve(filter(raw)))
     return noUpdate()
-  }
 
   const pkgData = await getNodeReleaseData(options.requestTimeout)
   dep.pkgData = pkgData
@@ -67,18 +65,41 @@ async function resolveNodeVersion(
     return true
   })
 
-  const picked = selectVersionTarget(raw.currentVersion, versions, nodeMode(mode as RangeMode))
-  const latest = selectVersionTarget(raw.currentVersion, versions, 'newest')
-  if (latest && latest.target !== picked?.target)
-    dep.latestVersionAvailable = latest.target
+  // A bare reference (`.node-version` / `.nvmrc`, or a plain `devEngines`
+  // version) preserves its `v` prefix and granularity; a semver range (e.g.
+  // `devEngines.runtime` `">=20"`) is resolved and rewritten like an npm range.
+  const bare = parseVersionReference(raw.currentVersion)
+  let resolved: string | undefined
+  let targetVersion: string | undefined
 
-  if (!picked || picked.target === raw.currentVersion)
+  if (bare) {
+    const picked = selectVersionTarget(raw.currentVersion, versions, nodeMode(mode))
+    const latest = selectVersionTarget(raw.currentVersion, versions, 'newest')
+    if (latest && latest.target !== picked?.target)
+      dep.latestVersionAvailable = latest.target
+    resolved = picked?.resolvedVersion
+    targetVersion = picked?.target
+  }
+  else {
+    try {
+      resolved = getMaxSatisfying(versions, raw.currentVersion, mode, pkgData.tags)
+    }
+    catch (e: any) {
+      dep.diff = 'error'
+      dep.update = false
+      dep.resolveError = e?.message || e
+      return dep
+    }
+    targetVersion = resolved && (getPrefixedVersion(raw.currentVersion, resolved.replace(/^v/, '')) ?? undefined)
+  }
+
+  if (!targetVersion || targetVersion === raw.currentVersion)
     return noUpdate()
 
-  dep.targetVersion = picked.target
-  dep.targetVersionTime = pkgData.time?.[picked.resolvedVersion]
+  dep.targetVersion = targetVersion
+  dep.targetVersionTime = resolved ? pkgData.time?.[resolved] : undefined
   dep.currentVersionTime = pkgData.time?.[`v${coerce(raw.currentVersion)}`]
-  dep.diff = getNodeDiff(raw.currentVersion, picked.target)
+  dep.diff = getNodeDiff(raw.currentVersion, targetVersion)
   dep.update = dep.diff !== null && dep.diff !== 'error'
   return dep
 }

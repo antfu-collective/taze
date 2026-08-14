@@ -1,4 +1,4 @@
-import type { CheckOptions, PackageData } from '../src/types'
+import type { CheckOptions, PackageData, PackageMeta } from '../src/types'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -141,6 +141,45 @@ describe('node version discovery & resolution', () => {
     const { packages } = await check({ '.node-version': '20.10.0\n' }, { mode: 'major', exclude: ['node'] })
     const node = packages.find(p => p.type === 'node-version')!.resolved.find(d => d.name === 'node')!
     expect(node.update).toBe(false)
+  })
+})
+
+describe('devEngines.runtime', () => {
+  const pkg = (runtime: unknown) => ({ 'package.json': JSON.stringify({ name: 'demo', private: true, devEngines: { runtime } }) })
+  const runtimeDep = (packages: PackageMeta[]) =>
+    packages.find(p => p.type === 'package.json')!.resolved.find(d => d.source === 'devEngines.runtime')!
+
+  it('resolves a semver range within the current major by default, preserving the operator', async () => {
+    const { packages } = await check(pkg({ name: 'node', version: '^20.0.0' }))
+    expect(runtimeDep(packages)).toMatchObject({ name: 'node', currentVersion: '^20.0.0', targetVersion: '^20.20.2', update: true, diff: 'minor' })
+  })
+
+  it('bumps to a newer major in major mode', async () => {
+    const { packages } = await check(pkg({ name: 'node', version: '>=20', onFail: 'error' }), { mode: 'major' })
+    expect(runtimeDep(packages)).toMatchObject({ currentVersion: '>=20', targetVersion: '>=26.7.0', update: true, diff: 'major' })
+  })
+
+  it('only touches the node entry when runtime is an array', async () => {
+    const { cwd } = await check(pkg([
+      { name: 'node', version: '^20.0.0' },
+      { name: 'deno', version: '>=1.0.0' },
+    ]), { mode: 'major', write: true })
+    const written = JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8'))
+    expect(written.devEngines.runtime).toEqual([
+      { name: 'node', version: '^26.7.0' },
+      { name: 'deno', version: '>=1.0.0' },
+    ])
+  })
+
+  it('writes the version in place, preserving other keys', async () => {
+    const { cwd } = await check(pkg({ name: 'node', version: '^20.0.0', onFail: 'error' }), { mode: 'major', write: true })
+    const written = JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8'))
+    expect(written.devEngines.runtime).toEqual({ name: 'node', version: '^26.7.0', onFail: 'error' })
+  })
+
+  it('is skipped when nodeVersion is disabled', async () => {
+    const { packages } = await check(pkg({ name: 'node', version: '^20.0.0' }), { mode: 'major', nodeVersion: false })
+    expect(packages.find(p => p.type === 'package.json')!.resolved.some(d => d.source === 'devEngines.runtime')).toBe(false)
   })
 })
 

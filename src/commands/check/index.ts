@@ -81,10 +81,11 @@ export async function check(options: CheckOptions) {
   const { lines, errLines } = renderPackages(resolvePkgs, options)
 
   const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
-  // Node.js version bumps (`.node-version` / `.nvmrc`) don't involve a package
-  // manager, so they must not trigger install/update prompts on their own.
+  // Node.js version bumps (`.node-version` / `.nvmrc` / `devEngines.runtime`)
+  // don't involve a package manager, so they must not trigger install/update
+  // prompts on their own.
   const hasPackageManagerChanges = resolvePkgs.some(pkg =>
-    pkg.resolved.some(dep => dep.update && dep.source !== 'node-version'),
+    pkg.resolved.some(dep => dep.update && dep.packageType !== 'node'),
   )
   if (!hasChanges) {
     if (errLines.length)

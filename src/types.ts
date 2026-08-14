@@ -24,6 +24,7 @@ export type DepType
     | 'yarn-workspace'
     | 'github-actions'
     | 'node-version'
+    | 'devEngines.runtime'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -39,6 +40,7 @@ export const DependenciesTypeShortMap = {
   'yarn-workspace': 'yarn-workspace',
   'github-actions': 'github-actions',
   'node-version': 'node-version',
+  'devEngines.runtime': 'devEngines.runtime',
 }
 
 export type Protocol = 'npm' | 'jsr'
