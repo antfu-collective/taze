@@ -1,27 +1,13 @@
 import type { Document as DocumentType } from 'yaml'
-import type { CommonOptions, DepType, PackageMeta, RawDep } from '../../types'
+import type { CommonOptions, PackageMeta } from '../../types'
 import type { Manifest } from '../types'
 import * as fs from 'node:fs/promises'
 import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
 import { Document, parseDocument as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { builtinAddons } from '../../addons'
-import { dumpDependencies, getByPath, parseDependencies, parseDependency } from '../dependencies'
-
-const allDepsFields = [
-  'dependencies',
-  'devDependencies',
-  'peerDependencies',
-  'optionalDependencies',
-  'packageManager',
-  'pnpm.overrides',
-  'resolutions',
-  'overrides',
-] as const satisfies DepType[]
-
-function isDepFieldEnabled(key: DepType, options: CommonOptions): boolean {
-  return key === 'peerDependencies' ? !!options.peer : options.depFields?.[key] !== false
-}
+import { dumpDependencies, getByPath, parseDependency } from '../dependencies'
+import { dumpDependencyFields, parseDependencyFields } from '../fields'
 
 export async function readYAML(filepath: string): Promise<DocumentType> {
   const content = await fs.readFile(filepath, 'utf-8')
@@ -60,24 +46,15 @@ async function loadPackageYAML(
 ): Promise<PackageMeta[]> {
   const filepath = resolve(options.cwd ?? '', relative)
   const doc = await readYAML(filepath)
-  const deps: RawDep[] = []
 
-  for (const key of allDepsFields) {
-    if (!isDepFieldEnabled(key, options))
-      continue
-
-    if (key === 'packageManager') {
-      const packageManager = doc.get(key)
-      if (typeof packageManager === 'string') {
-        const [name, version] = packageManager.split('@')
-        // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
-        deps.push(parseDependency({ name, version: `^${version.split('+')[0]}`, type: 'packageManager', shouldUpdate }))
-      }
-    }
-    else {
-      deps.push(...parseDependencies(doc.toJS(), key, shouldUpdate))
-    }
-  }
+  const deps = parseDependencyFields(doc.toJS(), options, shouldUpdate, () => {
+    const packageManager = doc.get('packageManager')
+    if (typeof packageManager !== 'string')
+      return undefined
+    const [name, version] = packageManager.split('@')
+    // `+` sign can be used to pin the hash of the package manager, we remove it to be semver compatible.
+    return parseDependency({ name, version: `^${version.split('+')[0]}`, type: 'packageManager', shouldUpdate })
+  })
 
   return [
     {
@@ -101,34 +78,26 @@ export async function writePackageYAML(
   pkg: PackageMeta,
   options: CommonOptions,
 ) {
-  let changed = false
-
   if (pkg.type !== 'package.yaml') {
     throw new Error('Package type is not supported')
   }
 
   const doc = pkg.yamlDocument || new Document(pkg.raw)
 
-  for (const key of allDepsFields) {
-    if (!isDepFieldEnabled(key, options))
-      continue
-
-    if (key === 'packageManager') {
+  const changed = dumpDependencyFields(pkg.resolved, options, {
+    has: key => !!getByPath(doc.toJS(), key),
+    set: (key, values) => {
+      Object.entries(values).forEach(([lastKey, value]) =>
+        doc.setIn([...key.split('.'), lastKey], value))
+    },
+    setPackageManager: () => {
       const [value] = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))
-      if (value) {
-        doc.set('packageManager', `${value[0]}@${value[1].replace('^', '')}`)
-        changed = true
-      }
-    }
-    else {
-      if (getByPath(doc.toJS(), key)) {
-        const values = Object.entries(dumpDependencies(pkg.resolved, key))
-        values.forEach(([lastKey, value]) =>
-          doc.setIn([...key.split('.'), lastKey], value))
-        changed = true
-      }
-    }
-  }
+      if (!value)
+        return false
+      doc.set('packageManager', `${value[0]}@${value[1].replace('^', '')}`)
+      return true
+    },
+  })
 
   if (changed) {
     for (const addon of (options.addons || builtinAddons)) {
@@ -141,7 +110,7 @@ export async function writePackageYAML(
 export const packageYamlManifest: Manifest = {
   name: 'package.yaml',
   type: 'package.yaml',
-  match: relative => relative.endsWith('package.yaml'),
+  match: filepath => filepath.endsWith('package.yaml'),
   load: loadPackageYAML,
   write: writePackageYAML,
 }

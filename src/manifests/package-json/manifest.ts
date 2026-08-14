@@ -1,4 +1,4 @@
-import type { CommonOptions, DepType, PackageMeta, RawDep } from '../../types'
+import type { CommonOptions, PackageMeta } from '../../types'
 import type { Manifest } from '../types'
 import { existsSync } from 'node:fs'
 import process from 'node:process'
@@ -6,19 +6,9 @@ import { join, resolve } from 'pathe'
 import { builtinAddons } from '../../addons'
 import { getHexHashFromIntegrity } from '../../utils/sha'
 import { bunWorkspaceManifest } from '../bun-workspace'
-import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from '../dependencies'
+import { dumpDependencies, getByPath, parseDependency, setByPath } from '../dependencies'
+import { dumpDependencyFields, parseDependencyFields } from '../fields'
 import { readJSON, writeJSON } from '../json'
-
-const allDepsFields = [
-  'dependencies',
-  'devDependencies',
-  'peerDependencies',
-  'optionalDependencies',
-  'packageManager',
-  'pnpm.overrides',
-  'resolutions',
-  'overrides',
-] as const satisfies DepType[]
 
 type PackageManagerDeclaration
   = | { field: 'packageManager', name: string, version: string, hexHash?: string }
@@ -51,14 +41,6 @@ function getPackageManagerDeclaration(raw: Record<string, any>): PackageManagerD
   }
 }
 
-function isDepFieldEnabled(key: DepType, options: CommonOptions): boolean {
-  if (options.depFields?.[key] === false)
-    return false
-  if (key === 'peerDependencies')
-    return !!options.peer
-  return true
-}
-
 export async function loadPackageJSON(
   relative: string,
   options: CommonOptions,
@@ -67,24 +49,15 @@ export async function loadPackageJSON(
 ): Promise<PackageMeta[]> {
   const filepath = resolve(options.cwd ?? '', relative)
   const raw: Record<string, any> = existingRaw ?? await readJSON(filepath)
-  const deps: RawDep[] = []
 
-  for (const key of allDepsFields) {
-    if (!isDepFieldEnabled(key, options))
-      continue
-
-    if (key === 'packageManager') {
-      const packageManager = getPackageManagerDeclaration(raw)
-      if (packageManager) {
-        const { name, version } = packageManager
-        const hexHash = packageManager.field === 'packageManager' ? packageManager.hexHash : undefined
-        deps.push(parseDependency({ name, version, type: 'packageManager', shouldUpdate, hexHash }))
-      }
-    }
-    else {
-      deps.push(...parseDependencies(raw, key, shouldUpdate))
-    }
-  }
+  const deps = parseDependencyFields(raw, options, shouldUpdate, () => {
+    const packageManager = getPackageManagerDeclaration(raw)
+    if (!packageManager)
+      return undefined
+    const { name, version } = packageManager
+    const hexHash = packageManager.field === 'packageManager' ? packageManager.hexHash : undefined
+    return parseDependency({ name, version, type: 'packageManager', shouldUpdate, hexHash })
+  })
 
   return [
     {
@@ -105,49 +78,41 @@ export async function writePackageJSON(
   pkg: PackageMeta,
   options: CommonOptions,
 ) {
-  let changed = false
-
-  for (const key of allDepsFields) {
-    if (!isDepFieldEnabled(key, options))
-      continue
-
-    if (key === 'packageManager') {
+  const changed = dumpDependencyFields(pkg.resolved, options, {
+    has: key => !!getByPath(pkg.raw, key),
+    set: (key, values) => setByPath(pkg.raw, key, values),
+    setPackageManager: () => {
       const value = Object.entries(dumpDependencies(pkg.resolved, 'packageManager'))[0]
       const declaration = getPackageManagerDeclaration(pkg.raw || {})
-      if (value && declaration) {
-        pkg.raw ||= {}
-        const [name, versionWithCaret] = value
-        if (declaration.field === 'packageManager') {
-          const version = versionWithCaret.replace('^', '')
-          let packageManagerValue = `${name}@${version}`
+      if (!value || !declaration)
+        return false
 
-          const resolvedDep = pkg.resolved.find(dep => dep.source === 'packageManager' && dep.name === name)
-          if (resolvedDep?.hexHash) {
-            // `pkgData` may be undefined when the dep was filtered out (e.g. via
-            // `--include`) and the resolve path that fetches registry data was
-            // skipped. In that case there's no fresh integrity to refresh with.
-            const integrity = resolvedDep.pkgData?.integrity?.[version]
-            if (integrity) {
-              const newHexHash = getHexHashFromIntegrity(integrity)
-              packageManagerValue = `${packageManagerValue}+sha512.${newHexHash}`
-            }
+      pkg.raw ||= {}
+      const [name, versionWithCaret] = value
+      if (declaration.field === 'packageManager') {
+        const version = versionWithCaret.replace('^', '')
+        let packageManagerValue = `${name}@${version}`
+
+        const resolvedDep = pkg.resolved.find(dep => dep.source === 'packageManager' && dep.name === name)
+        if (resolvedDep?.hexHash) {
+          // `pkgData` may be undefined when the dep was filtered out (e.g. via
+          // `--include`) and the resolve path that fetches registry data was
+          // skipped. In that case there's no fresh integrity to refresh with.
+          const integrity = resolvedDep.pkgData?.integrity?.[version]
+          if (integrity) {
+            const newHexHash = getHexHashFromIntegrity(integrity)
+            packageManagerValue = `${packageManagerValue}+sha512.${newHexHash}`
           }
+        }
 
-          pkg.raw.packageManager = packageManagerValue
-        }
-        else {
-          pkg.raw.devEngines.packageManager.version = versionWithCaret
-        }
-        changed = true
+        pkg.raw.packageManager = packageManagerValue
       }
-    }
-    else {
-      if (getByPath(pkg.raw, key)) {
-        setByPath(pkg.raw, key, dumpDependencies(pkg.resolved, key))
-        changed = true
+      else {
+        pkg.raw.devEngines.packageManager.version = versionWithCaret
       }
-    }
-  }
+      return true
+    },
+  })
 
   if (changed) {
     for (const addon of (options.addons || builtinAddons)) {
@@ -199,7 +164,7 @@ async function loadPackageJSONManifest(
 export const packageJsonManifest: Manifest = {
   name: 'package.json',
   type: 'package.json',
-  match: relative => relative.endsWith('package.json'),
+  match: filepath => filepath.endsWith('package.json'),
   load: loadPackageJSONManifest,
   write: writePackageJSON,
 }
