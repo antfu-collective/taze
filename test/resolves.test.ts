@@ -2,7 +2,7 @@ import type { CheckOptions, DependencyFilter, PackageData, RawDep, ResolvedDepCh
 import process from 'node:process'
 import { expect, it, vi } from 'vitest'
 import { resolveDependency } from '../src'
-import { getDiff, getLatestVersionAvailable, getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../src/io/resolves'
+import { getDiff, getLatestVersionAvailable, getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../src/registries'
 
 // `resolveDependency` fetches package metadata over the network. Mock it so
 // the test suite is deterministic and doesn't depend on (or hammer) the real

@@ -1,7 +1,10 @@
 import type { PnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
+import type { Manifest } from './types'
+import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'pathe'
+import process from 'node:process'
+import { join, resolve } from 'pathe'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import { dumpDependencies, parseDependency } from './dependencies'
 
@@ -87,4 +90,17 @@ export async function writePnpmWorkspace(
 
 export function writeYaml(pkg: PnpmWorkspaceMeta, document: PnpmWorkspaceYaml) {
   return writeFile(pkg.filepath, document.toString(), 'utf8')
+}
+
+export const pnpmWorkspaceManifest: Manifest = {
+  name: 'pnpm-workspace.yaml',
+  type: 'pnpm-workspace.yaml',
+  order: -1,
+  match: relative => relative.endsWith('pnpm-workspace.yaml'),
+  async discover(options) {
+    const cwd = resolve(options.cwd || process.cwd())
+    return existsSync(join(cwd, 'pnpm-workspace.yaml')) ? ['pnpm-workspace.yaml'] : []
+  },
+  load: loadPnpmWorkspace,
+  write: (pkg, options) => writePnpmWorkspace(pkg as PnpmWorkspaceMeta, options),
 }

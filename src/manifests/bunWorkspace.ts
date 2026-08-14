@@ -1,4 +1,5 @@
 import type { BunWorkspaceMeta, CommonOptions, RawDep } from '../types'
+import type { Manifest } from './types'
 import { readFile, writeFile } from 'node:fs/promises'
 import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
@@ -89,6 +90,19 @@ export async function writeBunWorkspace(
 
     await writeBunJSON(pkg.filepath, pkg.raw)
   }
+}
+
+/**
+ * Bun catalogs live inside a package.json and are discovered while loading it
+ * (see the package.json manifest), so this manifest is never matched directly —
+ * it only owns the write-back of `bun-workspace` packages.
+ */
+export const bunWorkspaceManifest: Manifest = {
+  name: 'bun-workspace',
+  type: 'bun-workspace',
+  match: () => false,
+  load: loadBunWorkspace,
+  write: (pkg, options) => writeBunWorkspace(pkg as BunWorkspaceMeta, options),
 }
 
 async function writeBunJSON(filepath: string, data: Record<string, unknown>) {

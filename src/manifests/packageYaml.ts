@@ -1,5 +1,6 @@
 import type { Document as DocumentType } from 'yaml'
 import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
+import type { Manifest } from './types'
 import * as fs from 'node:fs/promises'
 import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
@@ -135,4 +136,12 @@ export async function writePackageYAML(
     }
     await writeYAML(pkg.filepath, doc)
   }
+}
+
+export const packageYamlManifest: Manifest = {
+  name: 'package.yaml',
+  type: 'package.yaml',
+  match: relative => relative.endsWith('package.yaml'),
+  load: loadPackageYAML,
+  write: writePackageYAML,
 }

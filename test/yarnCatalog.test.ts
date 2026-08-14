@@ -3,7 +3,7 @@ import process from 'node:process'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
 import { afterEach, beforeEach, describe, expect, it, vi, vitest } from 'vitest'
 import { CheckPackages } from '../src'
-import * as yarnWorkspaces from '../src/io/yarnWorkspaces'
+import * as yarnWorkspaces from '../src/manifests/yarnWorkspace'
 
 // output that should be written to the .yarnrc.yml file
 let output: string | undefined

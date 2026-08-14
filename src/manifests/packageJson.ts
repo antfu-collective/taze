@@ -1,9 +1,13 @@
 import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
-import { resolve } from 'pathe'
+import type { Manifest } from './types'
+import { existsSync } from 'node:fs'
+import process from 'node:process'
+import { join, resolve } from 'pathe'
 import { builtinAddons } from '../addons'
 import { getHexHashFromIntegrity } from '../utils/sha'
+import { loadBunWorkspace } from './bunWorkspace'
 import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
-import { readJSON, writeJSON } from './packages'
+import { readJSON, writeJSON } from './json'
 
 const allDepsFields = [
   'dependencies',
@@ -151,4 +155,51 @@ export async function writePackageJSON(
     }
     await writeJSON(pkg.filepath, pkg.raw || {})
   }
+}
+
+/**
+ * Load a package.json, additionally emitting Bun catalog packages when the file
+ * declares Bun workspace catalogs and a `bun.lock(b)` is present. The catalogs
+ * and the package.json share the same `raw` object so writes don't clobber each
+ * other.
+ */
+async function loadPackageJSONManifest(
+  relative: string,
+  options: CommonOptions,
+  shouldUpdate: (name: string) => boolean,
+): Promise<PackageMeta[]> {
+  const filepath = resolve(options.cwd ?? '', relative)
+  try {
+    const raw = await readJSON(filepath)
+    const workspaces = raw?.workspaces
+
+    // Only process Bun catalogs if we detect Bun is being used
+    if (workspaces && (workspaces.catalog || workspaces.catalogs)) {
+      const cwd = resolve(options.cwd || process.cwd())
+      const hasBunLock = existsSync(join(cwd, 'bun.lockb')) || existsSync(join(cwd, 'bun.lock'))
+
+      if (hasBunLock) {
+        // Pass the same raw object to both loaders so writes don't clobber each other
+        const bunWorkspaces = await loadBunWorkspace(relative, options, shouldUpdate, raw)
+        const packageJson = await loadPackageJSON(relative, options, shouldUpdate, raw)
+        return [...bunWorkspaces, ...packageJson]
+      }
+    }
+
+    // Reuse already-read raw for non-bun case
+    return loadPackageJSON(relative, options, shouldUpdate, raw)
+  }
+  catch {
+    // Safe guard: If we can't read the file, fall back to normal package.json loading
+  }
+
+  return loadPackageJSON(relative, options, shouldUpdate)
+}
+
+export const packageJsonManifest: Manifest = {
+  name: 'package.json',
+  type: 'package.json',
+  match: relative => relative.endsWith('package.json'),
+  load: loadPackageJSONManifest,
+  write: writePackageJSON,
 }

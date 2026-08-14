@@ -4,7 +4,7 @@ import process from 'node:process'
 import readline from 'node:readline'
 import { stripVTControlCharacters } from 'node:util'
 import c from 'ansis'
-import { getDiff } from './io/resolves'
+import { getDiff } from './registries'
 
 import { DiffColorMap } from './utils/diff'
 

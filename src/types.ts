@@ -40,16 +40,34 @@ export const DependenciesTypeShortMap = {
 
 export type Protocol = 'npm' | 'jsr'
 
+/**
+ * The ecosystem a dependency belongs to, which decides how its versions are
+ * fetched and resolved. This is the routing key for the registry axis
+ * (`src/registries/*`) — orthogonal to {@link RawDep.source}, which describes
+ * where* inside a manifest the dependency lives.
+ */
+export type PackageType = 'npm' | 'github-actions'
+
 export interface RawDep {
   name: string
   currentVersion: string
+  /**
+   * Where the dependency lives inside its manifest (dependency field, catalog,
+   * override, etc.). Also drives grouping/labelling in the output.
+   */
   source: DepType
+  /**
+   * Which ecosystem the dependency belongs to. Decides which registry
+   * (`src/registries/*`) resolves it. Defaults to `'npm'` when omitted.
+   */
+  packageType?: PackageType
   update: boolean
   parents?: string[]
   protocol?: Protocol
   hexHash?: string
   /**
-   * Extra metadata carried by GitHub Actions dependencies (`source: 'github-actions'`).
+   * Extra metadata carried by GitHub Actions dependencies
+   * (`packageType: 'github-actions'`).
    * Describes how the `uses:` reference is written so it can be updated in place.
    */
   githubAction?: GitHubActionInfo

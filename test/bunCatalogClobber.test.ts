@@ -1,7 +1,7 @@
 import type { BunWorkspaceMeta, PackageMeta } from '../src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { writeBunWorkspace } from '../src/io/bunWorkspaces'
-import { writePackageJSON } from '../src/io/packageJson'
+import { writeBunWorkspace } from '../src/manifests/bunWorkspace'
+import { writePackageJSON } from '../src/manifests/packageJson'
 
 // Track all writes by filepath so we can inspect the final file state
 const writes: Record<string, string> = {}
@@ -19,9 +19,9 @@ vi.mock('node:fs/promises', async (importActual) => {
   }
 })
 
-// Mock writeJSON from packages.ts so writePackageJSON doesn't hit real fs
-// (packages.ts uses `node:fs` internally which the above mock doesn't cover)
-vi.mock('../src/io/packages', async (importActual) => {
+// Mock writeJSON so writePackageJSON doesn't hit real fs
+// (it uses `node:fs` internally which the above mock doesn't cover)
+vi.mock('../src/manifests/json', async (importActual) => {
   const actual = await importActual() as any
   return {
     ...actual,
@@ -343,7 +343,7 @@ describe('bun catalog shared raw reference integrity', () => {
     }
 
     // Simulate what loadPackage does: pass shared raw to both
-    const { loadBunWorkspace } = await import('../src/io/bunWorkspaces')
+    const { loadBunWorkspace } = await import('../src/manifests/bunWorkspace')
 
     const bunResult = await loadBunWorkspace(
       'package.json',
