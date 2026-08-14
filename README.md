@@ -24,6 +24,7 @@
 - Interactive mode to select which packages to update
 - Respects `package.json`'s `engines` field and your package manager's config
 - Updates GitHub Actions in your workflows, with optional SHA pinning
+- Updates the Node.js version pinned in `.node-version` and `.nvmrc`
 - Agents compatible JSON output
 
 ## Usage
@@ -184,6 +185,21 @@ If neither is set, taze falls back to a token from the [GitHub CLI](https://cli.
 
 `jsr:` specifiers are resolved against the JSR registry (yanked versions are skipped) and written back in place preserving the `jsr:` prefix. All modes, filtering, and `-w` apply as usual.
 
+### Node.js version
+
+`taze` also keeps the Node.js version pinned in `.node-version` and `.nvmrc` fresh. It checks these files in the current directory, and with `-r` it discovers nested ones too (honoring `ignorePaths`); a neighboring `package.json` is not required.
+
+```bash
+taze                    # stay on the current Node.js major
+taze patch              # stay on the current major and minor
+taze major -w           # allow a newer major and write the file
+taze --no-node-version  # opt out
+```
+
+Only stable numeric references with an optional `v` prefix are recognized (`22`, `22.14`, `v22.14.0`); aliases (`lts/*`, `node`), ranges, and prereleases are left untouched. The written reference keeps the shape you had — a major-only `22` stays major-only, and the `v` prefix, surrounding whitespace, and any comments/blank lines in `.nvmrc` are preserved.
+
+Releases and their dates come from the official [Node.js distribution index](https://nodejs.org/dist/index.json), so `maturityPeriod` and version-specific exclusions apply here too. Filtering uses the dependency name `node` (`--include node`, `--exclude node`, `packageMode.node`). Writing the file does not install or switch the active Node.js runtime.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.
@@ -235,7 +251,9 @@ export default defineConfig({
   githubActions: {
     // 'auto' (preserve existing style) | 'tag' | 'sha'
     style: 'auto'
-  }
+  },
+  // `.node-version` / `.nvmrc` updates are enabled by default; `false` to opt out
+  nodeVersion: true
 })
 ```
 

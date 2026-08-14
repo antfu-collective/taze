@@ -23,6 +23,7 @@ export type DepType
     | 'bun-workspace'
     | 'yarn-workspace'
     | 'github-actions'
+    | 'node-version'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -37,6 +38,7 @@ export const DependenciesTypeShortMap = {
   'bun-workspace': 'bun-workspace',
   'yarn-workspace': 'yarn-workspace',
   'github-actions': 'github-actions',
+  'node-version': 'node-version',
 }
 
 export type Protocol = 'npm' | 'jsr'
@@ -47,7 +49,7 @@ export type Protocol = 'npm' | 'jsr'
  * (`src/registries/*`) — orthogonal to {@link RawDep.source}, which describes
  * where* inside a manifest the dependency lives.
  */
-export type PackageType = 'npm' | 'github-actions' | 'jsr'
+export type PackageType = 'npm' | 'github-actions' | 'jsr' | 'node'
 
 export interface RawDep {
   name: string
@@ -236,6 +238,15 @@ export interface CommonOptions {
    * @default true
    */
   githubActions?: boolean | GitHubActionsOptions
+  /**
+   * Check and update the Node.js version declared in `.node-version` and
+   * `.nvmrc` files.
+   *
+   * Enabled by default. Set to `false` to opt out.
+   *
+   * @default true
+   */
+  nodeVersion?: boolean
 }
 
 export type DepFieldOptions = Partial<Record<DepType, boolean>>
@@ -414,6 +425,34 @@ export interface GitHubActionMeta extends BasePackageMeta {
   yamlDocument: Document
 }
 
+/**
+ * A parsed `.node-version` / `.nvmrc` file. The whole file content is kept as
+ * `lines` so comments, blank lines and formatting can be round-tripped; only
+ * the single version token on `versionLineIndex` is rewritten on save.
+ */
+export interface NodeVersionFileRaw extends Record<string, unknown> {
+  /** All lines of the file (split on `\n`, line endings preserved). */
+  lines: string[]
+  /** Index into `lines` of the line that holds the version reference. */
+  versionLineIndex: number
+  /** Whitespace before the version token on that line. */
+  leading: string
+  /** Whitespace (and any trailing `\r`) after the version token. */
+  trailing: string
+}
+
+export interface NodeVersionMeta extends BasePackageMeta {
+  /**
+   * File type — a `.node-version` or `.nvmrc` file
+   */
+  type: 'node-version'
+  /**
+   * Raw file structure, used to rewrite the version in place while preserving
+   * comments and formatting.
+   */
+  raw: NodeVersionFileRaw
+}
+
 export type PackageMeta
   = | PackageJsonMeta
     | GlobalPackageMeta
@@ -422,6 +461,7 @@ export type PackageMeta
     | YarnWorkspaceMeta
     | PackageYamlMeta
     | GitHubActionMeta
+    | NodeVersionMeta
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void

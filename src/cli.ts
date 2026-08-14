@@ -26,6 +26,7 @@ cli
   .option('--ignore-other-workspaces', 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)', { default: true })
   .option('--no-github-actions', 'disable checking GitHub Actions in .github/workflows and composite action.yml files')
   .option('--github-actions-style <style>', 'how to write updated actions: auto (preserve) | tag | sha')
+  .option('--no-node-version', 'disable checking .node-version and .nvmrc files')
   .option('--include, -n <deps>', 'only included dependencies will be checked for updates')
   .option('--exclude, -x <deps>', 'exclude dependencies to be checked, will override --include options; supports `name@range` (e.g. typescript@7) to exclude only matching versions')
   .option('--write, -w', 'write to package.json')

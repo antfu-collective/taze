@@ -6,13 +6,14 @@ import { getDiff, getGitHubActionDiff, getRegistry, registries, resolveDependenc
 
 describe('registries (package-type axis)', () => {
   it('exposes one registry per package type', () => {
-    expect(Object.keys(registries).sort()).toEqual(['github-actions', 'jsr', 'npm'])
+    expect(Object.keys(registries).sort()).toEqual(['github-actions', 'jsr', 'node', 'npm'])
   })
 
   it('routes by packageType and defaults to npm', () => {
     expect(getRegistry('npm').name).toBe('npm')
     expect(getRegistry('github-actions').name).toBe('github-actions')
     expect(getRegistry('jsr').name).toBe('jsr')
+    expect(getRegistry('node').name).toBe('node')
     expect(getRegistry(undefined).name).toBe('npm')
   })
 
@@ -48,6 +49,7 @@ describe('manifests (file-source axis)', () => {
       '.yarnrc.yml',
       'bun-workspace',
       'github-action',
+      'node-version',
       'package.json',
       'package.yaml',
       'pnpm-workspace.yaml',
@@ -62,6 +64,8 @@ describe('manifests (file-source axis)', () => {
     expect(owner('/repo/.yarnrc.yml')).toBe('.yarnrc.yml')
     expect(owner('/repo/.github/workflows/ci.yml')).toBe('github-action')
     expect(owner('/repo/action.yml')).toBe('github-action')
+    expect(owner('/repo/.node-version')).toBe('node-version')
+    expect(owner('/repo/packages/a/.nvmrc')).toBe('node-version')
   })
 
   it('orders catalog files before package files and github actions after', () => {

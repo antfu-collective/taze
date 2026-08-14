@@ -17,11 +17,11 @@
     },
     "recursive": {
       "type": "boolean",
-      "description": "Recursively search for package.json in subdirectories.",
+      "description": "Recursively search for supported files in subdirectories.",
       "default": false
     },
     "ignorePaths": {
-      "description": "Glob patterns to ignore when searching for package.json files.",
+      "description": "Glob patterns to ignore when searching for supported files.",
       "anyOf": [
         { "type": "string" },
         { "type": "array", "items": { "type": "string" } }
@@ -29,7 +29,7 @@
     },
     "ignoreOtherWorkspaces": {
       "type": "boolean",
-      "description": "Ignore package.json files in other workspaces (those with their own .git, pnpm-workspace.yaml, etc.).",
+      "description": "Ignore files in other workspaces (those with their own .git, pnpm-workspace.yaml, etc.).",
       "default": true
     },
     "include": {
@@ -207,6 +207,11 @@
           }
         }
       ]
+    },
+    "nodeVersion": {
+      "type": "boolean",
+      "description": "Check and update the Node.js version declared in .node-version and .nvmrc files. Set to false to opt out.",
+      "default": true
     }
   }
 }

@@ -81,6 +81,11 @@ export async function check(options: CheckOptions) {
   const { lines, errLines } = renderPackages(resolvePkgs, options)
 
   const hasChanges = resolvePkgs.length && resolvePkgs.some(i => i.resolved.some(j => j.update))
+  // Node.js version bumps (`.node-version` / `.nvmrc`) don't involve a package
+  // manager, so they must not trigger install/update prompts on their own.
+  const hasPackageManagerChanges = resolvePkgs.some(pkg =>
+    pkg.resolved.some(dep => dep.update && dep.source !== 'node-version'),
+  )
   if (!hasChanges) {
     if (errLines.length)
       outputErr(errLines)
@@ -158,7 +163,7 @@ export async function check(options: CheckOptions) {
   }
   else if (hasChanges) {
     let packageManager: Agent | undefined
-    if (!options.install && !options.update && !options.interactive) {
+    if (!options.install && !options.update && !options.interactive && hasPackageManagerChanges) {
       packageManager = await detect()
 
       // Determine the most common package file type for the message
@@ -186,7 +191,7 @@ export async function check(options: CheckOptions) {
       console.log(c.yellow(`ℹ changes written to ${fileTypeName}`))
     }
 
-    if (options.interactive && !options.install) {
+    if (options.interactive && !options.install && hasPackageManagerChanges) {
       options.install = await prompts([
         {
           name: 'install',

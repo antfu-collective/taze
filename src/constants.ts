@@ -5,6 +5,7 @@ export const LOG_LEVELS = ['debug', 'info', 'warn', 'error', 'silent'] as const
 export const MODE_CHOICES = ['default', 'major', 'minor', 'patch', 'latest', 'newest', 'stable', 'next'] as const
 
 export const DEFAULT_IGNORE_PATHS = [
+  '**/.git/**',
   '**/node_modules/**',
   '**/dist/**',
   '**/public/**',
@@ -25,6 +26,7 @@ const DEFAULT_COMMON_OPTIONS: CommonOptions = {
   exclude: '',
   depFields: {},
   githubActions: true,
+  nodeVersion: true,
 }
 
 export const DEFAULT_CHECK_OPTIONS: CheckOptions = {

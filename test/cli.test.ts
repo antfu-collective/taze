@@ -8,6 +8,7 @@ it('taze cli should expose options that require values', async () => {
 
   expect(proc.stdout).toContain('--concurrency <requests>')
   expect(proc.stdout).toContain('--request-timeout <ms>')
+  expect(proc.stdout).toContain('--no-node-version')
   expect(proc.stderr).toBe('')
   expect(proc.exitCode).toBe(0)
 })
