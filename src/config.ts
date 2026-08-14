@@ -144,5 +144,14 @@ export async function resolveConfig(
     }
   }
 
+  // When DO_NOT_TRACK is set, skip the third-party fast-npm-meta endpoint and
+  // use the direct registry client instead. The fast-npm-meta endpoint receives
+  // every dependency name in the project, which is a privacy concern an operator
+  // may not want. DO_NOT_TRACK is an informal convention that many CLI tools
+  // honor: https://donottrack.sh/
+  if (process.env.DO_NOT_TRACK) {
+    checkMerged.fastNpmMetaApiEndpoint = undefined
+  }
+
   return merged
 }
