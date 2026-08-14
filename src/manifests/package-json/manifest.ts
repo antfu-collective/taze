@@ -1,13 +1,13 @@
-import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
-import type { Manifest } from './types'
+import type { CommonOptions, DepType, PackageMeta, RawDep } from '../../types'
+import type { Manifest } from '../types'
 import { existsSync } from 'node:fs'
 import process from 'node:process'
 import { join, resolve } from 'pathe'
-import { builtinAddons } from '../addons'
-import { getHexHashFromIntegrity } from '../utils/sha'
-import { loadBunWorkspace } from './bunWorkspace'
-import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from './dependencies'
-import { readJSON, writeJSON } from './json'
+import { builtinAddons } from '../../addons'
+import { getHexHashFromIntegrity } from '../../utils/sha'
+import { bunWorkspaceManifest } from '../bun-workspace'
+import { dumpDependencies, getByPath, parseDependencies, parseDependency, setByPath } from '../dependencies'
+import { readJSON, writeJSON } from '../json'
 
 const allDepsFields = [
   'dependencies',
@@ -180,7 +180,7 @@ async function loadPackageJSONManifest(
 
       if (hasBunLock) {
         // Pass the same raw object to both loaders so writes don't clobber each other
-        const bunWorkspaces = await loadBunWorkspace(relative, options, shouldUpdate, raw)
+        const bunWorkspaces = await bunWorkspaceManifest.load(relative, options, shouldUpdate, raw)
         const packageJson = await loadPackageJSON(relative, options, shouldUpdate, raw)
         return [...bunWorkspaces, ...packageJson]
       }

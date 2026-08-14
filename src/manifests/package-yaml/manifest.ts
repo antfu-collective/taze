@@ -1,12 +1,12 @@
 import type { Document as DocumentType } from 'yaml'
-import type { CommonOptions, DepType, PackageMeta, RawDep } from '../types'
-import type { Manifest } from './types'
+import type { CommonOptions, DepType, PackageMeta, RawDep } from '../../types'
+import type { Manifest } from '../types'
 import * as fs from 'node:fs/promises'
 import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
 import { Document, parseDocument as parseYaml, stringify as stringifyYaml } from 'yaml'
-import { builtinAddons } from '../addons'
-import { dumpDependencies, getByPath, parseDependencies, parseDependency } from './dependencies'
+import { builtinAddons } from '../../addons'
+import { dumpDependencies, getByPath, parseDependencies, parseDependency } from '../dependencies'
 
 const allDepsFields = [
   'dependencies',

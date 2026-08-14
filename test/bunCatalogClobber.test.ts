@@ -1,7 +1,7 @@
 import type { BunWorkspaceMeta, PackageMeta } from '../src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { writeBunWorkspace } from '../src/manifests/bunWorkspace'
-import { writePackageJSON } from '../src/manifests/packageJson'
+import { writeBunWorkspace } from '../src/manifests/bun-workspace/manifest'
+import { writePackageJSON } from '../src/manifests/package-json/manifest'
 
 // Track all writes by filepath so we can inspect the final file state
 const writes: Record<string, string> = {}
@@ -343,7 +343,7 @@ describe('bun catalog shared raw reference integrity', () => {
     }
 
     // Simulate what loadPackage does: pass shared raw to both
-    const { loadBunWorkspace } = await import('../src/manifests/bunWorkspace')
+    const { loadBunWorkspace } = await import('../src/manifests/bun-workspace/manifest')
 
     const bunResult = await loadBunWorkspace(
       'package.json',

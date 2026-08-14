@@ -1,12 +1,12 @@
 import type { PnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
-import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../types'
-import type { Manifest } from './types'
+import type { CommonOptions, PnpmWorkspaceMeta, RawDep } from '../../types'
+import type { Manifest } from '../types'
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import process from 'node:process'
 import { join, resolve } from 'pathe'
 import { parsePnpmWorkspaceYaml } from 'pnpm-workspace-yaml'
-import { dumpDependencies, parseDependency } from './dependencies'
+import { dumpDependencies, parseDependency } from '../dependencies'
 
 export async function loadPnpmWorkspace(
   relative: string,

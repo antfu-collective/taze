@@ -1,12 +1,12 @@
-import type { CheckOptions, DependencyFilter, PackageData, Protocol, RangeMode, RawDep, ResolvedDepChange, RetryOptions } from '../types'
+import type { CheckOptions, DependencyFilter, PackageData, Protocol, RangeMode, RawDep, ResolvedDepChange, RetryOptions } from '../../types'
 import process from 'node:process'
 import { findMinimumForRange, isGreater, isLess, satisfies } from 'verkit'
-import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../utils/config'
-import { parsePnpmPackagePath, parseYarnPackagePath } from '../utils/package'
-import { fetchJsrPackageMeta, fetchPackage } from '../utils/packument'
-import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../utils/versions'
-import { cache, cacheTTL, debug, inflightRequests, markCacheChanged, now, ttl } from './cache'
-import { getDiff, mergeMode } from './shared'
+import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../../utils/config'
+import { parsePnpmPackagePath, parseYarnPackagePath } from '../../utils/package'
+import { fetchJsrPackageMeta, fetchPackage } from '../../utils/packument'
+import { filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion } from '../../utils/versions'
+import { cache, cacheTTL, debug, inflightRequests, markCacheChanged, now, ttl } from '../cache'
+import { getDiff, mergeMode } from '../shared'
 
 export async function getPackageData(name: string, protocol: Protocol = 'npm', cwd?: string, requestTimeout?: number, retry?: number | false | RetryOptions, fastNpmMetaApiEndpoint?: string): Promise<PackageData> {
   let error: any

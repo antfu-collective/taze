@@ -1,9 +1,9 @@
-import type { CheckOptions, DependencyFilter, DiffType, PackageData, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import type { CheckOptions, DependencyFilter, DiffType, PackageData, RangeMode, RawDep, ResolvedDepChange } from '../../types'
 import { coerce, isValid } from 'verkit'
-import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../utils/config'
-import { fetchActionTags, fetchCommitDate, selectTarget } from '../utils/github'
-import { cache, cacheTTL, debug, inflightRequests, markCacheChanged, now, ttl } from './cache'
-import { getDiff as getSemverDiff, mergeMode } from './shared'
+import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../../utils/config'
+import { fetchActionTags, fetchCommitDate, selectTarget } from '../../utils/github'
+import { cache, cacheTTL, debug, inflightRequests, markCacheChanged, now, ttl } from '../cache'
+import { getDiff as getSemverDiff, mergeMode } from '../shared'
 
 export async function getGitHubActionData(repo: string, requestTimeout?: number): Promise<PackageData> {
   const cacheName = `gha:${repo}`

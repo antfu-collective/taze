@@ -3,12 +3,14 @@ import type { Registry } from './types'
 import { newQueue } from '@henrygd/queue'
 import { diffSorter } from '../filters/diff-sorter'
 import { queueContext } from '../utils/context'
-import { githubActionsRegistry } from './githubActions'
+import { githubActionsRegistry } from './github-actions'
 import { npmRegistry } from './npm'
 
 export { dumpCache, loadCache } from './cache'
 
-export { getGitHubActionData, getGitHubActionDiff, resolveGitHubAction } from './githubActions'
+export { githubActionsRegistry } from './github-actions'
+export { getGitHubActionData, getGitHubActionDiff, resolveGitHubAction } from './github-actions/registry'
+export { npmRegistry } from './npm'
 export {
   getFilteredVersions,
   getLatestVersionAvailable,
@@ -20,7 +22,7 @@ export {
   isUrlPackage,
   resolveNpmDependency,
   updateTargetVersion,
-} from './npm'
+} from './npm/registry'
 export { getDiff, mergeMode } from './shared'
 export type { Registry } from './types'
 

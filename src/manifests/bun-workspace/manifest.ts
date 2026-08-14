@@ -1,9 +1,9 @@
-import type { BunWorkspaceMeta, CommonOptions, RawDep } from '../types'
-import type { Manifest } from './types'
+import type { BunWorkspaceMeta, CommonOptions, RawDep } from '../../types'
+import type { Manifest } from '../types'
 import { readFile, writeFile } from 'node:fs/promises'
 import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
-import { dumpDependencies, parseDependency } from './dependencies'
+import { dumpDependencies, parseDependency } from '../dependencies'
 
 export async function loadBunWorkspace(
   relative: string,

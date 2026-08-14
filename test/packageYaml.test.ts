@@ -4,7 +4,7 @@ import process from 'node:process'
 import { afterEach, beforeEach, describe, expect, it, vi, vitest } from 'vitest'
 import { Document } from 'yaml'
 import { CheckPackages } from '../src'
-import * as packageYaml from '../src/manifests/packageYaml'
+import * as packageYaml from '../src/manifests/package-yaml/manifest'
 
 // output that should be written to the package.yaml file
 let output: string | undefined

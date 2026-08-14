@@ -1,13 +1,13 @@
 import type { Scalar } from 'yaml'
-import type { CommonOptions, GitHubActionMeta, GitHubActionsOptions, GitHubActionStyle, PackageMeta, RawDep } from '../types'
-import type { Manifest } from './types'
+import type { CommonOptions, GitHubActionMeta, GitHubActionsOptions, GitHubActionStyle, PackageMeta, RawDep } from '../../types'
+import type { Manifest } from '../types'
 import { readFile, writeFile } from 'node:fs/promises'
 import process from 'node:process'
 import { resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { isScalar, parseDocument, visit } from 'yaml'
-import { DEFAULT_IGNORE_PATHS } from '../constants'
-import { formatUses, parseUses } from '../utils/github'
+import { DEFAULT_IGNORE_PATHS } from '../../constants'
+import { formatUses, parseUses } from '../../utils/github'
 
 function resolveStyle(options: CommonOptions): GitHubActionStyle {
   const config = options.githubActions

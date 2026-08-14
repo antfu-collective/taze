@@ -1,8 +1,7 @@
 import type { RawDep } from '../src/types'
 import { describe, expect, it } from 'vitest'
 import { manifests, writePackage } from '../src/manifests'
-import { getGitHubActionDiff, getRegistry, registries, resolveDependency } from '../src/registries'
-import { getDiff } from '../src/registries/shared'
+import { getDiff, getGitHubActionDiff, getRegistry, registries, resolveDependency } from '../src/registries'
 
 describe('registries (package-type axis)', () => {
   it('exposes one registry per package type', () => {
