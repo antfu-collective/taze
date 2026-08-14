@@ -32,6 +32,42 @@ export function markCacheChanged() {
   cacheChanged = true
 }
 
+/**
+ * Resolve `PackageData` for `cacheName`, sharing the on-disk cache, TTL and
+ * in-flight de-duplication used across registries. Successful results (no
+ * `error`) are cached; the fetcher is responsible for shaping errors.
+ */
+export async function getCachedData(cacheName: string, fetcher: () => Promise<PackageData>): Promise<PackageData> {
+  if (cache[cacheName] && ttl(cache[cacheName].cacheTime) < cacheTTL) {
+    debug.cache(`cache hit for ${cacheName}`)
+    return cache[cacheName].data
+  }
+
+  const inflight = inflightRequests.get(cacheName)
+  if (inflight) {
+    debug.cache(`in-flight hit for ${cacheName}`)
+    return inflight
+  }
+
+  const request = (async () => {
+    debug.resolve(`resolving ${cacheName}`)
+    const data = await fetcher()
+    if (!data.error) {
+      cache[cacheName] = { data, cacheTime: now() }
+      markCacheChanged()
+    }
+    return data
+  })()
+
+  inflightRequests.set(cacheName, request)
+  try {
+    return await request
+  }
+  finally {
+    inflightRequests.delete(cacheName)
+  }
+}
+
 export async function loadCache() {
   if (existsSync(cachePath) && ttl(lstatSync(cachePath).mtimeMs) < cacheTTL) {
     debug.cache(`cache loaded from ${cachePath}`)

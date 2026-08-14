@@ -23,6 +23,8 @@ export type DepType
     | 'bun-workspace'
     | 'yarn-workspace'
     | 'github-actions'
+    | 'node-version'
+    | 'devEngines.runtime'
 
 export const DependenciesTypeShortMap = {
   'packageManager': 'package-manager',
@@ -37,6 +39,8 @@ export const DependenciesTypeShortMap = {
   'bun-workspace': 'bun-workspace',
   'yarn-workspace': 'yarn-workspace',
   'github-actions': 'github-actions',
+  'node-version': 'node-version',
+  'devEngines.runtime': 'devEngines.runtime',
 }
 
 export type Protocol = 'npm' | 'jsr'
@@ -47,7 +51,7 @@ export type Protocol = 'npm' | 'jsr'
  * (`src/registries/*`) — orthogonal to {@link RawDep.source}, which describes
  * where* inside a manifest the dependency lives.
  */
-export type PackageType = 'npm' | 'github-actions' | 'jsr'
+export type PackageType = 'npm' | 'github-actions' | 'jsr' | 'node'
 
 export interface RawDep {
   name: string
@@ -236,6 +240,15 @@ export interface CommonOptions {
    * @default true
    */
   githubActions?: boolean | GitHubActionsOptions
+  /**
+   * Check and update the Node.js version declared in `.node-version` and
+   * `.nvmrc` files.
+   *
+   * Enabled by default. Set to `false` to opt out.
+   *
+   * @default true
+   */
+  nodeVersion?: boolean
 }
 
 export type DepFieldOptions = Partial<Record<DepType, boolean>>
@@ -414,6 +427,23 @@ export interface GitHubActionMeta extends BasePackageMeta {
   yamlDocument: Document
 }
 
+export interface NodeVersionMeta extends BasePackageMeta {
+  /**
+   * File type — a `.node-version` or `.nvmrc` file
+   */
+  type: 'node-version'
+  /**
+   * The file content split around the version token, so it can be rewritten in
+   * place while preserving comments, blank lines and formatting.
+   */
+  raw: NodeVersionFileRaw
+}
+
+export interface NodeVersionFileRaw extends Record<string, unknown> {
+  prefix: string
+  suffix: string
+}
+
 export type PackageMeta
   = | PackageJsonMeta
     | GlobalPackageMeta
@@ -422,6 +452,7 @@ export type PackageMeta
     | YarnWorkspaceMeta
     | PackageYamlMeta
     | GitHubActionMeta
+    | NodeVersionMeta
 
 export type DependencyFilter = (dep: RawDep) => boolean | Promise<boolean>
 export type DependencyResolvedCallback = (packageName: string | null, depName: string, progress: number, total: number) => void

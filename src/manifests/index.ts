@@ -8,6 +8,7 @@ import { DEFAULT_IGNORE_PATHS } from '../constants'
 import { createDependenciesFilter } from '../utils/dependenciesFilter'
 import { bunWorkspaceManifest } from './bun-workspace'
 import { githubActionsManifest } from './github-action'
+import { nodeVersionManifest } from './node-version'
 import { packageJsonManifest } from './package-json'
 import { packageYamlManifest } from './package-yaml'
 import { pnpmWorkspaceManifest } from './pnpm-workspace'
@@ -28,6 +29,7 @@ export const builtinManifests: Manifest[] = [
   packageYamlManifest,
   bunWorkspaceManifest,
   githubActionsManifest,
+  nodeVersionManifest,
 ]
 
 /**

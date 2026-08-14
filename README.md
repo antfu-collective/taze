@@ -24,6 +24,7 @@
 - Interactive mode to select which packages to update
 - Respects `package.json`'s `engines` field and your package manager's config
 - Updates GitHub Actions in your workflows, with optional SHA pinning
+- Updates the Node.js version pinned in `.node-version` and `.nvmrc`
 - Agents compatible JSON output
 
 ## Usage
@@ -184,6 +185,23 @@ If neither is set, taze falls back to a token from the [GitHub CLI](https://cli.
 
 `jsr:` specifiers are resolved against the JSR registry (yanked versions are skipped) and written back in place preserving the `jsr:` prefix. All modes, filtering, and `-w` apply as usual.
 
+### Node.js version
+
+`taze` also keeps the Node.js version pinned in `.node-version`, `.nvmrc`, and a `package.json` [`devEngines.runtime`](https://github.com/nodejs/node/blob/main/doc/api/packages.md#devengines) entry fresh. It checks these files in the current directory, and with `-r` it discovers nested ones too (honoring `ignorePaths`); a neighboring `package.json` is not required for the `.node-version` / `.nvmrc` files.
+
+```bash
+taze                    # stay on the current Node.js major
+taze patch              # stay on the current major and minor
+taze major -w           # allow a newer major and write the file
+taze --no-node-version  # opt out
+```
+
+In `.node-version` / `.nvmrc` only stable numeric references with an optional `v` prefix are recognized (`22`, `22.14`, `v22.14.0`); aliases (`lts/*`, `node`), ranges, and prereleases are left untouched. The written reference keeps the shape you had — a major-only `22` stays major-only, and the `v` prefix, surrounding whitespace, and any comments/blank lines are preserved.
+
+A `devEngines.runtime` pin whose `name` is `node` is instead treated as a semver range and rewritten in place, preserving the range operator (`>=20` → `>=26.7.0`, `^20.0.0` → `^20.20.2`); `runtime` may be a single object or an array (only the `node` entry is touched).
+
+Releases and their dates come from the official [Node.js distribution index](https://nodejs.org/dist/index.json), so `maturityPeriod` and version-specific exclusions apply here too. Filtering uses the dependency name `node` (`--include node`, `--exclude node`, `packageMode.node`), and `--no-node-version` / `nodeVersion: false` opts out of all of the above. Writing the files does not install or switch the active Node.js runtime.
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.
@@ -235,7 +253,9 @@ export default defineConfig({
   githubActions: {
     // 'auto' (preserve existing style) | 'tag' | 'sha'
     style: 'auto'
-  }
+  },
+  // `.node-version` / `.nvmrc` updates are enabled by default; `false` to opt out
+  nodeVersion: true
 })
 ```
 

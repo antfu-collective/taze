@@ -5,6 +5,7 @@ import { diffSorter } from '../filters/diff-sorter'
 import { queueContext } from '../utils/context'
 import { githubActionsRegistry } from './github-actions'
 import { jsrRegistry } from './jsr'
+import { nodeRegistry } from './node'
 import { npmRegistry } from './npm'
 
 export { dumpCache, loadCache } from './cache'
@@ -30,6 +31,7 @@ export const registries = {
   'npm': npmRegistry,
   'github-actions': githubActionsRegistry,
   'jsr': jsrRegistry,
+  'node': nodeRegistry,
 } satisfies Record<PackageType, Registry>
 
 export function getRegistry(packageType: PackageType = 'npm'): Registry {

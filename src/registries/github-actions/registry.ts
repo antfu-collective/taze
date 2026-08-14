@@ -2,52 +2,19 @@ import type { CheckOptions, DependencyFilter, DiffType, PackageData, RangeMode, 
 import { coerce, isValid } from 'verkit'
 import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../../utils/config'
 import { fetchActionTags, fetchCommitDate, selectTarget } from '../../utils/github'
-import { cache, cacheTTL, debug, inflightRequests, markCacheChanged, now, ttl } from '../cache'
+import { getCachedData } from '../cache'
 import { getDiff as getSemverDiff, mergeMode } from '../shared'
 
-async function getGitHubActionData(repo: string, requestTimeout?: number): Promise<PackageData> {
-  const cacheName = `gha:${repo}`
-
-  if (cache[cacheName]) {
-    if (ttl(cache[cacheName].cacheTime) < cacheTTL) {
-      debug.cache(`cache hit for ${cacheName}`)
-      return cache[cacheName].data
-    }
-    else {
-      delete cache[cacheName]
-    }
-  }
-
-  const inflightRequest = inflightRequests.get(cacheName)
-  if (inflightRequest) {
-    debug.cache(`in-flight hit for ${cacheName}`)
-    return inflightRequest
-  }
-
-  const request = (async () => {
-    debug.resolve(`resolving ${cacheName}`)
+function getGitHubActionData(repo: string, requestTimeout?: number): Promise<PackageData> {
+  return getCachedData(`gha:${repo}`, async (): Promise<PackageData> => {
     const { versions, shaMap, error } = await fetchActionTags(repo, requestTimeout)
-    const data: PackageData = {
+    return {
       versions,
       tags: versions.length ? { latest: versions[versions.length - 1] } : {},
       shaMap,
       error,
     }
-    if (!error) {
-      cache[cacheName] = { data, cacheTime: now() }
-      markCacheChanged()
-    }
-    return data
-  })()
-
-  inflightRequests.set(cacheName, request)
-
-  try {
-    return await request
-  }
-  finally {
-    inflightRequests.delete(cacheName)
-  }
+  })
 }
 
 /**
