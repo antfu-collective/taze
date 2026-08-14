@@ -9,7 +9,7 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   - tinyexec@1.2.2
 packages:
-  - '!**/test/**'
+  - '!**/test/fixtures/**'
 overrides:
   fast-npm-meta: ^2.2.0
   package-manager-detector: ^1.8.0

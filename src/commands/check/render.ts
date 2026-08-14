@@ -211,7 +211,7 @@ export function outputErr(errLines: string[]) {
   console.error()
 }
 
-export interface JsonDepChange {
+interface JsonDepChange {
   name: string
   aliasName?: string
   source: DepType
@@ -225,7 +225,7 @@ export interface JsonDepChange {
   error?: string
 }
 
-export interface JsonPackage {
+interface JsonPackage {
   name: string
   type: PackageMeta['type']
   filepath: string
