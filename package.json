@@ -28,6 +28,7 @@
   ],
   "scripts": {
     "lint": "eslint",
+    "knip": "knip",
     "dev": "DEBUG=taze:* tsx ./src/cli.ts",
     "start": "tsx ./src/cli.ts",
     "build": "tsdown",
@@ -66,6 +67,7 @@
     "empathic": "catalog:inlined",
     "eslint": "catalog:dev",
     "get-npm-meta": "catalog:inlined",
+    "knip": "catalog:dev",
     "taze": "workspace:*",
     "tsdown": "catalog:dev",
     "tsx": "catalog:dev",

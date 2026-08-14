@@ -9,7 +9,7 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   - tinyexec@1.2.2
 packages:
-  - '!**/test/**'
+  - '!**/test/fixtures/**'
 overrides:
   fast-npm-meta: ^2.2.0
   package-manager-detector: ^1.8.0
@@ -19,6 +19,7 @@ catalogs:
     '@antfu/eslint-config': ^9.2.0
     bumpp: ^12.1.1
     eslint: ^10.8.0
+    knip: ^6.32.2
     tsdown: ^0.22.14
     tsx: ^4.23.6
     typescript: ^6.0.3

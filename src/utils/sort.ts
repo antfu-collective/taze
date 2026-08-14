@@ -3,8 +3,8 @@ import { DependenciesTypeShortMap } from '../types'
 import { DiffMap } from './diff'
 import { toDate } from './time'
 
-export type SortKey = 'time' | 'diff' | 'name'
-export type SortOrder = 'asc' | 'desc'
+type SortKey = 'time' | 'diff' | 'name'
+type SortOrder = 'asc' | 'desc'
 
 export type SortOption = `${SortKey}-${SortOrder}`
 export const SORT_CHOICES = [
