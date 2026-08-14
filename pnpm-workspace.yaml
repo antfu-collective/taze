@@ -16,12 +16,12 @@ overrides:
 
 catalogs:
   dev:
-    '@antfu/eslint-config': ^9.2.0
-    bumpp: ^12.1.1
-    eslint: ^10.8.0
+    '@antfu/eslint-config': ^9.3.0
+    bumpp: ^12.2.1
+    eslint: ^10.8.1
     knip: ^6.32.2
     tsdown: ^0.22.14
-    tsx: ^4.23.6
+    tsx: ^4.23.12
     typescript: ^6.0.3
     vitest: ^4.1.10
   inlined:
@@ -34,14 +34,14 @@ catalogs:
     empathic: ^2.0.1
     get-npm-meta: ^0.3.0
   prod:
-    '@antfu/ni': ^30.3.0
+    '@antfu/ni': ^30.5.0
     '@henrygd/queue': ^1.2.0
     cac: ^7.0.0
     obug: ^2.1.4
     ofetch: ^1.5.1
     package-manager-detector: ^1.8.0
     pathe: ^2.0.3
-    pnpm-workspace-yaml: ^1.7.0
+    pnpm-workspace-yaml: ^1.8.0
     restore-cursor: ^5.1.0
     tinyexec: ^1.3.0
     tinyglobby: ^0.2.17
@@ -50,7 +50,7 @@ catalogs:
     yaml: ^2.9.0
   types:
     '@types/cli-progress': ^3.11.6
-    '@types/node': ^26.1.2
+    '@types/node': ^26.2.0
 allowBuilds:
   esbuild: true
 
