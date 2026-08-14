@@ -425,32 +425,21 @@ export interface GitHubActionMeta extends BasePackageMeta {
   yamlDocument: Document
 }
 
-/**
- * A parsed `.node-version` / `.nvmrc` file. The whole file content is kept as
- * `lines` so comments, blank lines and formatting can be round-tripped; only
- * the single version token on `versionLineIndex` is rewritten on save.
- */
-export interface NodeVersionFileRaw extends Record<string, unknown> {
-  /** All lines of the file (split on `\n`, line endings preserved). */
-  lines: string[]
-  /** Index into `lines` of the line that holds the version reference. */
-  versionLineIndex: number
-  /** Whitespace before the version token on that line. */
-  leading: string
-  /** Whitespace (and any trailing `\r`) after the version token. */
-  trailing: string
-}
-
 export interface NodeVersionMeta extends BasePackageMeta {
   /**
    * File type — a `.node-version` or `.nvmrc` file
    */
   type: 'node-version'
   /**
-   * Raw file structure, used to rewrite the version in place while preserving
-   * comments and formatting.
+   * The file content split around the version token, so it can be rewritten in
+   * place while preserving comments, blank lines and formatting.
    */
   raw: NodeVersionFileRaw
+}
+
+export interface NodeVersionFileRaw extends Record<string, unknown> {
+  prefix: string
+  suffix: string
 }
 
 export type PackageMeta

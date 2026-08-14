@@ -69,7 +69,6 @@ describe('version reference parsing', () => {
     expect(parseVersionReference('22.14')).toMatchObject({ prefix: '', major: 22, minor: 14, segments: 2 })
     expect(parseVersionReference('v22.14.0')).toMatchObject({ prefix: 'v', major: 22, minor: 14, patch: 0, segments: 3 })
     expect(parseVersionReference('lts/*')).toBeNull()
-    expect(parseVersionReference('22', true)).toBeNull()
   })
 
   it('formats a version to match the template granularity/prefix', () => {

@@ -1,10 +1,10 @@
 import type { RangeMode } from '../types'
 
 /**
- * Parse and select numeric version references such as those found in
- * `.node-version` / `.nvmrc` files: an optional `v` prefix followed by one to
- * three numeric segments (`22`, `22.14`, `v22.14.0`). Aliases (`lts/*`,
- * `node`), ranges and prereleases are intentionally not matched.
+ * Parse and select numeric version references such as those in `.node-version`
+ * / `.nvmrc` files: an optional `v` prefix and one to three numeric segments
+ * (`22`, `22.14`, `v22.14.0`). Aliases (`lts/*`), ranges and prereleases don't
+ * match.
  */
 
 const VERSION_REFERENCE_RE = /^(v?)(\d+)(?:\.(\d+))?(?:\.(\d+))?([-+].*)?$/
@@ -20,116 +20,61 @@ export interface ParsedVersionReference {
   prerelease: boolean
 }
 
-export interface SelectVersionTargetOptions {
-  /** require a leading `v` for both the current ref and every candidate */
-  requireV?: boolean
-  /** reject specific candidates (e.g. excluded ranges) */
-  reject?: (version: ParsedVersionReference) => boolean
-}
-
-export interface SelectedVersionTarget {
-  /** the reference to write, formatted to match the current granularity */
-  target: string
-  /** the underlying resolved version (always fully specified) */
-  resolvedVersion: string
-}
-
-export function parseVersionReference(value: string, requireV = false): ParsedVersionReference | null {
+export function parseVersionReference(value: string): ParsedVersionReference | null {
   const match = VERSION_REFERENCE_RE.exec(value)
-  if (!match || (requireV && match[1] !== 'v'))
+  if (!match)
     return null
 
-  const segments = match[4] != null ? 3 : match[3] != null ? 2 : 1
   return {
     raw: value,
     prefix: match[1] as '' | 'v',
     major: Number(match[2]),
     minor: Number(match[3] ?? 0),
     patch: Number(match[4] ?? 0),
-    segments,
+    segments: match[4] != null ? 3 : match[3] != null ? 2 : 1,
     prerelease: match[5]?.startsWith('-') ?? false,
   }
 }
 
 export function compareVersionReferences(a: ParsedVersionReference, b: ParsedVersionReference): number {
-  if (a.major !== b.major)
-    return a.major - b.major
-  if (a.minor !== b.minor)
-    return a.minor - b.minor
-  if (a.patch !== b.patch)
-    return a.patch - b.patch
-  // stable releases sort after their prereleases
-  if (a.prerelease !== b.prerelease)
-    return a.prerelease ? -1 : 1
-  return a.raw.localeCompare(b.raw)
+  return (a.major - b.major) || (a.minor - b.minor) || (a.patch - b.patch)
+    // stable releases sort after their prereleases
+    || (a.prerelease === b.prerelease ? a.raw.localeCompare(b.raw) : a.prerelease ? -1 : 1)
 }
 
 /**
  * Render `version` using the prefix and numeric granularity of `template`, so
- * a major-only reference stays major-only (`22` -> `24`) and a full reference
- * stays full (`v22.14.0` -> `v24.1.0`).
+ * `22` -> `24` stays major-only and `v22.14.0` -> `v24.1.0` stays full.
  */
-export function formatVersionReference(
-  version: ParsedVersionReference,
-  template: ParsedVersionReference,
-): string {
-  const numeric = template.segments === 1
-    ? `${version.major}`
-    : template.segments === 2
-      ? `${version.major}.${version.minor}`
-      : `${version.major}.${version.minor}.${version.patch}`
-
+export function formatVersionReference(version: ParsedVersionReference, template: ParsedVersionReference): string {
+  const numeric = [version.major, version.minor, version.patch].slice(0, template.segments).join('.')
   return `${template.prefix}${numeric}`
 }
 
 /**
- * Pick the update target from `versions`, honoring the range mode and keeping
- * the granularity/prefix of the current reference.
+ * Pick the update target from `versions` (already filtered by the caller),
+ * honoring the range mode and keeping the current reference's granularity.
  */
-export function selectVersionTarget(
-  currentValue: string,
-  versions: string[],
-  mode: RangeMode,
-  options: SelectVersionTargetOptions = {},
-): SelectedVersionTarget | undefined {
-  const current = parseVersionReference(currentValue, options.requireV)
+export function selectVersionTarget(currentValue: string, versions: string[], mode: RangeMode) {
+  const current = parseVersionReference(currentValue)
   if (!current)
     return
 
   const allowPrerelease = mode === 'newest' || mode === 'next' || current.prerelease
+  const stableCurrent = { ...current, prerelease: false }
   const candidates = versions
-    .map(version => parseVersionReference(version, options.requireV))
-    .filter((version): version is ParsedVersionReference => !!version)
-    .filter((version) => {
-      if (!allowPrerelease && version.prerelease)
+    .map(parseVersionReference)
+    .filter((v): v is ParsedVersionReference => {
+      if (!v || (!allowPrerelease && v.prerelease) || compareVersionReferences(v, stableCurrent) <= 0)
         return false
-      if (options.reject?.(version))
-        return false
-
-      const stableCurrent = { ...current, prerelease: false }
-      if (compareVersionReferences(version, stableCurrent) <= 0)
-        return false
-
-      switch (mode) {
-        case 'patch':
-          return version.major === current.major && version.minor === current.minor
-        case 'minor':
-        case 'default':
-        case 'stable':
-          return version.major === current.major
-        default:
-          return true
-      }
+      if (mode === 'patch')
+        return v.major === current.major && v.minor === current.minor
+      if (mode === 'minor' || mode === 'default' || mode === 'stable')
+        return v.major === current.major
+      return true
     })
+    .sort(compareVersionReferences)
 
-  if (!candidates.length)
-    return
-
-  candidates.sort(compareVersionReferences)
-  const best = candidates.at(-1)!
-
-  return {
-    target: formatVersionReference(best, current),
-    resolvedVersion: best.raw,
-  }
+  const best = candidates.at(-1)
+  return best && { target: formatVersionReference(best, current), resolvedVersion: best.raw }
 }

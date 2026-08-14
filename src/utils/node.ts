@@ -31,7 +31,7 @@ export async function fetchNodeReleases(requestTimeout?: number): Promise<Packag
   const releases = await res.json() as NodeRelease[]
   const stable = releases
     .map((release) => {
-      const parsed = parseVersionReference(release.version, true)
+      const parsed = parseVersionReference(release.version)
       return parsed && parsed.segments === 3 && !parsed.prerelease
         ? { date: release.date, parsed }
         : null
