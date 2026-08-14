@@ -47,7 +47,7 @@ export type Protocol = 'npm' | 'jsr'
  * (`src/registries/*`) — orthogonal to {@link RawDep.source}, which describes
  * where* inside a manifest the dependency lives.
  */
-export type PackageType = 'npm' | 'github-actions'
+export type PackageType = 'npm' | 'github-actions' | 'jsr'
 
 export interface RawDep {
   name: string

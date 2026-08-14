@@ -40,7 +40,7 @@ export function parseDependency({
   name,
   version,
   type,
-  packageType = 'npm',
+  packageType,
   shouldUpdate,
   parents,
   hexHash,
@@ -53,12 +53,17 @@ export function parseDependency({
   parents?: string[]
   hexHash?: string
 }): RawDep {
+  // Route `jsr:` specifiers (e.g. `"@std/cli": "jsr:^1.0.0"`) to the jsr
+  // registry. Other specifiers default to npm. An explicit `packageType`
+  // (e.g. from the GitHub Actions manifest) always wins.
+  const resolvedPackageType: PackageType = packageType
+    ?? (version.startsWith('jsr:') ? 'jsr' : 'npm')
   const dep: RawDep = {
     name,
     currentVersion: version,
     parents,
     source: type,
-    packageType,
+    packageType: resolvedPackageType,
     // when `updated` marked to `false`, it will be bypassed on resolving
     update: shouldUpdate(name),
   }
@@ -83,12 +88,15 @@ export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
         return tree[parent]
       }, data)
 
-      if (i.aliasName === undefined) {
+      if (i.aliasName === undefined && !i.protocol) {
         targetLeaf[i.name] = version
       }
       else {
+        // The `jsr:` protocol carries only a version (the package name comes
+        // from the key); `npm:` aliases carry `name@version`.
+        const key = i.aliasName ?? i.name
         const protocol = i.protocol ? `${i.protocol}:` : ''
-        targetLeaf[i.aliasName] = `${protocol}${i.protocol === 'jsr' ? version : buildNpmTargetPackage(i, version)}`
+        targetLeaf[key] = `${protocol}${i.protocol === 'jsr' ? version : buildNpmTargetPackage(i, version)}`
       }
     })
 

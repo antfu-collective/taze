@@ -6,12 +6,13 @@ import { getDiff, getGitHubActionDiff, getRegistry, registries, resolveDependenc
 
 describe('registries (package-type axis)', () => {
   it('exposes one registry per package type', () => {
-    expect(Object.keys(registries).sort()).toEqual(['github-actions', 'npm'])
+    expect(Object.keys(registries).sort()).toEqual(['github-actions', 'jsr', 'npm'])
   })
 
   it('routes by packageType and defaults to npm', () => {
     expect(getRegistry('npm').name).toBe('npm')
     expect(getRegistry('github-actions').name).toBe('github-actions')
+    expect(getRegistry('jsr').name).toBe('jsr')
     expect(getRegistry(undefined).name).toBe('npm')
   })
 

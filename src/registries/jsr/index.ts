@@ -1,0 +1,1 @@
+export { jsrRegistry } from './registry'
