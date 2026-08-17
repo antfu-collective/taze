@@ -156,8 +156,11 @@ async function writeGitHubAction(
     changed = true
   }
 
-  if (changed)
-    await writeFile(pkg.filepath, pkg.yamlDocument.toString(), 'utf-8')
+  if (changed) {
+    await writeFile(pkg.filepath, pkg.yamlDocument.toString({
+      lineWidth: 0,
+    }), 'utf-8')
+  }
 }
 
 export const githubActionsManifest: Manifest = {
