@@ -1,13 +1,30 @@
-import type { Scalar } from 'yaml'
+import type { Document as DocumentType, Scalar } from 'yaml'
 import type { CommonOptions, GitHubActionMeta, GitHubActionsOptions, GitHubActionStyle, PackageMeta, RawDep } from '../../types'
 import type { Manifest } from '../types'
-import { readFile, writeFile } from 'node:fs/promises'
+import * as fs from 'node:fs/promises'
 import process from 'node:process'
+import detectIndent from 'detect-indent'
 import { resolve } from 'pathe'
 import { glob } from 'tinyglobby'
-import { isScalar, parseDocument, visit } from 'yaml'
+import { isScalar, parseDocument as parseYaml, stringify as stringifyYaml, visit } from 'yaml'
 import { DEFAULT_IGNORE_PATHS } from '../../constants'
 import { formatUses, parseUses } from '../../utils/github'
+
+export async function writeYAML(filepath: string, data: DocumentType | Record<string, unknown>) {
+  const { amount, type } = await fs.readFile(filepath, 'utf-8')
+    .then(detectIndent)
+    .catch(Object.create)
+
+  const indent = (type === 'tab' ? 2 : amount) ?? 2
+
+  const yamlContent = stringifyYaml(data, {
+    indent,
+    aliasDuplicateObjects: false,
+    lineWidth: 0,
+  })
+
+  return fs.writeFile(filepath, yamlContent, 'utf-8')
+}
 
 function resolveStyle(options: CommonOptions): GitHubActionStyle {
   const config = options.githubActions
@@ -64,8 +81,8 @@ async function loadGitHubAction(
   shouldUpdate: (name: string) => boolean,
 ): Promise<PackageMeta[]> {
   const filepath = resolve(options.cwd ?? '', relative)
-  const content = await readFile(filepath, 'utf-8')
-  const doc = parseDocument(content)
+  const content = await fs.readFile(filepath, 'utf-8')
+  const doc = parseYaml(content)
 
   if (doc.errors.length)
     return []
@@ -156,8 +173,9 @@ async function writeGitHubAction(
     changed = true
   }
 
-  if (changed)
-    await writeFile(pkg.filepath, pkg.yamlDocument.toString(), 'utf-8')
+  if (changed) {
+    await writeYAML(pkg.filepath, pkg.yamlDocument)
+  }
 }
 
 export const githubActionsManifest: Manifest = {
