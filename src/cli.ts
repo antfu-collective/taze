@@ -69,7 +69,7 @@ cli
       process.exit(1)
     }
 
-    const resolved = await resolveConfig(options)
+    const resolved = await resolveConfig(options, process.argv.slice(2))
 
     let exitCode
     if (options.global)

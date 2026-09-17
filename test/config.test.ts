@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
+import { cac } from 'cac'
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resolveConfig } from '../src/config'
 
@@ -120,5 +121,156 @@ describe('resolveConfig honors DO_NOT_TRACK for the fast-npm-meta endpoint', () 
     const options: CommonOptions = { cwd, fastNpmMetaApiEndpoint: 'https://example.com/meta' }
     await resolveConfig(options)
     expect(options.fastNpmMetaApiEndpoint).toBe('https://example.com/meta')
+  })
+})
+
+/**
+ * Mirror taze's CLI flags that declare a cac `default` (or a `--no-*` negation
+ * default). Parsing with `{ run: false }` is how the CLI builds the object
+ * later merged on top of the config file.
+ */
+function parseCliDefaults(argv: string[]) {
+  const cli = cac('taze')
+  cli
+    .option('--ignore-other-workspaces', '', { default: true })
+    .option('--no-github-actions', '')
+    .option('--github-actions-style <style>', '')
+    .option('--no-node-version', '')
+    .option('--concurrency <requests>', '', { default: 10 })
+    .option('--request-timeout <ms>', '', { default: 5000 })
+  const { options } = cli.parse(['node', 'taze', ...argv], { run: false })
+  const { '--': _unused, ...rest } = options
+  return rest as CheckOptions
+}
+
+describe('resolveConfig does not let untyped CLI defaults clobber the config file', () => {
+  let cwd: string
+
+  beforeEach(() => {
+    cwd = makeTmp()
+  })
+
+  it('injects exactly the five defaulted keys when argv is empty', () => {
+    expect(parseCliDefaults([])).toEqual({
+      ignoreOtherWorkspaces: true,
+      githubActions: true,
+      nodeVersion: true,
+      concurrency: 10,
+      requestTimeout: 5000,
+    })
+  })
+
+  it('keeps config-file values when argv does not mention the flags', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({
+      requestTimeout: 1,
+      concurrency: 3,
+      ignoreOtherWorkspaces: false,
+      githubActions: false,
+      nodeVersion: false,
+    }))
+
+    const resolved = await resolveConfig({ ...parseCliDefaults([]), cwd }, []) as CheckOptions
+
+    expect(resolved.requestTimeout).toBe(1)
+    expect(resolved.concurrency).toBe(3)
+    expect(resolved.ignoreOtherWorkspaces).toBe(false)
+    expect(resolved.githubActions).toBe(false)
+    expect(resolved.nodeVersion).toBe(false)
+  })
+
+  it('preserves a githubActions object from the config file', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({
+      githubActions: { style: 'auto' },
+    }))
+
+    const resolved = await resolveConfig({ ...parseCliDefaults([]), cwd }, []) as CheckOptions
+
+    expect(resolved.githubActions).toEqual({ style: 'auto' })
+  })
+
+  it('lets --request-timeout override the config file', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ requestTimeout: 1 }))
+    const argv = ['--request-timeout', '9']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.requestTimeout).toBe(9)
+  })
+
+  it('lets --concurrency= override the config file', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ concurrency: 3 }))
+    const argv = ['--concurrency=7']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.concurrency).toBe(7)
+  })
+
+  it('lets --no-github-actions override a config-file true', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ githubActions: true }))
+    const argv = ['--no-github-actions']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.githubActions).toBe(false)
+  })
+
+  it('lets --no-node-version override a config-file true', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ nodeVersion: true }))
+    const argv = ['--no-node-version']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.nodeVersion).toBe(false)
+  })
+
+  it('lets --no-ignore-other-workspaces override a config-file true', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ ignoreOtherWorkspaces: true }))
+    const argv = ['--no-ignore-other-workspaces']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.ignoreOtherWorkspaces).toBe(false)
+  })
+
+  it('lets an explicit --github-actions override config-file false', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ githubActions: false }))
+    const argv = ['--github-actions']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.githubActions).toBe(true)
+  })
+
+  it('does not treat --node-version as a --no-* flag', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ nodeVersion: false }))
+    const argv = ['--node-version']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.nodeVersion).toBe(true)
+  })
+
+  it('applies --github-actions-style when --github-actions is omitted', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ githubActions: { style: 'auto' } }))
+    const argv = ['--github-actions-style', 'sha']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.githubActions).toEqual({ style: 'sha' })
+  })
+
+  it('still lets programmatic options override the config file without argv', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ requestTimeout: 1, githubActions: false }))
+    const resolved = await resolveConfig({ cwd, requestTimeout: 9, githubActions: true }) as CheckOptions
+    expect(resolved.requestTimeout).toBe(9)
+    expect(resolved.githubActions).toBe(true)
+  })
+
+  it('keeps documented defaults when neither config nor flags set them', async () => {
+    const resolved = await resolveConfig({ ...parseCliDefaults([]), cwd }, []) as CheckOptions
+    expect(resolved.requestTimeout).toBe(5000)
+    expect(resolved.concurrency).toBe(10)
+    expect(resolved.ignoreOtherWorkspaces).toBe(true)
+    expect(resolved.githubActions).toBe(true)
+    expect(resolved.nodeVersion).toBe(true)
+  })
+
+  it('lets --no-github-actions disable a config-file style object', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ githubActions: { style: 'auto' } }))
+    const argv = ['--no-github-actions']
+    const resolved = await resolveConfig({ ...parseCliDefaults(argv), cwd }, argv) as CheckOptions
+    expect(resolved.githubActions).toBe(false)
+  })
+
+  it('does not mutate the parsed CLI options object', async () => {
+    write(cwd, '.tazerc.json', JSON.stringify({ requestTimeout: 1 }))
+    const parsed = { ...parseCliDefaults([]), cwd }
+    await resolveConfig(parsed, [])
+    expect(parsed.requestTimeout).toBe(5000)
   })
 })

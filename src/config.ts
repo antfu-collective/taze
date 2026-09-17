@@ -10,6 +10,53 @@ import { inferConfig } from './utils/inferConfig'
 const debug = createDebug('taze:config')
 
 /**
+ * cac writes these keys into the parsed options object even when the user did
+ * not type the flag: `--concurrency` / `--request-timeout` declare `{ default }`,
+ * and `--no-github-actions` / `--no-node-version` / `--ignore-other-workspaces`
+ * (default true) inject a boolean. Merging that object last would discard the
+ * config file, so {@link resolveConfig} keeps them only when `argv` mentions
+ * the flag (including the `--no-*` form).
+ */
+const CLI_DEFAULTED_KEYS = [
+  'requestTimeout',
+  'concurrency',
+  'ignoreOtherWorkspaces',
+  'githubActions',
+  'nodeVersion',
+] as const
+
+function camelCaseFlag(name: string) {
+  return name.replace(/-([a-z])/g, (_, char: string) => char.toUpperCase())
+}
+
+function getProvidedCliOptionKeys(argv: string[]) {
+  const provided = new Set<string>()
+  for (const arg of argv) {
+    if (arg === '--')
+      break
+    if (!arg.startsWith('--'))
+      continue
+    // `--no-github-actions` → `githubActions`; `--node-version` stays `nodeVersion`
+    const name = arg.replace(/^--(no-)?/, '').split('=')[0]
+    if (name)
+      provided.add(camelCaseFlag(name))
+  }
+  return provided
+}
+
+function omitUnprovidedCliDefaults<T extends CliOptions | CommonOptions>(options: T, argv: string[]): T {
+  const provided = getProvidedCliOptionKeys(argv)
+  const omitted = CLI_DEFAULTED_KEYS.filter(key => key in options && !provided.has(key))
+  if (!omitted.length)
+    return options
+
+  const copy = { ...options } as T & Record<string, unknown>
+  for (const key of omitted)
+    delete copy[key]
+  return copy
+}
+
+/**
  * The raw option shape accepted from the CLI, before normalization.
  *
  * The CLI exposes a few options as flat flags (`--retry`, `--retry-factor`,
@@ -89,10 +136,21 @@ function normalizeConfig(options: CommonOptions) {
   return options
 }
 
+/**
+ * Resolve CLI / API options against `taze.config.*` / `.tazerc`.
+ *
+ * Pass `argv` (typically `process.argv.slice(2)`, including `[]`) so keys that
+ * cac injects by default are merged only when the user actually typed the flag.
+ * `--no-github-actions` / `--no-node-version` / `--no-ignore-other-workspaces`
+ * count as providing those keys. Omit `argv` for programmatic callers.
+ */
 export async function resolveConfig(
   options: CliOptions | CommonOptions,
+  argv?: string[],
 ): Promise<CommonOptions> {
   const defaults = DEFAULT_CHECK_OPTIONS
+  if (argv)
+    options = omitUnprovidedCliDefaults(options, argv)
   options = normalizeConfig(normalizeCliOptions(options))
 
   const loader = createConfigLoader<CommonOptions>({

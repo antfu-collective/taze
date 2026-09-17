@@ -41,6 +41,7 @@ export const DEFAULT_CHECK_OPTIONS: CheckOptions = {
   all: false,
   json: false,
   sort: 'diff-asc',
+  concurrency: 10,
   requestTimeout: 5000,
   group: true,
   includeLocked: false,
