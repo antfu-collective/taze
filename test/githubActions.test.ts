@@ -123,6 +123,26 @@ describe('github actions loading & resolving', () => {
     expect(packages.find(p => p.type === 'github-action')).toBeUndefined()
   })
 
+  it('pins an up-to-date tag to its sha when style: sha (no version bump)', async () => {
+    const { packages } = await CheckPackages({ ...baseOptions, mode: 'default', githubActions: { style: 'sha' } })
+    const pkg = packages.find(p => p.type === 'github-action')!
+    const byName = Object.fromEntries(pkg.resolved.map(r => [r.name, r]))
+
+    // `@v3` and `@v1` already float within their line: no version bump, but sha-pinned anyway
+    expect(byName['actions/checkout']).toMatchObject({ currentVersion: 'v3', targetVersion: 'v3', update: true, diff: 'pin' })
+    expect(byName['actions/checkout'].githubAction?.targetSha).toBe(SHA['actions/checkout'].v3)
+    expect(byName['org/repo']).toMatchObject({ currentVersion: 'v1', targetVersion: 'v1', update: true, diff: 'pin' })
+  })
+
+  it('leaves up-to-date tags untouched in auto/tag styles', async () => {
+    for (const githubActions of [undefined, { style: 'tag' as const }]) {
+      const { packages } = await CheckPackages({ ...baseOptions, mode: 'default', githubActions })
+      const pkg = packages.find(p => p.type === 'github-action')!
+      const checkout = pkg.resolved.find(r => r.name === 'actions/checkout')!
+      expect(checkout.update).toBe(false)
+    }
+  })
+
   it('applies the maturityPeriod cool-down using tag commit dates', async () => {
     // every candidate release is "brand new" -> all rejected by the cool-down
     vi.mocked(fetchCommitDate).mockResolvedValue(new Date().toISOString())
@@ -157,6 +177,13 @@ describe('github actions writing', () => {
 
     expect(output).toContain(`uses: actions/checkout@${SHA['actions/checkout'].v4} # v4`)
     expect(output).toContain(`uses: org/repo/.github/workflows/release.yml@${SHA['org/repo'].v2} # v2`)
+  })
+
+  it('pins up-to-date tag refs to their sha when style: sha (no version bump)', async () => {
+    await CheckPackages({ ...baseOptions, mode: 'default', write: true, githubActions: { style: 'sha' } })
+
+    expect(output).toContain(`uses: actions/checkout@${SHA['actions/checkout'].v3} # v3`)
+    expect(output).toContain(`uses: org/repo/.github/workflows/release.yml@${SHA['org/repo'].v1} # v1`)
   })
 
   it('forces tag style (dropping the sha) when style: tag', async () => {

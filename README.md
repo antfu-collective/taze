@@ -151,6 +151,8 @@ taze --no-github-actions   # opt out
 
 References are updated in place while preserving the granularity you wrote (`@v4` → `@v5`, `@v4.1.1` → `@v4.2.0`). By default the existing style of each action is kept: tag references stay tags, while SHA-pinned references stay pinned (with a refreshed `# vX.Y.Z` comment). Choose a style explicitly with `--github-actions-style <auto|tag|sha>`:
 
+With `--github-actions-style sha`, tag references are pinned to a commit SHA even when no version bump is available, so a repo can be fully SHA-pinned in one pass (`actions/checkout@v4` → `actions/checkout@<sha> # v4`). These pin-only changes are reported with a `pin` diff.
+
 ```yaml
 # style: sha — pin to an immutable commit for supply-chain safety
 - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
