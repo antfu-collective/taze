@@ -86,6 +86,11 @@ function normalizeConfig(options: CommonOptions) {
   if (options.silent)
     options.loglevel = 'silent'
 
+  for (const key of Object.keys(options) as (keyof CommonOptions)[]) {
+    if (options[key] === undefined)
+      delete options[key]
+  }
+
   return options
 }
 

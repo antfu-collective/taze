@@ -11,6 +11,10 @@ import { resolveConfig } from './config'
 import { LOG_LEVELS, MODE_CHOICES } from './constants'
 import { SORT_CHOICES } from './utils/sort'
 
+function hasCliFlag(rawArgs: string[], ...flags: string[]): boolean {
+  return rawArgs.some(arg => flags.some(flag => arg === flag || arg.startsWith(`${flag}=`)))
+}
+
 const cli: CAC = cac('taze')
 
 cli
@@ -68,6 +72,19 @@ cli
       console.error(`Invalid --github-actions-style: ${options.githubActionsStyle}. Please use one of: auto | tag | sha`)
       process.exit(1)
     }
+
+    // Strip CAC's implicit defaults when the corresponding flag was not passed
+    // on the command line, so they do not override user config files.
+    if (!hasCliFlag(cli.rawArgs, '--node-version', '--no-node-version'))
+      delete options.nodeVersion
+    if (!hasCliFlag(cli.rawArgs, '--github-actions', '--no-github-actions', '--github-actions-style'))
+      delete options.githubActions
+    if (!hasCliFlag(cli.rawArgs, '--ignore-other-workspaces', '--no-ignore-other-workspaces'))
+      delete options.ignoreOtherWorkspaces
+    if (!hasCliFlag(cli.rawArgs, '--concurrency'))
+      delete options.concurrency
+    if (!hasCliFlag(cli.rawArgs, '--request-timeout'))
+      delete options.requestTimeout
 
     const resolved = await resolveConfig(options)
 
