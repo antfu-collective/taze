@@ -1,5 +1,5 @@
 import type { RangeMode } from '../types'
-import { findMinimumForRange, isGreater, isLessOrEqual, isPrerelease, normalizeRange, satisfies } from 'verkit'
+import { findMinimumForRange, isGreaterThan, isLessThanOrEqual, isPrerelease, normalize, normalizeRange, satisfies } from 'verkit'
 
 export function getVersionRangePrefix(v: string) {
   const leadings = ['>=', '<=', '>', '<', '~', '^']
@@ -42,7 +42,7 @@ export function changeVersionRange(version: string, mode: Exclude<RangeMode, 'la
     major: '>=',
     minor: '^',
     patch: '~',
-  }[mode] + min
+  }[mode] + normalize(min)
 }
 
 function applyVersionRangePrefix(version: string | null, prefix: string | null) {
@@ -96,7 +96,7 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       const allowPrerelease = currentIsPrerelease || latestIsPrerelease
 
       const candidates = versions.filter(ver =>
-        (allowPrerelease || !isPrerelease(ver)) && (!latest || isLessOrEqual(ver, latest)),
+        (allowPrerelease || !isPrerelease(ver)) && (!latest || isLessThanOrEqual(ver, latest)),
       )
 
       version = candidates.at(-1) ?? null
@@ -117,7 +117,7 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       .filter(ver => !ver.includes('-'))
       .forEach((ver) => {
         if (satisfies(ver, range)) {
-          if (!version || isGreater(ver, version))
+          if (!version || isGreaterThan(ver, version))
             version = ver
         }
       })
@@ -142,7 +142,7 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
     // publish would win over the real newest beta. See #256.
     if (!maxVersion) {
       const min = findMinimumForRange(current)
-      const channel = min && isPrerelease(min) ? getPrereleaseChannel(min) : undefined
+      const channel = min && isPrerelease(min) ? getPrereleaseChannel(normalize(min)!) : undefined
       const channelTag = channel ? tags[channel] : undefined
       if (channelTag && satisfies(channelTag, range))
         maxVersion = channelTag
@@ -150,8 +150,8 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
 
     versions.forEach((ver) => {
       if (satisfies(ver, range)) {
-        if (!maxVersion || isLessOrEqual(ver, maxVersion)) {
-          if (!version || isGreater(ver, version))
+        if (!maxVersion || isLessThanOrEqual(ver, maxVersion)) {
+          if (!version || isGreaterThan(ver, version))
             version = ver
         }
       }

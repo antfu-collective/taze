@@ -8,7 +8,7 @@ import type {
 } from '../../types'
 import { stripVTControlCharacters } from 'node:util'
 import c from 'ansis'
-import { findMinimumForRange } from 'verkit'
+import { findMinimumForRange, normalize } from 'verkit'
 import {
   colorizeNodeCompatibility,
   colorizeVersionDiff,
@@ -57,7 +57,7 @@ function renderChange(
     update && timediff
       ? timeDifference(change.targetVersionTime)
       : '',
-    (change.latestVersionAvailable && findMinimumForRange(change.targetVersion) !== change.latestVersionAvailable)
+    (change.latestVersionAvailable && normalize(findMinimumForRange(change.targetVersion) ?? change.targetVersion) !== change.latestVersionAvailable)
       ? c.dim.magenta`(${change.latestVersionAvailable} available)`
       : '',
     nodecompat

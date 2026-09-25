@@ -1,5 +1,5 @@
 import type { CheckOptions, DependencyFilter, RangeMode, RawDep, ResolvedDepChange } from '../../types'
-import { findMinimumForRange } from 'verkit'
+import { findMinimumForRange, normalize } from 'verkit'
 import {
   getLatestVersionAvailable,
   getPackageData,
@@ -88,7 +88,7 @@ async function resolveJsrDependency(
   try {
     const targetVersion = findMinimumForRange(target || dep.targetVersion)
     if (targetVersion)
-      dep.latestVersionAvailable = getLatestVersionAvailable(dep, targetVersion, options)
+      dep.latestVersionAvailable = getLatestVersionAvailable(dep, normalize(targetVersion)!, options)
   }
   catch {}
 

@@ -1,6 +1,6 @@
 import type { CheckOptions, DependencyFilter, PackageData, Protocol, RangeMode, RawDep, ResolvedDepChange, RetryOptions } from '../../types'
 import process from 'node:process'
-import { findMinimumForRange, isGreater, isLess, satisfies } from 'verkit'
+import { findMinimumForRange, isGreaterThan, isLessThan, normalize, satisfies } from 'verkit'
 import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../../utils/config'
 import { parsePnpmPackagePath, parseYarnPackagePath } from '../../utils/package'
 import { fetchJsrPackageMeta, fetchPackage } from '../../utils/packument'
@@ -130,7 +130,7 @@ export function getVersionOfTag(dep: ResolvedDepChange, tag: string, options: Ch
 
 export function getLatestVersionAvailable(dep: ResolvedDepChange, targetVersion: string, options: CheckOptions) {
   const version = getVersionOfRange(dep, 'latest', options)
-  return version && isGreater(version, targetVersion) ? version : undefined
+  return version && isGreaterThan(version, targetVersion) ? version : undefined
 }
 
 export function updateTargetVersion(
@@ -157,12 +157,12 @@ export function updateTargetVersion(
       || (dep.currentProvenance === 'trustedPublisher' && dep.targetProvenance === true) // trusted -> provenance
 
   try {
-    const current = findMinimumForRange(dep.currentVersion)!
-    const target = findMinimumForRange(dep.targetVersion)!
+    const current = normalize(findMinimumForRange(dep.currentVersion)!)!
+    const target = normalize(findMinimumForRange(dep.targetVersion)!)!
 
     dep.currentVersionTime = dep.pkgData.time?.[current]
     dep.diff = getDiff(current, target)
-    dep.update = dep.diff !== null && isLess(current, target)
+    dep.update = dep.diff !== null && isLessThan(current, target)
   }
   catch (e) {
     if (!forgiving)
@@ -306,19 +306,21 @@ async function resolveNpmDependency(
 
   try {
     const targetVersion = findMinimumForRange(target || dep.targetVersion)
-    if (targetVersion)
-      dep.latestVersionAvailable = getLatestVersionAvailable(dep, targetVersion, options)
+    if (targetVersion) {
+      const normalizedTargetVersion = normalize(targetVersion)!
+      dep.latestVersionAvailable = getLatestVersionAvailable(dep, normalizedTargetVersion, options)
 
-    const { nodecompat = true } = options
-    if (nodecompat) {
-      const currentNodeVersion = process.version
-      const { nodeSemver } = dep.pkgData
-      if (nodeSemver
-        && targetVersion
-        && targetVersion in nodeSemver) {
-        dep.nodeCompatibleVersion = {
-          compatible: satisfies(currentNodeVersion, nodeSemver[targetVersion]),
-          semver: nodeSemver[targetVersion],
+      const { nodecompat = true } = options
+      if (nodecompat) {
+        const currentNodeVersion = process.version
+        const { nodeSemver } = dep.pkgData
+        if (nodeSemver
+          && normalizedTargetVersion
+          && normalizedTargetVersion in nodeSemver) {
+          dep.nodeCompatibleVersion = {
+            compatible: satisfies(currentNodeVersion, nodeSemver[normalizedTargetVersion]),
+            semver: nodeSemver[normalizedTargetVersion],
+          }
         }
       }
     }

@@ -1,5 +1,5 @@
 import type { CheckOptions, DependencyFilter, DiffType, PackageData, RangeMode, RawDep, ResolvedDepChange } from '../../types'
-import { coerce, isValid } from 'verkit'
+import { coerce, isValid, normalize } from 'verkit'
 import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../../utils/config'
 import { fetchActionTags, fetchCommitDate, resolveGitHubActionStyle, selectTarget } from '../../utils/github'
 import { getCachedData } from '../cache'
@@ -23,10 +23,14 @@ function getGitHubActionData(repo: string, requestTimeout?: number): Promise<Pac
  * first before delegating to the shared diff.
  */
 export function getGitHubActionDiff(current: string, target: string): DiffType {
-  if (!isValid(current))
-    current = coerce(current) ?? current
-  if (!isValid(target))
-    target = coerce(target) ?? target
+  if (!isValid(current)) {
+    const coerced = coerce(current)
+    current = coerced ? normalize(coerced)! : current
+  }
+  if (!isValid(target)) {
+    const coerced = coerce(target)
+    target = coerced ? normalize(coerced)! : target
+  }
 
   return getSemverDiff(current, target)
 }
@@ -78,7 +82,8 @@ async function resolveGitHubAction(
     const picked = selectTarget(raw.currentVersion, candidateTags, mode as RangeMode, {
       reject: (parsed) => {
         if (excludeRanges.length > 0) {
-          const coerced = coerce(parsed.raw)
+          const coercedRaw = coerce(parsed.raw)
+          const coerced = coercedRaw ? normalize(coercedRaw) : null
           if (coerced && isVersionInExcludedRanges(coerced, excludeRanges))
             return true
         }
@@ -92,7 +97,8 @@ async function resolveGitHubAction(
     // supply-chain cool-down: skip versions whose commit is younger than the
     // configured maturity period, stepping down to the next candidate
     if (cutoff > 0 && maturityExclude !== true) {
-      const coerced = coerce(picked.resolvedTag)
+      const coercedResolvedTag = coerce(picked.resolvedTag)
+      const coerced = coercedResolvedTag ? normalize(coercedResolvedTag) : null
       const isMaturityExcluded = coerced && maturityExclude.length > 0
         && isVersionInExcludedRanges(coerced, maturityExclude)
       if (!isMaturityExcluded) {

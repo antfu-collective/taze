@@ -1,5 +1,5 @@
 import type { CheckOptions, DependencyFilter, DiffType, PackageData, RangeMode, RawDep, ResolvedDepChange } from '../../types'
-import { coerce } from 'verkit'
+import { coerce, normalize } from 'verkit'
 import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../../utils/config'
 import { fetchNodeReleases } from '../../utils/node'
 import { parseVersionReference, selectVersionTarget } from '../../utils/versionReference'
@@ -22,7 +22,9 @@ function nodeMode(mode: RangeMode): RangeMode {
 
 /** Node references coerce cleanly to semver (`22` -> `22.0.0`, `>=20` -> `20.0.0`). */
 export function getNodeDiff(current: string, target: string): DiffType {
-  return getDiff(coerce(current) ?? current, coerce(target) ?? target)
+  const coercedCurrent = coerce(current)
+  const coercedTarget = coerce(target)
+  return getDiff(coercedCurrent ? normalize(coercedCurrent)! : current, coercedTarget ? normalize(coercedTarget)! : target)
 }
 
 async function resolveNodeVersion(
@@ -98,7 +100,8 @@ async function resolveNodeVersion(
 
   dep.targetVersion = targetVersion
   dep.targetVersionTime = resolved ? pkgData.time?.[resolved] : undefined
-  dep.currentVersionTime = pkgData.time?.[`v${coerce(raw.currentVersion)}`]
+  const coercedCurrentVersion = coerce(raw.currentVersion)
+  dep.currentVersionTime = pkgData.time?.[`v${coercedCurrentVersion ? normalize(coercedCurrentVersion) : raw.currentVersion}`]
   dep.diff = getNodeDiff(raw.currentVersion, targetVersion)
   dep.update = dep.diff !== null && dep.diff !== 'error'
   return dep
