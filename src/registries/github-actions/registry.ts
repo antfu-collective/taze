@@ -1,7 +1,7 @@
 import type { CheckOptions, DependencyFilter, DiffType, PackageData, RangeMode, RawDep, ResolvedDepChange } from '../../types'
 import { coerce, isValid } from 'verkit'
 import { getExcludeVersionRanges, getMaturityPeriodExcludeRanges, isVersionInExcludedRanges } from '../../utils/config'
-import { fetchActionTags, fetchCommitDate, selectTarget } from '../../utils/github'
+import { fetchActionTags, fetchCommitDate, resolveGitHubActionStyle, selectTarget } from '../../utils/github'
 import { getCachedData } from '../cache'
 import { getDiff as getSemverDiff, mergeMode } from '../shared'
 
@@ -111,8 +111,22 @@ async function resolveGitHubAction(
     break
   }
 
-  if (!target || target.tag === raw.currentVersion)
+  if (!target || target.tag === raw.currentVersion) {
+    // No newer version. With `style: 'sha'`, still convert an up-to-date tag
+    // reference to a commit-SHA pin using the SHA already fetched for the
+    // current tag — supply-chain hardening that doesn't need a version bump.
+    if (info.style === 'tag' && resolveGitHubActionStyle(options) === 'sha') {
+      const sha = pkgData.shaMap?.[raw.currentVersion]
+      if (sha) {
+        dep.targetVersion = raw.currentVersion
+        dep.diff = 'pin'
+        dep.update = true
+        dep.githubAction = { ...info, targetSha: sha }
+        return dep
+      }
+    }
     return noUpdate()
+  }
 
   dep.targetVersion = target.tag
   dep.diff = getGitHubActionDiff(raw.currentVersion, target.tag)

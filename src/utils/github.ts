@@ -1,4 +1,4 @@
-import type { RangeMode } from '../types'
+import type { CommonOptions, GitHubActionsOptions, GitHubActionStyle, RangeMode } from '../types'
 import { spawnSync } from 'node:child_process'
 import process from 'node:process'
 import { createDebug } from 'obug'
@@ -176,6 +176,13 @@ function extractVersionFromComment(comment?: string | null): string | undefined 
 
 export function formatUses(repo: string, subpath: string, ref: string): string {
   return `${repo}${subpath}@${ref}`
+}
+
+export function resolveGitHubActionStyle(options: Pick<CommonOptions, 'githubActions'>): GitHubActionStyle {
+  const config = options.githubActions
+  if (config && typeof config === 'object')
+    return (config as GitHubActionsOptions).style ?? 'auto'
+  return 'auto'
 }
 
 export interface SelectTargetOptions {
