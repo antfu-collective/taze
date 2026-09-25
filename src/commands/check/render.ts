@@ -50,7 +50,9 @@ function renderChange(
     c.gray(change.currentVersion),
     update ? c.dim.gray('→') : '',
     update
-      ? colorizeVersionDiff(change.currentVersion, change.targetVersion)
+      ? change.diff === 'pin'
+        ? `${c.blue(change.githubAction?.targetSha?.slice(0, 7) ?? change.targetVersion)} ${c.dim(`# ${change.targetVersion}`)}`
+        : colorizeVersionDiff(change.currentVersion, change.targetVersion)
       : c.gray.strikethrough(change.targetVersion),
     update && timediff
       ? timeDifference(change.targetVersionTime)

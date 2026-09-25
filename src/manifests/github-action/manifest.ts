@@ -1,5 +1,5 @@
 import type { Scalar } from 'yaml'
-import type { CommonOptions, GitHubActionMeta, GitHubActionsOptions, GitHubActionStyle, PackageMeta, RawDep } from '../../types'
+import type { CommonOptions, GitHubActionMeta, PackageMeta, RawDep } from '../../types'
 import type { Manifest } from '../types'
 import { readFile, writeFile } from 'node:fs/promises'
 import process from 'node:process'
@@ -7,14 +7,7 @@ import { resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { isScalar, parseDocument, visit } from 'yaml'
 import { DEFAULT_IGNORE_PATHS } from '../../constants'
-import { formatUses, parseUses } from '../../utils/github'
-
-function resolveStyle(options: CommonOptions): GitHubActionStyle {
-  const config = options.githubActions
-  if (config && typeof config === 'object')
-    return (config as GitHubActionsOptions).style ?? 'auto'
-  return 'auto'
-}
+import { formatUses, parseUses, resolveGitHubActionStyle } from '../../utils/github'
 
 function isGitHubActionsEnabled(options: CommonOptions): boolean {
   return options.githubActions !== false
@@ -128,7 +121,7 @@ async function writeGitHubAction(
   if (pkg.type !== 'github-action')
     throw new Error('Package type is not supported')
 
-  const configuredStyle = resolveStyle(options)
+  const configuredStyle = resolveGitHubActionStyle(options)
   let changed = false
 
   for (const dep of pkg.resolved) {
