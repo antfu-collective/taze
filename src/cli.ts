@@ -13,7 +13,7 @@ import { SORT_CHOICES } from './utils/sort'
 
 const cli: CAC = cac('taze')
 
-cli
+const command = cli
   .command('[mode]', `Update mode (version range to check). Available: ${MODE_CHOICES.join(' | ')}`)
   .option('--cwd, -C <cwd>', 'specify the current working directory')
   .option('--loglevel <level>', `log level (${LOG_LEVELS.join('|')})`)
@@ -23,7 +23,7 @@ cli
   .option('--force, -f', 'force fetching from server, bypass cache')
   .option('--fast-npm-meta-api-endpoint <url>', 'API endpoint for fetching npm package metadata via fast-npm-meta')
   .option('--ignore-paths <paths>', 'ignore paths for search package.json')
-  .option('--ignore-other-workspaces', 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.)', { default: true })
+  .option('--ignore-other-workspaces', 'ignore package.json that in other workspaces (with their own .git,pnpm-workspace.yaml,etc.) (default: true)')
   .option('--no-github-actions', 'disable checking GitHub Actions in .github/workflows and composite action.yml files')
   .option('--github-actions-style <style>', 'how to write updated actions: auto (preserve) | tag | sha')
   .option('--no-node-version', 'disable checking .node-version and .nvmrc files')
@@ -44,8 +44,8 @@ cli
   .option('--peer', 'Include peerDependencies in the update process')
   .option('--maturity-period [days]', 'wait period in days before upgrading to newly released packages (default: 7 when flag is used, 0 when not used)')
   .option('--maturity-period-exclude <deps>', 'dependencies to exclude from the maturity period filter')
-  .option('--concurrency <requests>', 'number of concurrent requests when resolving dependencies', { default: 10 })
-  .option('--request-timeout <ms>', 'request timeout in milliseconds when fetching package metadata', { default: 5000 })
+  .option('--concurrency <requests>', 'number of concurrent requests when resolving dependencies (default: 10)')
+  .option('--request-timeout <ms>', 'request timeout in milliseconds when fetching package metadata (default: 5000)')
   .option('--retry [times]', 'number of retries when fetching package metadata fails, use --no-retry to disable (default: 4)')
   .option('--retry-factor <factor>', 'exponential backoff factor between retries (default: 2)')
   .option('--retry-min-timeout <ms>', 'milliseconds before starting the first retry (default: 1000)')
@@ -67,6 +67,17 @@ cli
     if (options.githubActionsStyle && !['auto', 'tag', 'sha'].includes(options.githubActionsStyle)) {
       console.error(`Invalid --github-actions-style: ${options.githubActionsStyle}. Please use one of: auto | tag | sha`)
       process.exit(1)
+    }
+
+    // cac fills in `true` for negated options (`--no-*`) even when the flag is
+    // absent from the command line; drop those implicit values so they don't
+    // override config file settings.
+    for (const option of command.options.filter(o => o.negated)) {
+      const positiveName = option.rawName.replace(/^--no-/, '--')
+      const passed = cli.rawArgs.some(arg =>
+        arg === option.rawName || arg === positiveName || arg.startsWith(`${positiveName}=`))
+      if (!passed)
+        delete options[option.name as keyof CliOptions]
     }
 
     const resolved = await resolveConfig(options)
