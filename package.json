@@ -24,7 +24,8 @@
     "taze": "bin/taze.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "scripts": {
     "lint": "eslint",
