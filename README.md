@@ -206,7 +206,9 @@ Releases and their dates come from the official [Node.js distribution index](htt
 
 ### Config file
 
-With `taze.config.js` file, you can configure the same options the command has.
+You can configure the same options the command has in a config file. taze loads
+`taze.config.{js,ts,mjs,cjs}` or `.tazerc.json` / `.tazerc` (see
+[schema.json](./schema.json) for the full option list and editor validation).
 
 ```js
 import { defineConfig } from 'taze'
@@ -259,6 +261,41 @@ export default defineConfig({
   // `.node-version` / `.nvmrc` updates are enabled by default; `false` to opt out
   nodeVersion: true
 })
+```
+
+Equivalent `.tazerc.json`:
+
+```json
+{
+  "$schema": "https://github.com/antfu-collective/taze/schema.json",
+  "exclude": [
+    "webpack"
+  ],
+  "force": true,
+  "write": true,
+  "install": true,
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/test/**"
+  ],
+  "ignoreOtherWorkspaces": true,
+  "packageMode": {
+    "typescript": "major",
+    "unocss": "ignore",
+    "/vue/": "latest"
+  },
+  "maturityPeriodExclude": [
+    "react",
+    "@myorg/*"
+  ],
+  "depFields": {
+    "overrides": false
+  },
+  "githubActions": {
+    "style": "auto"
+  },
+  "nodeVersion": true
+}
 ```
 
 ### Custom Manifests
