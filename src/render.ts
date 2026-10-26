@@ -1,18 +1,24 @@
 /* eslint-disable no-console */
 
+import type { ColorsOptions } from './types'
 import process from 'node:process'
 import readline from 'node:readline'
 import { stripVTControlCharacters } from 'node:util'
-import c from 'ansis'
 import { getDiff } from './registries'
-
+import { createColors } from './utils/colors'
 import { DiffColorMap } from './utils/diff'
 
-export const FIG_CHECK = c.green('◉')
-export const FIG_UNCHECK = c.gray('◌')
-export const FIG_POINTER = c.cyan('❯ ')
-export const FIG_NO_POINTER = '  '
-export const FIG_BLOCK = c.bold.dim.gray('┃')
+export function createFigures(colors: ColorsOptions = {}) {
+  const c = createColors(colors)
+  return {
+    FIG_CHECK: c.interactiveChecked('◉'),
+    FIG_UNCHECK: c.interactiveUnchecked('◌'),
+    FIG_POINTER: c.interactivePointer('❯ '),
+    FIG_NO_POINTER: '  ',
+    FIG_BLOCK: c.bold.dim.interactiveBorder('┃'),
+  }
+}
+
 const ERASE_LINE_SUFFIX = '\u001B[K'
 const HIDE_CURSOR_SEQUENCE = '\u001B[?25l'
 const SHOW_CURSOR_SEQUENCE = '\u001B[?25h'
@@ -72,7 +78,8 @@ export function formatTable(lines: string[][], align: string, spaces = '  ') {
   }).join(spaces))
 }
 
-export function colorizeVersionDiff(from: string, to: string, hightlightRange = true) {
+export function colorizeVersionDiff(from: string, to: string, hightlightRange = true, colors: ColorsOptions = {}) {
+  const c = createColors(colors)
   let leadingWildcard = ''
   let fromLeadingWildcard = ''
 
@@ -105,8 +112,8 @@ export function colorizeVersionDiff(from: string, to: string, hightlightRange = 
   const middot = (i > 0 && i < partsToColor.length) ? '.' : ''
 
   const leadingColor = (leadingWildcard === fromLeadingWildcard || !hightlightRange)
-    ? 'gray'
-    : 'yellow'
+    ? 'versionRange'
+    : 'versionRangeChanged'
 
   return c[leadingColor](leadingWildcard)
     + partsToColor.slice(0, i).join('.')
@@ -143,7 +150,12 @@ export function showInteractiveCursor() {
   process.stdout.write(SHOW_CURSOR_SEQUENCE)
 }
 
-export function writeInteractiveScreen(lines: string[]) {
+export function writeInteractiveScreen(
+  lines: string[],
+  colors: ColorsOptions = {},
+) {
+  const c = createColors(colors)
+  const { FIG_POINTER } = createFigures(colors)
   const output = lines.join('\n')
   const hasTtyOutput = process.stdout.isTTY
 
@@ -161,7 +173,13 @@ export function writeInteractiveScreen(lines: string[]) {
   readline.cursorTo(process.stdout, 0, 0)
 
   if (output !== '') {
-    const outputLines = lines.map(line => `${line}${ERASE_LINE_SUFFIX}`)
+    const outputLines = lines.map((line) => {
+      const content = `${line}${ERASE_LINE_SUFFIX}`
+      // Erase with the selected background active to highlight the full row.
+      return line.includes(FIG_POINTER)
+        ? c.interactiveSelectedBg(content)
+        : content
+    })
     const ttyOutput = outputLines.join('\n')
 
     process.stdout.write(`${ttyOutput}\n`)
@@ -205,7 +223,9 @@ export function sliceRenderLines(
   return lines.slice(start, start + remainHeight)
 }
 
-export function createSliceRender() {
+export function createSliceRender(colors: ColorsOptions = {}) {
+  const c = createColors(colors)
+  const { FIG_CHECK, FIG_UNCHECK } = createFigures(colors)
   const buffer: SliceRenderLine[] = []
 
   return {
@@ -221,7 +241,7 @@ export function createSliceRender() {
 
       const lines: SliceRenderLine[] = buffer.length < remainHeight - 1
         ? buffer
-        : [...buffer, { content: c.yellow('  -- END --') }]
+        : [...buffer, { content: c.interactiveEndMarker('  -- END --') }]
 
       // spare space for cursor
       remainHeight -= 1
@@ -257,16 +277,17 @@ export function createSliceRender() {
 
       outputLines.push(...slice.map(line => line.content))
 
-      writeInteractiveScreen(outputLines)
+      writeInteractiveScreen(outputLines, colors)
     },
   }
 }
 
-export function colorizeNodeCompatibility(nodeVersionCompatibility?: { semver: string, compatible: boolean }) {
+export function colorizeNodeCompatibility(nodeVersionCompatibility?: { semver: string, compatible: boolean }, colors: ColorsOptions = {}) {
+  const c = createColors(colors)
   if (!nodeVersionCompatibility)
     return ''
 
   return nodeVersionCompatibility.compatible
-    ? c.dim(nodeVersionCompatibility.semver)
-    : c.red(nodeVersionCompatibility.semver)
+    ? c.nodeCompatible.dim(nodeVersionCompatibility.semver)
+    : c.nodeIncompatible(nodeVersionCompatibility.semver)
 }

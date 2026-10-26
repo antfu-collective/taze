@@ -8,9 +8,9 @@ export const DiffMap = {
 }
 
 export const DiffColorMap = {
-  major: 'red',
-  minor: 'cyan',
-  patch: 'green',
-  error: 'red',
-  pin: 'blue',
+  major: 'versionMajor',
+  minor: 'versionMinor',
+  patch: 'versionPatch',
+  error: 'versionError',
+  pin: 'versionPin',
 } as const

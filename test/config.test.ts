@@ -25,6 +25,32 @@ afterAll(() => {
     fs.rmSync(dir, { recursive: true, force: true })
 })
 
+describe('resolveConfig merges the colors palette', () => {
+  it('keeps the original defaults when only one color is configured', async () => {
+    const cwd = makeTmp()
+    write(cwd, '.tazerc.json', JSON.stringify({ colors: { packageName: '#abc' } }))
+
+    const { colors } = await resolveConfig({ cwd })
+    expect(colors).toMatchObject({
+      packageName: '#abc',
+      versionMajor: 'red',
+      releaseAgeMonths: 'yellow',
+      interactiveChecked: 'green',
+      interactiveSelectedBg: false,
+    })
+  })
+
+  it('allows individual colors and an inherited selection background to be disabled', async () => {
+    const cwd = makeTmp()
+    write(cwd, '.tazerc.json', JSON.stringify({ colors: { versionMajor: '#123456', interactiveSelectedBg: '#333' } }))
+
+    const { colors } = await resolveConfig({ cwd, colors: { versionMajor: false, interactiveSelectedBg: false } })
+    expect(colors?.versionMajor).toBe(false)
+    expect(colors?.interactiveSelectedBg).toBe(false)
+    expect(colors?.releaseAgeYears).toBe('red')
+  })
+})
+
 describe('resolveConfig folds pnpm update ignores into exclude', () => {
   let cwd: string
 

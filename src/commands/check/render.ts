@@ -1,5 +1,6 @@
 import type {
   CheckOptions,
+  ColorsOptions,
   DepType,
   DiffType,
   InteractiveContext,
@@ -7,18 +8,15 @@ import type {
   ResolvedDepChange,
 } from '../../types'
 import { stripVTControlCharacters } from 'node:util'
-import c from 'ansis'
 import { findMinimumForRange, normalize } from 'verkit'
 import {
   colorizeNodeCompatibility,
   colorizeVersionDiff,
-  FIG_CHECK,
-  FIG_NO_POINTER,
-  FIG_POINTER,
-  FIG_UNCHECK,
+  createFigures,
   formatTable,
 } from '../../render'
 import { DependenciesTypeShortMap } from '../../types'
+import { createColors } from '../../utils/colors'
 import { DiffColorMap } from '../../utils/diff'
 import { sortDepChanges } from '../../utils/sort'
 
@@ -30,7 +28,10 @@ function renderChange(
   grouped = false,
   timediff = true,
   nodecompat = true,
+  colors: ColorsOptions = {},
 ) {
+  const c = createColors(colors)
+  const { FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK } = createFigures(colors)
   const update = change.update && (!interactive || interactive.isChecked(change))
   const pre = interactive
     ? [
@@ -41,30 +42,30 @@ function renderChange(
 
   let name = change.name
   if (change.aliasName)
-    name = c.dim`${change.aliasName} ← ` + change.name
+    name = c.dependencyAlias.dim`${change.aliasName} ← ` + change.name
 
   return [
-    `${pre} ${update ? change.provenanceDowngraded ? c.bgRed(name) : name : c.gray(name)}`,
-    grouped ? '' : c.gray(DependenciesTypeShortMap[change.source]),
-    timediff ? timeDifference(change.currentVersionTime) : '',
-    c.gray(change.currentVersion),
-    update ? c.dim.gray('→') : '',
+    `${pre} ${update ? change.provenanceDowngraded ? c.provenanceWarningBg(name) : c.dependencyName(name) : c.dependencyUnselected(name)}`,
+    grouped ? '' : c.dependencyType(DependenciesTypeShortMap[change.source]),
+    timediff ? timeDifference(change.currentVersionTime, undefined, colors) : '',
+    c.versionCurrent(change.currentVersion),
+    update ? c.dim.versionArrow('→') : '',
     update
       ? change.diff === 'pin'
-        ? `${c.blue(change.githubAction?.targetSha?.slice(0, 7) ?? change.targetVersion)} ${c.dim(`# ${change.targetVersion}`)}`
-        : colorizeVersionDiff(change.currentVersion, change.targetVersion)
-      : c.gray.strikethrough(change.targetVersion),
+        ? `${c.versionPin(change.githubAction?.targetSha?.slice(0, 7) ?? change.targetVersion)} ${c.dim(`# ${change.targetVersion}`)}`
+        : colorizeVersionDiff(change.currentVersion, change.targetVersion, true, colors)
+      : c.dependencyUnselected.strikethrough(change.targetVersion),
     update && timediff
-      ? timeDifference(change.targetVersionTime)
+      ? timeDifference(change.targetVersionTime, undefined, colors)
       : '',
     (change.latestVersionAvailable && normalize(findMinimumForRange(change.targetVersion) ?? change.targetVersion) !== change.latestVersionAvailable)
-      ? c.dim.magenta`(${change.latestVersionAvailable} available)`
+      ? c.dim.versionAvailable`(${change.latestVersionAvailable} available)`
       : '',
     nodecompat
-      ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
+      ? colorizeNodeCompatibility(change.nodeCompatibleVersion, colors)
       : '',
     change.provenanceDowngraded
-      ? `🦠 ${c.bold.green(formatProvenance(change.currentProvenance))} ${c.dim.gray`→`} ${c.bold.red(formatProvenance(change.targetProvenance))}`
+      ? `🦠 ${c.bold.provenanceCurrent(formatProvenance(change.currentProvenance))} ${c.dim.provenanceArrow`→`} ${c.bold.provenanceTarget(formatProvenance(change.targetProvenance))}`
       : '',
   ]
 }
@@ -78,6 +79,8 @@ export function renderChanges(
   options: CheckOptions,
   interactive?: InteractiveContext,
 ) {
+  const { colors = {} } = options
+  const c = createColors(colors)
   const { resolved, relative: filepath } = pkg
   const lines: string[] = []
   const errLines: string[] = []
@@ -114,10 +117,10 @@ export function renderChanges(
     const catalogPrefix = ['pnpm-catalog:', 'bun-catalog:', 'yarn-catalog:']
       .find(p => pkg.name?.startsWith(p))
     const displayName = catalogPrefix
-      ? c.dim(catalogPrefix) + c.yellow(pkg.name!.slice(catalogPrefix.length))
+      ? c.dim(catalogPrefix) + c.catalogName(pkg.name!.slice(catalogPrefix.length))
       : pkg.name
-        ? c.cyan(pkg.name)
-        : c.red('›') + c.dim(` ${filepath || ''}`.trimEnd())
+        ? c.packageName(pkg.name)
+        : c.packagePathMarker('›') + c.dim(` ${filepath || ''}`.trimEnd())
 
     lines.push(
       `${displayName} ${c.dim('-')} ${diffEntries}`,
@@ -131,6 +134,7 @@ export function renderChanges(
         group,
         options.timediff ?? true,
         options.nodecompat ?? true,
+        colors,
       )),
       'LLRRRRRLL',
     )
@@ -152,7 +156,7 @@ export function renderChanges(
           continue
         if (lines.at(-1) !== '')
           lines.push('')
-        lines.push(`  ${c.blue(key)}`)
+        lines.push(`  ${c.dependencyGroup(key)}`)
         lines.push(...group.map(change => `  ${changeToTable.get(change)!}`))
       }
     }
@@ -161,15 +165,15 @@ export function renderChanges(
     }
 
     if (changes.some(c => c.provenanceDowngraded)) {
-      lines.push(c.yellow.bold`\n🦠 The package provenance has been downgraded, which may indicate a risk of malicious publishing. Please carefully review the package contents and check community feedback.`)
+      lines.push(c.provenanceWarning.bold`\n🦠 The package provenance has been downgraded, which may indicate a risk of malicious publishing. Please carefully review the package contents and check community feedback.`)
     }
 
     lines.push('')
   }
   else if (options.all) {
-    lines.push(`${c.cyan(pkg.name)} ${c.dim(filepath)}`)
+    lines.push(`${c.packageName(pkg.name)} ${c.dim(filepath)}`)
     lines.push()
-    lines.push(c.gray('  ✓ up to date'))
+    lines.push(c.upToDate('  ✓ up to date'))
   }
 
   const errors = pkg.resolved.filter(i => i.resolveError != null)
@@ -177,7 +181,7 @@ export function renderChanges(
   if (errors.length) {
     lines.push()
     for (const dep of errors)
-      errLines.push(...renderResolveError(dep))
+      errLines.push(...renderResolveError(dep, colors))
     lines.push()
   }
 
@@ -187,27 +191,29 @@ export function renderChanges(
   }
 }
 
-function renderResolveError(dep: ResolvedDepChange) {
+function renderResolveError(dep: ResolvedDepChange, colors: ColorsOptions = {}) {
+  const c = createColors(colors)
   const lines: string[] = []
 
   if (dep.resolveError == null)
     return lines
 
   if (dep.resolveError === '404') {
-    lines.push(c.red`> ${c.underline(dep.name)} not found`)
+    lines.push(c.messageError`> ${c.underline(dep.name)} not found`)
   }
   else if (dep.resolveError === 'invalid_range') {
-    // lines.push(c.yellow(`> ${c.underline(dep.name)} has an unresolvable version range: ${c.underline(dep.currentVersion)}`))
+    // lines.push(c.messageWarning(`> ${c.underline(dep.name)} has an unresolvable version range: ${c.underline(dep.currentVersion)}`))
   }
   else {
-    lines.push(c.red`> ${c.underline(dep.name)} unknown error`)
-    lines.push(c.red(dep.resolveError.toString()))
+    lines.push(c.messageError`> ${c.underline(dep.name)} unknown error`)
+    lines.push(c.messageError(dep.resolveError.toString()))
   }
   return lines
 }
 
-export function outputErr(errLines: string[]) {
-  console.error(c.inverse.red.bold` ERROR `)
+export function outputErr(errLines: string[], colors: ColorsOptions = {}) {
+  const c = createColors(colors)
+  console.error(c.inverse.messageError.bold` ERROR `)
   console.error()
   console.error(errLines.join('\n'))
   console.error()

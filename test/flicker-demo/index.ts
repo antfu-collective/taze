@@ -7,6 +7,7 @@ import type { DiffType, PackageData, PackageJsonMeta, ResolvedDepChange } from '
  */
 import process from 'node:process'
 import { promptInteractive } from '../../src/commands/check/interactive'
+import { resolveConfig } from '../../src/config'
 
 const COUNT = Number(process.argv[2]) || 50
 
@@ -54,13 +55,15 @@ function generatePkgMeta(n: number): PackageJsonMeta {
 
 const pkgs = [generatePkgMeta(COUNT)]
 
-promptInteractive(pkgs, {
+resolveConfig({
   mode: 'minor',
   sort: 'diff-asc',
   group: true,
   timediff: true,
-}).then(() => {
-  // eslint-disable-next-line no-console
-  console.log(`\nTest completed.`)
-  process.exit(0)
 })
+  .then(options => promptInteractive(pkgs, options))
+  .then(() => {
+    // eslint-disable-next-line no-console
+    console.log(`\nTest completed.`)
+    process.exit(0)
+  })

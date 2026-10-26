@@ -171,6 +171,511 @@ export interface ResolvedDepChange extends RawDep {
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent'
 
+export type ColorValue
+  = | 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white' | 'gray'
+    | 'redBright' | 'greenBright' | 'yellowBright' | 'blueBright' | 'magentaBright' | 'cyanBright' | 'whiteBright'
+    | `#${string}` | false
+
+export interface ColorsOptions {
+  /**
+   * Foreground color of the project/package name at the start of a package summary.
+   * Also used by the per-package up-to-date view. Dependency names in the table
+   * use `dependencyName`; package progress bars use `progressPackage`.
+   *
+   * @default 'cyan'
+   */
+  packageName?: ColorValue
+
+  /**
+   * Foreground color of the catalog name in a catalog header.
+   * For `pnpm-catalog:default`, this colors `default`; the `pnpm-catalog:`
+   * prefix keeps its dim style. Applies to pnpm, Bun, and Yarn catalogs.
+   *
+   * @default 'yellow'
+   */
+  catalogName?: ColorValue
+
+  /**
+   * Foreground color of a dependency name when its update is active.
+   * In interactive mode, active means checked for updating, independently of
+   * which row has keyboard focus. Inactive names use `dependencyUnselected`;
+   * active names with downgraded provenance use `provenanceWarningBg`.
+   *
+   * @default false
+   */
+  dependencyName?: ColorValue
+
+  /**
+   * Foreground color of the dim alias prefix before the underlying dependency name.
+   * For an aliased dependency displayed as `alias-name ← actual-name`, this
+   * colors `alias-name ← `. The prefix remains dim when a color is configured;
+   * `false` leaves it without its own foreground color.
+   *
+   * @default false
+   */
+  dependencyAlias?: ColorValue
+
+  /**
+   * Foreground color of dependency section headings when `group` is enabled.
+   * Examples include `dependencies`, `devDependencies`, and `peerDependencies`.
+   * The abbreviated source column in ungrouped output uses `dependencyType`.
+   *
+   * @default 'blue'
+   */
+  dependencyGroup?: ColorValue
+
+  /**
+   * Foreground color of the abbreviated dependency source column when `group` is false.
+   * Examples include `dev`, `peer`, and `optional`. Grouped output instead
+   * shows section headings colored by `dependencyGroup`.
+   *
+   * @default 'gray'
+   */
+  dependencyType?: ColorValue
+
+  /**
+   * Foreground color of the name and target version of a dependency whose update is inactive.
+   * Used for unchecked rows in interactive mode and non-updating rows shown
+   * by `all`. The inactive target version retains its strikethrough style;
+   * the current-version column still uses `versionCurrent`.
+   *
+   * @default 'gray'
+   */
+  dependencyUnselected?: ColorValue
+
+  /**
+   * Foreground color of the `›` marker in the header of a package with no name.
+   * The marker precedes the relative manifest path, such as `› package.json`.
+   * The path itself retains its dim style.
+   *
+   * @default 'red'
+   */
+  packagePathMarker?: ColorValue
+
+  /**
+   * Foreground color of `npm` or `pnpm` in a global-package summary header.
+   * The adjacent `(global)` label and installation path use `globalPackageInfo`.
+   * Progress bar labels for global packages use `progressDependency`.
+   *
+   * @default 'red'
+   */
+  packageManager?: ColorValue
+
+  /**
+   * Foreground color of the extra information in global-package summary headers.
+   * Applies to the `(global)` label and, for pnpm, the global installation path.
+   * These pieces keep their dim style; the manager name uses `packageManager`.
+   *
+   * @default 'gray'
+   */
+  globalPackageInfo?: ColorValue
+
+  /**
+   * Foreground color of the per-package `✓ up to date` line when that view is rendered.
+   * This is the status inside an individual package's output when `all` is enabled.
+   * The overall `dependencies are already up-to-date` message uses `messageSuccess`.
+   *
+   * @default 'gray'
+   */
+  upToDate?: ColorValue
+
+  /**
+   * Foreground color of the current declared version on the left of an update.
+   * For example, colors `^1.0.0` in `^1.0.0 → ^2.0.0`.
+   * Also applies to the current-version column in the version selection list.
+   *
+   * @default 'gray'
+   */
+  versionCurrent?: ColorValue
+
+  /**
+   * Foreground color of changed version digits for a major update and its numeric summary count.
+   * Version highlighting starts at the first differing segment: `1.2.3 → 2.0.0`
+   * colors `2.0.0`. The leading range prefix is controlled separately by
+   * `versionRange` and `versionRangeChanged`.
+   *
+   * @default 'red'
+   */
+  versionMajor?: ColorValue
+
+  /**
+   * Foreground color of changed version digits for a minor update and its numeric summary count.
+   * For `1.2.3 → 1.3.0`, the highlighted portion is `3.0`.
+   * Shared leading version segments keep their existing uncolored appearance.
+   *
+   * @default 'cyan'
+   */
+  versionMinor?: ColorValue
+
+  /**
+   * Foreground color of changed version digits for a patch update and its numeric summary count.
+   * For `1.2.3 → 1.2.4`, the highlighted portion is `4`.
+   * Also used as the fallback version-difference color when no diff type is available.
+   *
+   * @default 'green'
+   */
+  versionPatch?: ColorValue
+
+  /**
+   * Foreground color of a pinned target version or shortened GitHub Action commit SHA.
+   * Also colors the numeric `pin` count in the package summary.
+   * A trailing version annotation such as `# v4.2.0` keeps its dim style.
+   *
+   * @default 'blue'
+   */
+  versionPin?: ColorValue
+
+  /**
+   * Foreground color of the numeric error count in a package's version-change summary.
+   * Used when a dependency's diff classification is `error`.
+   * Dependency resolution error text and the ERROR badge use `messageError`.
+   *
+   * @default 'red'
+   */
+  versionError?: ColorValue
+
+  /**
+   * Foreground color of an unchanged leading `^` or `~` in the target version.
+   * Also used for that prefix when range-prefix highlighting is disabled.
+   * The version digits are styled independently according to the version diff type.
+   *
+   * @default 'gray'
+   */
+  versionRange?: ColorValue
+
+  /**
+   * Foreground color of a target version's leading `^` or `~` when the range prefix changes.
+   * For `^1.0.0 → ~2.0.0`, this colors the new `~`.
+   * Applies when range-prefix highlighting is enabled; unchanged prefixes use `versionRange`.
+   *
+   * @default 'yellow'
+   */
+  versionRangeChanged?: ColorValue
+
+  /**
+   * Foreground color of the dim `(x.y.z available)` notice after a dependency row.
+   * Shown when a newer available version differs from the chosen target version.
+   * The notice retains its dim style, independently of the target version's diff color.
+   *
+   * @default 'magenta'
+   */
+  versionAvailable?: ColorValue
+
+  /**
+   * Foreground color of the dim `→` between current and target versions.
+   * Used in dependency rows and the version selection list.
+   * The arrow between provenance status labels uses `provenanceArrow`.
+   *
+   * @default 'gray'
+   */
+  versionArrow?: ColorValue
+
+  /**
+   * Foreground color of a dependency's Node.js engine range when it is compatible.
+   * Shown when Node.js compatibility information is available and `nodecompat` is enabled.
+   * The range remains dim. The default `false` adds no foreground color.
+   *
+   * @default false
+   */
+  nodeCompatible?: ColorValue
+
+  /**
+   * Foreground color of a dependency's Node.js engine range when it is incompatible
+   * with the current Node.js version. Shown when compatibility information is
+   * available and `nodecompat` is enabled; compatible ranges use `nodeCompatible`.
+   *
+   * @default 'red'
+   */
+  nodeIncompatible?: ColorValue
+
+  /**
+   * Foreground color of the `<1h` release-age label for elapsed times below one hour.
+   * Release ages describe time since publication, rather than calendar dates.
+   * Applies to both current and target release ages when `timediff` is enabled
+   * and the registry provides the corresponding publication timestamp.
+   *
+   * @default 'gray'
+   */
+  releaseAgeUnderHour?: ColorValue
+
+  /**
+   * Foreground color of release ages from one hour up to, but excluding, 100 hours.
+   * The elapsed time is rounded to whole hours and displayed as `~24h`.
+   * Applies to both current and target releases; ages of 100 hours or more
+   * move to `releaseAgeDays`, even though a rounded hours label can reach `~100h`.
+   *
+   * @default 'green'
+   */
+  releaseAgeHours?: ColorValue
+
+  /**
+   * Foreground color of release ages from 100 hours up to, but excluding, 30 days.
+   * The elapsed time is rounded to whole days and displayed as `~7d`.
+   * Applies to both current and target release-age columns when `timediff` is enabled.
+   *
+   * @default 'green'
+   */
+  releaseAgeDays?: ColorValue
+
+  /**
+   * Foreground color of release ages from 30 days up to, but excluding, 365 days.
+   * Each month is treated as 30 days; the result is rounded and displayed as `~3mo`.
+   * Applies to both release-age columns. This is independent of version-change
+   * colors, so changing it does not recolor major/minor/patch updates.
+   *
+   * @default 'yellow'
+   */
+  releaseAgeMonths?: ColorValue
+
+  /**
+   * Foreground color of release ages of 365 days or more, such as `~1.5y`.
+   * Each year is treated as 365 days, and the value is rounded to one decimal
+   * place with a trailing `.0` omitted. Applies to both release-age columns.
+   *
+   * @default 'red'
+   */
+  releaseAgeYears?: ColorValue
+
+  /**
+   * Foreground color of the `❯` pointer identifying the row with keyboard focus.
+   * Used in both the dependency list and the version selection list.
+   * Focus moves with the navigation keys; checked state is indicated separately
+   * by `interactiveChecked` and `interactiveUnchecked`.
+   *
+   * @default 'cyan'
+   */
+  interactivePointer?: ColorValue
+
+  /**
+   * Foreground color of the `◉` marker for a dependency checked for updating.
+   * A checked dependency can be on any row, independently of keyboard focus.
+   * This option colors the marker; the dependency name uses `dependencyName`.
+   *
+   * @default 'green'
+   */
+  interactiveChecked?: ColorValue
+
+  /**
+   * Foreground color of the `◌` marker for a dependency not checked for updating.
+   * The unchecked dependency's name and target version use `dependencyUnselected`.
+   * The focused row is identified independently by `interactivePointer`.
+   *
+   * @default 'gray'
+   */
+  interactiveUnchecked?: ColorValue
+
+  /**
+   * Foreground color of the keyboard help text above the dependency list
+   * and the `Select a version for ... (current ...)` heading in version selection.
+   * Highlighted key names and the dependency name within these lines use
+   * `interactiveKey` and `interactiveDependencyName`, respectively.
+   *
+   * @default 'gray'
+   */
+  interactiveHint?: ColorValue
+
+  /**
+   * Foreground color of key names emphasized in the interactive keyboard help.
+   * Examples include `↑↓`, `space`, `enter`, `esc`, and `a`.
+   * The key names remain bold; the surrounding explanation uses `interactiveHint`.
+   *
+   * @default 'green'
+   */
+  interactiveKey?: ColorValue
+
+  /**
+   * Foreground color of the `┃` border beside interactive help and version headings.
+   * The border retains its bold and dim styles.
+   * Applies to both the dependency selection screen and the version selection screen.
+   *
+   * @default 'gray'
+   */
+  interactiveBorder?: ColorValue
+
+  /**
+   * Foreground color of the dependency name in the version selection heading.
+   * For `Select a version for vue (current ^3.0.0)`, this colors `vue`.
+   * The name remains bold; dependency names in the main table use `dependencyName`.
+   *
+   * @default 'green'
+   */
+  interactiveDependencyName?: ColorValue
+
+  /**
+   * Foreground color of an unfocused version category or tag in version selection.
+   * Examples include `minor`, `patch`, `latest`, and `next` when offered.
+   * The category on the focused row retains its existing uncolored appearance;
+   * the pointer and row background have their own interactive color options.
+   *
+   * @default 'gray'
+   */
+  interactiveVersionName?: ColorValue
+
+  /**
+   * Foreground color of the `-- END --` marker appended to a long dependency list.
+   * The marker is added when the content reaches the terminal's available height
+   * and becomes visible as the rendered slice reaches the end of the list.
+   *
+   * @default 'yellow'
+   */
+  interactiveEndMarker?: ColorValue
+
+  /**
+   * Background color of the row with keyboard focus in dependency or version selection.
+   * Tracks the `❯` pointer independently of whether the dependency is checked.
+   * The existing foreground colors and text styles are preserved; a specific
+   * cell background such as `provenanceWarningBg` can still appear within the row.
+   *
+   * `false` leaves the terminal background in place. Set a color explicitly to
+   * enable highlighting, for example `'#333'` on a dark terminal or `'#eee'` on a
+   * light terminal. Applied to interactive TTY output when terminal colors are enabled.
+   *
+   * @default false
+   */
+  interactiveSelectedBg?: ColorValue
+
+  /**
+   * Foreground color of the current release's provenance status in a downgrade notice.
+   * Labels such as `trusted`, `provenance`, or `untrusted` remain bold.
+   * This is the status before the `provenanceArrow` in the dependency row.
+   *
+   * @default 'green'
+   */
+  provenanceCurrent?: ColorValue
+
+  /**
+   * Foreground color of the target release's provenance status in a downgrade notice.
+   * The bold label appears after `provenanceArrow`, for example `untrusted`
+   * in a change from `trusted → untrusted`.
+   *
+   * @default 'red'
+   */
+  provenanceTarget?: ColorValue
+
+  /**
+   * Foreground color of the dim `→` between current and target provenance labels.
+   * Displayed for a dependency whose provenance has been downgraded.
+   * The version-change arrow is controlled independently by `versionArrow`.
+   *
+   * @default 'gray'
+   */
+  provenanceArrow?: ColorValue
+
+  /**
+   * Foreground color of the provenance downgrade warning paragraph below a package's table.
+   * Rendered when the displayed dependencies include a provenance downgrade.
+   * The paragraph remains bold; row status labels and the dependency-name
+   * background use the other `provenance*` color options.
+   *
+   * @default 'yellow'
+   */
+  provenanceWarning?: ColorValue
+
+  /**
+   * Background color behind the name of an actively updated dependency with downgraded provenance.
+   * In interactive mode this warning background appears when that update is checked.
+   * Unchecked names use `dependencyUnselected`. This background stays visible
+   * within a focused row even when `interactiveSelectedBg` is enabled.
+   *
+   * @default 'red'
+   */
+  provenanceWarningBg?: ColorValue
+
+  /**
+   * Foreground color of overall success and up-to-date messages printed by the check command.
+   * Examples include `dependencies are already up-to-date` and summaries of
+   * packages already up to date. The individual `✓ up to date` line uses `upToDate`.
+   *
+   * @default 'green'
+   */
+  messageSuccess?: ColorValue
+
+  /**
+   * Foreground color of written-file notices and installation reminders.
+   * Examples include `ℹ changes written to package.json` and the reminder to
+   * install updated dependencies. Embedded commands use `hintCommand`.
+   *
+   * @default 'yellow'
+   */
+  messageWarning?: ColorValue
+
+  /**
+   * Foreground color of dependency resolution error text and the `ERROR` badge.
+   * Examples include `package-name not found` and details of an unknown resolution error.
+   * The badge retains its inverse and bold styles, so this color appears as
+   * the badge background when inverse rendering swaps foreground and background.
+   *
+   * @default 'red'
+   */
+  messageError?: ColorValue
+
+  /**
+   * Foreground color of taze's `installing...` and `updating...` status lines.
+   * These messages are printed immediately before invoking the package manager.
+   * Applies to local updates and, for installation, global package updates.
+   *
+   * @default 'magenta'
+   */
+  operationStatus?: ColorValue
+
+  /**
+   * Foreground color of complete command snippets in usage hints and installation reminders.
+   * Examples include `taze major` and `pnpm i`.
+   * The surrounding message keeps its own color; individual suggested flags
+   * or mode arguments use `hintArgument`.
+   *
+   * @default 'cyan'
+   */
+  hintCommand?: ColorValue
+
+  /**
+   * Foreground color of individual flags or mode arguments suggested by usage hints.
+   * Examples include `-w`, `-i`, and the standalone `major` mode in global-update hints.
+   * Complete suggested commands are colored by `hintCommand`.
+   *
+   * @default 'green'
+   */
+  hintArgument?: ColorValue
+
+  /**
+   * Foreground color of the question text in write/install confirmation prompts.
+   * Examples include `write to package.json` and `install now`.
+   * Applies to the question supplied by taze; the prompt library handles
+   * its own input controls and answer indicators.
+   *
+   * @default 'green'
+   */
+  promptMessage?: ColorValue
+
+  /**
+   * Foreground color of the package progress bar's `pkg` label and current package name.
+   * The package progress bar is created for recursive checks when packages are found.
+   * Dependency progress bars use `progressDependency` for their labels.
+   *
+   * @default 'cyan'
+   */
+  progressPackage?: ColorValue
+
+  /**
+   * Foreground color of the dependency progress bar label.
+   * The label is `dep` for local checks and the package manager name, such as
+   * `npm` or `pnpm`, for global checks. The dependency name uses `progressName`.
+   *
+   * @default 'green'
+   */
+  progressDependency?: ColorValue
+
+  /**
+   * Foreground color applied to the `{name}` placeholder in progress bar output.
+   * This normally displays the dependency currently being resolved.
+   * Package progress bar names carry their own `progressPackage` color inside
+   * this placeholder, which preserves the package-name emphasis.
+   *
+   * @default 'gray'
+   */
+  progressName?: ColorValue
+}
+
 export interface CommonOptions {
   cwd?: string
   recursive?: boolean
@@ -189,6 +694,12 @@ export interface CommonOptions {
   loglevel?: LogLevel
   failOnOutdated?: boolean
   silent?: boolean
+  /**
+   * Override colors by UI role with ANSI color names, hex colors (`#RGB` or
+   * `#RRGGBB`), or `false` to disable an individual color. Unspecified colors
+   * retain the original palette.
+   */
+  colors?: ColorsOptions
   /**
    * Fields in package.json to be checked
    * By default all fields will be checked

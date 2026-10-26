@@ -226,6 +226,13 @@ export default defineConfig({
   retry: 4,
   // write to package.json
   write: true,
+  // optional colors by UI role; omitted entries keep their original appearance
+  colors: {
+    versionMajor: 'red',
+    releaseAgeMonths: 'yellow',
+    // no focused row background by default
+    interactiveSelectedBg: false
+  },
   // run `npm install` or `yarn install` right after bumping
   install: true,
   // ignore paths for looking for package.json in monorepo
@@ -260,6 +267,77 @@ export default defineConfig({
   nodeVersion: true
 })
 ```
+
+`colors` also works in `.tazerc.json`. Each key names the UI element it colors,
+so a major-update color can be changed independently of a release-age color.
+Omitted entries preserve the original appearance. Values can be ANSI color names
+(such as `green` or `cyanBright`), hex colors (`#RGB` or `#RRGGBB`), or `false`
+to leave that element uncolored. Existing bold, dim, and strikethrough styles
+are preserved.
+
+`colors.interactiveSelectedBg` colors the focused dependency or version row.
+It defaults to `false` (no background), and enabling it preserves the row's text
+colors. For example, use `'#333'` for a dark terminal or `'#eee'` for a light terminal.
+
+Release-age options control the time since a release (such as `~3mo`), shown for
+both current and target versions. Their existing hour/day/month/year thresholds
+are unchanged.
+
+| Key under `colors` | Used for | Default |
+| --- | --- | --- |
+| `packageName` | Project/package name in the package header. | `cyan` |
+| `catalogName` | Catalog name in a catalog header. | `yellow` |
+| `dependencyName` | Name of a dependency selected for updating. | `false` |
+| `dependencyAlias` | Alias prefix before a dependency name. | `false` |
+| `dependencyGroup` | Dependency group heading, such as devDependencies. | `blue` |
+| `dependencyType` | Dependency source abbreviation in ungrouped output. | `gray` |
+| `dependencyUnselected` | Name and target version of an unchecked dependency. | `gray` |
+| `packagePathMarker` | Marker before the file path of an unnamed package. | `red` |
+| `packageManager` | Package manager name in a global package header. | `red` |
+| `globalPackageInfo` | Global package label and installation path. | `gray` |
+| `upToDate` | Up-to-date status shown inside a package. | `gray` |
+| `versionCurrent` | Currently installed or declared version. | `gray` |
+| `versionMajor` | Changed version digits and count for major updates. | `red` |
+| `versionMinor` | Changed version digits and count for minor updates. | `cyan` |
+| `versionPatch` | Changed version digits and count for patch updates. | `green` |
+| `versionPin` | Pinned version or commit SHA and pin count. | `blue` |
+| `versionError` | Version error count. | `red` |
+| `versionRange` | Unchanged version range prefix, such as ^ or ~. | `gray` |
+| `versionRangeChanged` | Changed version range prefix. | `yellow` |
+| `versionAvailable` | Notice that a newer version is available. | `magenta` |
+| `versionArrow` | Arrow between the current and target versions. | `gray` |
+| `nodeCompatible` | Node.js version range when compatible. | `false` |
+| `nodeIncompatible` | Node.js version range when incompatible. | `red` |
+| `releaseAgeUnderHour` | Release age of less than one hour (<1h). | `gray` |
+| `releaseAgeHours` | Release age shown in hours (1 to less than 100 hours). | `green` |
+| `releaseAgeDays` | Release age shown in days (100 hours to less than 30 days). | `green` |
+| `releaseAgeMonths` | Release age shown in months (30 to less than 365 days). | `yellow` |
+| `releaseAgeYears` | Release age shown in years (365 days or more). | `red` |
+| `interactivePointer` | Pointer identifying the focused row. | `cyan` |
+| `interactiveChecked` | Checked dependency marker. | `green` |
+| `interactiveUnchecked` | Unchecked dependency marker. | `gray` |
+| `interactiveHint` | Keyboard help and version selection heading text. | `gray` |
+| `interactiveKey` | Key names highlighted in keyboard help. | `green` |
+| `interactiveBorder` | Vertical border beside interactive help and headings. | `gray` |
+| `interactiveDependencyName` | Dependency name in the version selection heading. | `green` |
+| `interactiveVersionName` | Unfocused version category or tag, such as minor or latest. | `gray` |
+| `interactiveEndMarker` | End-of-list marker. | `yellow` |
+| `interactiveSelectedBg` | Background of the focused dependency or version row; disabled by default. | `false` |
+| `provenanceCurrent` | Current package provenance status. | `green` |
+| `provenanceTarget` | Target package provenance status. | `red` |
+| `provenanceArrow` | Arrow between current and target provenance statuses. | `gray` |
+| `provenanceWarning` | Provenance downgrade warning message. | `yellow` |
+| `provenanceWarningBg` | Background behind a dependency with downgraded provenance. | `red` |
+| `messageSuccess` | Success and overall up-to-date messages. | `green` |
+| `messageWarning` | Written-file and install reminder messages. | `yellow` |
+| `messageError` | Dependency resolution errors and ERROR label. | `red` |
+| `operationStatus` | Installing and updating status messages. | `magenta` |
+| `hintCommand` | Command shown in a usage hint or installation reminder. | `cyan` |
+| `hintArgument` | Flag or mode argument shown in a usage hint. | `green` |
+| `promptMessage` | Write/install confirmation question. | `green` |
+| `progressPackage` | Package progress bar label and package name. | `cyan` |
+| `progressDependency` | Dependency progress bar label. | `green` |
+| `progressName` | Dependency name displayed in progress bars. | `gray` |
 
 ### Custom Manifests
 

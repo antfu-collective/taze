@@ -7,17 +7,19 @@ import type {
 } from '../../types'
 import { detect, parseNi, parseNup, run } from '@antfu/ni'
 import prompts from '@posva/prompts'
-import c from 'ansis'
 import { builtinAddons } from '../../addons'
 import { CheckPackages } from '../../api/check'
 import { createMultiProgressBar } from '../../log'
 import { writePackage } from '../../manifests'
+import { createColors } from '../../utils/colors'
 import { promptInteractive } from './interactive'
 import { outputErr, outputJson, renderPackages } from './render'
 
 export async function check(options: CheckOptions) {
+  const { colors = {} } = options
+  const c = createColors(colors)
   let exitCode = 0
-  const bars = (options.loglevel === 'silent' || options.json) ? null : createMultiProgressBar()
+  const bars = (options.loglevel === 'silent' || options.json) ? null : createMultiProgressBar(colors)
   let packagesBar: SingleBar | undefined
   const depBar = bars?.create(1, 0)
 
@@ -26,14 +28,14 @@ export async function check(options: CheckOptions) {
   const { packages } = await CheckPackages(options, {
     afterPackagesLoaded(pkgs) {
       packagesBar = (options.recursive && pkgs.length)
-        ? bars?.create(pkgs.length, 0, { type: c.cyan('pkg'), name: c.cyan(pkgs[0].name) })
+        ? bars?.create(pkgs.length, 0, { type: c.progressPackage('pkg'), name: c.progressPackage(pkgs[0].name) })
         : undefined
 
       const totalDeps = pkgs.reduce((acc, pkg) => acc + pkg.deps.length, 0)
-      depBar?.start(totalDeps, 0, { type: c.green('dep'), name: '' })
+      depBar?.start(totalDeps, 0, { type: c.progressDependency('dep'), name: '' })
     },
     beforePackageStart(pkg) {
-      packagesBar?.increment(0, { name: c.cyan(pkg.name) })
+      packagesBar?.increment(0, { name: c.progressPackage(pkg.name) })
     },
 
     beforePackageWrite() {
@@ -89,9 +91,9 @@ export async function check(options: CheckOptions) {
   )
   if (!hasChanges) {
     if (errLines.length)
-      outputErr(errLines)
+      outputErr(errLines, colors)
     else
-      console.log(c.green('dependencies are already up-to-date'))
+      console.log(c.messageSuccess('dependencies are already up-to-date'))
 
     return exitCode
   }
@@ -110,13 +112,13 @@ export async function check(options: CheckOptions) {
     const last = resolvePkgs.length - counter
 
     if (last === 1)
-      console.log(c.green('dependencies are already up-to-date in one package\n'))
+      console.log(c.messageSuccess('dependencies are already up-to-date in one package\n'))
     else if (last > 0)
-      console.log(c.green(`dependencies are already up-to-date in ${last} packages\n`))
+      console.log(c.messageSuccess(`dependencies are already up-to-date in ${last} packages\n`))
   }
 
   if (errLines.length)
-    outputErr(errLines)
+    outputErr(errLines, colors)
 
   if (options.interactive && !options.write) {
     options.write = await prompts([
@@ -124,7 +126,7 @@ export async function check(options: CheckOptions) {
         name: 'write',
         type: 'confirm',
         initial: true,
-        message: c.green('write to package.json'),
+        message: c.promptMessage('write to package.json'),
       },
     ]).then(r => r.write)
   }
@@ -144,7 +146,7 @@ export async function check(options: CheckOptions) {
     console.log()
 
     if (options.mode === 'default')
-      console.log(`Run ${c.cyan('taze major')} to check major updates`)
+      console.log(`Run ${c.hintCommand('taze major')} to check major updates`)
 
     if (hasChanges) {
       if (options.failOnOutdated)
@@ -157,7 +159,7 @@ export async function check(options: CheckOptions) {
       const hasPackageYaml = fileTypes.includes('package.yaml')
       const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
 
-      console.log(`Add ${c.green('-w')} to write to ${fileTypeName}`)
+      console.log(`Add ${c.hintArgument('-w')} to write to ${fileTypeName}`)
     }
 
     console.log()
@@ -176,8 +178,8 @@ export async function check(options: CheckOptions) {
 
       console.log(
         packageManager
-          ? c.yellow`ℹ changes written to ${fileTypeName}, run ${c.cyan`${packageManager} i`} to install updates.`
-          : c.yellow`ℹ changes written to ${fileTypeName}, install updates with your preferred package manager.`,
+          ? c.messageWarning`ℹ changes written to ${fileTypeName}, run ${c.hintCommand`${packageManager} i`} to install updates.`
+          : c.messageWarning`ℹ changes written to ${fileTypeName}, install updates with your preferred package manager.`,
       )
     }
 
@@ -189,7 +191,7 @@ export async function check(options: CheckOptions) {
       const hasPackageYaml = fileTypes.includes('package.yaml')
       const fileTypeName = hasPackageYaml ? 'package.yaml' : 'package.json'
 
-      console.log(c.yellow(`ℹ changes written to ${fileTypeName}`))
+      console.log(c.messageWarning(`ℹ changes written to ${fileTypeName}`))
     }
 
     if (options.interactive && !options.install && hasPackageManagerChanges) {
@@ -198,13 +200,13 @@ export async function check(options: CheckOptions) {
           name: 'install',
           type: 'confirm',
           initial: true,
-          message: c.green('install now'),
+          message: c.promptMessage('install now'),
         },
       ]).then(r => r.install)
     }
 
     if (options.install) {
-      console.log(c.magenta('installing...'))
+      console.log(c.operationStatus('installing...'))
       console.log()
 
       await run(parseNi, [])
@@ -212,7 +214,7 @@ export async function check(options: CheckOptions) {
 
     if (options.update) {
       packageManager ||= await detect()
-      console.log(c.magenta('updating...'))
+      console.log(c.operationStatus('updating...'))
       console.log()
 
       await run(parseNup, [

@@ -3,9 +3,9 @@ import type { CheckOptions, InteractiveContext, PackageMeta, ResolvedDepChange }
 import process from 'node:process'
 import readline from 'node:readline'
 import { createControlledPromise, notNullish } from '@antfu/utils'
-import c from 'ansis'
 import { getVersionOfRange, getVersionOfTag, updateTargetVersion } from '../../registries'
-import { clearInteractiveScreen, colorizeVersionDiff, createSliceRender, FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER, formatTable, hideInteractiveCursor, showInteractiveCursor, sliceRenderLines, writeInteractiveScreen } from '../../render'
+import { clearInteractiveScreen, colorizeVersionDiff, createFigures, createSliceRender, formatTable, hideInteractiveCursor, showInteractiveCursor, sliceRenderLines, writeInteractiveScreen } from '../../render'
+import { createColors } from '../../utils/colors'
 import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 import { getPrefixedVersion } from '../../utils/versions'
@@ -16,7 +16,10 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     sort = 'diff-asc',
     group = true,
     timediff = true,
+    colors = {},
   } = options
+  const c = createColors(colors)
+  const { FIG_BLOCK, FIG_NO_POINTER, FIG_POINTER } = createFigures(colors)
 
   const checked = new Set<object>()
 
@@ -83,10 +86,10 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
     return {
       render() {
-        const sr = createSliceRender()
-        const Y = (v: string) => c.bold.green(v)
-        sr.push({ content: `${FIG_BLOCK} ${c.gray`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`}`, fixed: true })
-        sr.push({ content: `${FIG_BLOCK} ${c.gray`${Y('enter')} to confirm, ${Y('esc')} to cancel, ${Y('a')} to select/unselect all`}`, fixed: true })
+        const sr = createSliceRender(colors)
+        const Y = (v: string) => c.bold.interactiveKey(v)
+        sr.push({ content: `${FIG_BLOCK} ${c.interactiveHint`${Y('↑↓')} to select, ${Y('space')} to toggle, ${Y('→')} to change version`}`, fixed: true })
+        sr.push({ content: `${FIG_BLOCK} ${c.interactiveHint`${Y('enter')} to confirm, ${Y('esc')} to cancel, ${Y('a')} to select/unselect all`}`, fixed: true })
         sr.push({ content: '', fixed: true })
 
         pkgs.forEach((pkg) => {
@@ -174,17 +177,17 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     return {
       render() {
         const headerLines = [
-          `${FIG_BLOCK} ${c.gray`Select a version for ${c.green.bold(dep.name)}${c.gray` (current ${dep.currentVersion})`}`}`,
+          `${FIG_BLOCK} ${c.interactiveHint`Select a version for ${c.interactiveDependencyName.bold(dep.name)}${c.interactiveHint` (current ${dep.currentVersion})`}`}`,
           '',
         ]
         const versionRows = versions.map((v, idx) => {
           return [
-            (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.gray(v.name)),
-            timediff ? timeDifference(dep.currentVersionTime) : '',
-            c.gray(dep.currentVersion),
-            c.dim.gray('→'),
-            colorizeVersionDiff(dep.currentVersion, v.targetVersion),
-            timediff ? timeDifference(v.time) : '',
+            (index === idx ? FIG_POINTER : FIG_NO_POINTER) + (index === idx ? v.name : c.interactiveVersionName(v.name)),
+            timediff ? timeDifference(dep.currentVersionTime, undefined, colors) : '',
+            c.versionCurrent(dep.currentVersion),
+            c.dim.versionArrow('→'),
+            colorizeVersionDiff(dep.currentVersion, v.targetVersion, true, colors),
+            timediff ? timeDifference(v.time, undefined, colors) : '',
           ]
         })
         const versionLines = formatTable(
@@ -200,7 +203,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
 
         const slice = sliceRenderLines(versionLines, index, remainHeight, availableWidth)
 
-        writeInteractiveScreen([...headerLines, ...slice.map(line => line.content)])
+        writeInteractiveScreen([...headerLines, ...slice.map(line => line.content)], colors)
       },
       onKey(key) {
         switch (key.name) {
