@@ -16,6 +16,7 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
     sort = 'diff-asc',
     group = true,
     timediff = true,
+    preselect = true,
   } = options
 
   const checked = new Set<object>()
@@ -23,7 +24,8 @@ export async function promptInteractive(pkgs: PackageMeta[], options: CheckOptio
   pkgs.forEach((pkg) => {
     pkg.resolved.forEach((dep) => {
       if (dep.update && !dep.provenanceDowngraded) {
-        checked.add(dep)
+        if (preselect)
+          checked.add(dep)
       }
       else if (dep.latestVersionAvailable) {
         // Set `update` flag to true to render option in the list,

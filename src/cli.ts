@@ -32,6 +32,7 @@ const command = cli
   .option('--write, -w', 'write to package.json')
   .option('--global, -g', 'update global packages')
   .option('--interactive, -I', 'interactive mode')
+  .option('--no-preselect', 'start interactive mode with no updates checked')
   .option('--install, -i', 'install directly after bumping')
   .option('--update, -u', 'update directly after bumping')
   .option('--all, -a', 'show all packages up to date info')
