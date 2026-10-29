@@ -260,6 +260,13 @@ export interface CheckOptions extends CommonOptions {
   sort?: SortOption
   interactive?: boolean
   /**
+   * Check the available updates when the interactive list opens.
+   * Set to `false` to start with nothing checked.
+   *
+   * @default true
+   */
+  preselect?: boolean
+  /**
    * Output update info as JSON to stdout.
    *
    * When enabled, `interactive` is ignored and no progress bars,

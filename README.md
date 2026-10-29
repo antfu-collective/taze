@@ -130,6 +130,15 @@ taze stable --maturity-period 14
 > [!NOTE]
 > This kind of filtering is sometimes called `cooldown` or `minimumReleaseAge` by other tools.
 
+### Interactive Mode
+
+Pass `-I` (`--interactive`) to pick the updates to apply from a list. Updates within the mode's range start checked. Pass `--no-preselect` to start with nothing checked and pick only the ones you want. Press `a` to check or uncheck all.
+
+```bash
+taze major -I
+taze major -I --no-preselect
+```
+
 ### JSON Output
 
 Pass `--json` to output the resolved update info as JSON to stdout instead of the rendered table. This is handy for scripting and CI.
@@ -226,6 +235,8 @@ export default defineConfig({
   retry: 4,
   // write to package.json
   write: true,
+  // start interactive mode with nothing checked
+  preselect: false,
   // run `npm install` or `yarn install` right after bumping
   install: true,
   // ignore paths for looking for package.json in monorepo

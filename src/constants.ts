@@ -36,6 +36,7 @@ export const DEFAULT_CHECK_OPTIONS: CheckOptions = {
   global: false,
   // TODO: enable by default: !process.env.CI && process.stdout.isTTY,
   interactive: false,
+  preselect: true,
   install: false,
   update: false,
   all: false,
