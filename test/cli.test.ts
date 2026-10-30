@@ -53,3 +53,30 @@ it('taze cli should expose --fast-npm-meta-api-endpoint option', async () => {
   expect(proc.stdout).toContain('--fast-npm-meta-api-endpoint <url>')
   expect(proc.exitCode).toBe(0)
 })
+
+const lockedFixture = {
+  'package.json': JSON.stringify({
+    name: 'locked-pkg',
+    private: true,
+    devDependencies: { '@types/node': '22.15.30' },
+  }),
+}
+
+it('treats `--include-locked <mode>` the same as `-l <mode>`', async () => {
+  const withLong = await runInFixture(lockedFixture, ['--include-locked', 'latest'])
+  const withShort = await runInFixture(lockedFixture, ['-l', 'latest'])
+  expect(withLong.exitCode).toBe(0)
+  expect(withShort.exitCode).toBe(0)
+  // Both must honor mode=latest (major jump), not the default locked minor path.
+  expect(withLong.stdout).toContain('major')
+  expect(withShort.stdout).toContain('major')
+  expect(withLong.stdout).toContain('@types/node')
+  expect(withShort.stdout).toContain('@types/node')
+})
+
+it('does not let `--fail-on-outdated` swallow the mode positional', async () => {
+  const proc = await runInFixture(lockedFixture, ['--fail-on-outdated', 'latest', '-l'])
+  expect(proc.exitCode).toBe(1)
+  expect(proc.stdout).toContain('major')
+  expect(proc.stdout).toContain('@types/node')
+})
