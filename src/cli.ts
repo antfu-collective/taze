@@ -52,6 +52,20 @@ const command = cli
   .option('--retry-max-timeout <ms>', 'maximum milliseconds between two retries (default: Infinity)')
   .option('--retry-randomize', 'randomize retry timeouts by a factor between 1 and 2')
   .action(async (mode: RangeMode | undefined, options: CliOptions) => {
+    // cac/mri only marks camelCase names as boolean. Kebab-case long flags
+    // such as `--include-locked latest` are therefore treated as string
+    // options and swallow the following positional mode (#187). Reclaim a
+    // swallowed mode choice and coerce the flag back to a boolean.
+    for (const option of command.options.filter(o => o.isBoolean && !o.negated)) {
+      const key = option.name as keyof CliOptions
+      const val = options[key]
+      if (typeof val !== 'string')
+        continue
+      if (mode == null && MODE_CHOICES.includes(val as RangeMode))
+        mode = val as RangeMode
+      ;(options as Record<string, unknown>)[option.name] = true
+    }
+
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
         console.error(`Invalid mode: ${mode}. Please use one of the following: ${MODE_CHOICES.join(' | ')}`)
