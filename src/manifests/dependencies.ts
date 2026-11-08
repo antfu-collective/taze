@@ -73,11 +73,17 @@ export function parseDependency({
   return dep
 }
 
+// Compare by code point, the same order `jsonc/sort-keys` expects.
+// `localeCompare` would put `@scope/pkg` before `3d-pkg` and `pkg_a` before `pkg-b`.
+function compareKeys(a: string, b: string) {
+  return a < b ? -1 : a > b ? 1 : 0
+}
+
 export function dumpDependencies(deps: ResolvedDepChange[], type: DepType) {
   const data: Record<string, any> = {}
   deps
     .filter(i => i.source === type)
-    .sort((a, b) => (a.aliasName || a.name).localeCompare(b.aliasName || b.name))
+    .sort((a, b) => compareKeys(a.aliasName || a.name, b.aliasName || b.name))
     .forEach((i) => {
       const version = i.update ? i.targetVersion : i.currentVersion
       let targetLeaf = data
