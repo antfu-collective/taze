@@ -99,4 +99,26 @@ describe('dumpDependencies', () => {
     expect(Object.keys(dump)).toEqual(['a', 'b', 'c'],
     )
   })
+
+  it('dump sorted by key in code point order', () => {
+    // `jsonc/sort-keys` compares keys by code point, not with `localeCompare`
+    const dump = dumpDependencies([
+      makeDepChange('dependencies', { name: 'date-fns' }),
+      makeDepChange('dependencies', { name: 'fast_array_intersect' }),
+      makeDepChange('dependencies', { name: '@vueuse/core' }),
+      makeDepChange('dependencies', { name: 'fast-xml-parser' }),
+      makeDepChange('dependencies', { name: '3dmol' }),
+      makeDepChange('dependencies', { name: 'fast-equals' }),
+      makeDepChange('dependencies', { name: '@atomistics/xyz' }),
+    ], 'dependencies')
+    expect(Object.keys(dump)).toEqual([
+      '3dmol',
+      '@atomistics/xyz',
+      '@vueuse/core',
+      'date-fns',
+      'fast-equals',
+      'fast-xml-parser',
+      'fast_array_intersect',
+    ])
+  })
 })
