@@ -10,7 +10,7 @@ import { isScalar, parseDocument as parseYaml, stringify as stringifyYaml, visit
 import { DEFAULT_IGNORE_PATHS } from '../../constants'
 import { formatUses, parseUses, resolveGitHubActionStyle } from '../../utils/github'
 
-export async function writeYAML(filepath: string, data: DocumentType | Record<string, unknown>) {
+async function writeYAML(filepath: string, data: DocumentType | Record<string, unknown>) {
   const { amount, type } = await fs.readFile(filepath, 'utf-8')
     .then(detectIndent)
     .catch(Object.create)
