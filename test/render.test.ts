@@ -1,7 +1,7 @@
 import process from 'node:process'
 import readline from 'node:readline'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { formatTable, hideInteractiveCursor, showInteractiveCursor, sliceRenderLines, writeInteractiveScreen } from '../src/render'
+import { createSliceRender, FIG_CHECK, FIG_UNCHECK, formatTable, hideInteractiveCursor, showInteractiveCursor, sliceRenderLines, writeInteractiveScreen } from '../src/render'
 
 const originalIsTTYDescriptor = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY')
 
@@ -85,6 +85,23 @@ it('showInteractiveCursor writes the show-cursor sequence for tty output', () =>
   expect(writeSpy).toHaveBeenCalledWith('\u001B[?25h')
 })
 
+it('scrolls to the second dependency when only one row fits', () => {
+  const write = vi.fn(() => true)
+  vi.spyOn(process, 'stdout', 'get').mockReturnValue(Object.create(process.stdout, {
+    isTTY: { value: true },
+    rows: { value: 2 },
+    columns: { value: 80 },
+    write: { value: write },
+  }))
+
+  const renderer = createSliceRender()
+  const second = `❯ ${FIG_UNCHECK} second`
+  renderer.push({ content: 'dependencies' }, { content: `${FIG_CHECK} first` }, { content: second })
+  renderer.render(1)
+
+  expect(write).toHaveBeenCalledWith(`${second}\u001B[K\n`)
+})
+
 describe(sliceRenderLines, () => {
   it('keeps the focused line visible when slicing long lists', () => {
     const lines = Array.from({ length: 12 }, (_, index) => ({ content: `version-${index}` }))
@@ -98,5 +115,13 @@ describe(sliceRenderLines, () => {
       'version-9',
       'version-10',
     ])
+  })
+
+  it('budgets wrapped rows and blank lines around the focused dependency', () => {
+    const lines = ['file', '', 'a'.repeat(30), 'b'.repeat(15), '❯ focus', 'next'].map(content => ({ content }))
+
+    expect(sliceRenderLines(lines, 4, 4, 10).map(line => line.content)).toEqual(['b'.repeat(15), '❯ focus', 'next'])
+    expect(sliceRenderLines(lines, 2, 2, 10)).toEqual([lines[2]])
+    expect(sliceRenderLines(lines, 0, 4, 10)).toEqual(lines.slice(0, 2))
   })
 })

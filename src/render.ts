@@ -175,34 +175,39 @@ export interface SliceRenderLine {
   fixed?: boolean
 }
 
+function getVisualLineCount(content: string, width: number) {
+  return content.split('\n').reduce((rows, line) => rows + Math.max(1, Math.ceil(visualLength(line) / width)), 0)
+}
+
 export function sliceRenderLines(
   lines: SliceRenderLine[],
   focusedLineIndex: number,
   remainHeight: number,
   availableWidth: number,
 ) {
-  const hasWrappedLines = lines.some((line) => {
-    const visualLineCount = Math.ceil(visualLength(line.content) / availableWidth)
+  if (!lines.length || remainHeight < 1)
+    return []
 
-    return visualLineCount > 1
-  })
+  const heights = lines.map(line => getVisualLineCount(line.content, availableWidth))
+  let start = focusedLineIndex
+  let end = start + 1
+  let remaining = remainHeight - heights[start]
 
-  if (
-    remainHeight < 1
-    || lines.length === 0
-    || lines.length <= remainHeight
-    || hasWrappedLines
-  ) {
-    return lines
+  if (remaining < 0)
+    return [lines[start]]
+
+  let above = Math.floor(remaining / 2)
+  while (start > 0 && heights[start - 1] <= above) {
+    const height = heights[--start]
+    above -= height
+    remaining -= height
   }
+  while (end < lines.length && heights[end] <= remaining)
+    remaining -= heights[end++]
+  while (start > 0 && heights[start - 1] <= remaining)
+    remaining -= heights[--start]
 
-  const half = Math.floor((remainHeight - 1) / 2)
-  const startOffset = focusedLineIndex - half
-  const endOffset = focusedLineIndex + remainHeight - half - lines.length
-  const compensatedStartOffset = endOffset <= 0 ? startOffset : startOffset - endOffset
-  const start = Math.max(0, compensatedStartOffset)
-
-  return lines.slice(start, start + remainHeight)
+  return lines.slice(start, end)
 }
 
 export function createSliceRender() {
@@ -230,12 +235,18 @@ export function createSliceRender() {
         const curr = lines[i]
         if (curr.fixed) {
           outputLines.push(curr.content)
-          remainHeight -= 1
+          remainHeight -= getVisualLineCount(curr.content, availableWidth)
           i++
         }
         else {
           break
         }
+      }
+
+      // hide the header if it leaves no room for the list
+      if (remainHeight < 1) {
+        outputLines.length = 0
+        remainHeight = process.stdout.rows - 1
       }
 
       const remainLines = lines.slice(i)
@@ -244,11 +255,11 @@ export function createSliceRender() {
       let focusedLineIndex = 0
       let depIndex = 0
       for (const line of remainLines) {
-        if (line.content.includes(FIG_CHECK) || line.content.includes(FIG_UNCHECK))
+        if (line.content.includes(FIG_CHECK) || line.content.includes(FIG_UNCHECK)) {
+          if (depIndex === selectedDepIndex)
+            break
           depIndex += 1
-
-        if (depIndex === selectedDepIndex)
-          break
+        }
 
         focusedLineIndex += 1
       }
