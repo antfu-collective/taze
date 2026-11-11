@@ -207,7 +207,7 @@ export async function check(options: CheckOptions) {
       console.log(c.magenta('installing...'))
       console.log()
 
-      await run(parseNi, [])
+      await run(parseNi, [], { cwd: options.cwd })
     }
 
     if (options.update) {
