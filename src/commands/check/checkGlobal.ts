@@ -1,12 +1,18 @@
 import type { CheckOptions, GlobalPackageMeta, RawDep } from '../../types'
 /* eslint-disable no-console */
+import { existsSync } from 'node:fs'
+import os from 'node:os'
+import process from 'node:process'
 import { getCommand } from '@antfu/ni'
 import prompts from '@posva/prompts'
 import c from 'ansis'
+import { join } from 'pathe'
 import { exec } from 'tinyexec'
+import { isValidRange } from 'verkit'
 import { createMultiProgressBar } from '../../log'
-import { dumpDependencies } from '../../manifests/dependencies'
-import { resolvePackage } from '../../registries'
+import { dumpDependencies, parseDependency } from '../../manifests/dependencies'
+import { readJSON } from '../../manifests/json'
+import { parseAliasedPackage, resolvePackage } from '../../registries'
 import { createDependenciesFilter } from '../../utils/dependenciesFilter'
 import { promptInteractive } from './interactive'
 import { outputErr, outputJson, renderPackages } from './render'
@@ -28,6 +34,13 @@ interface PnpmOut {
   }
 }
 
+interface BunManifest {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+  optionalDependencies?: Record<string, string>
+  peerDependencies?: Record<string, string>
+}
+
 export async function checkGlobal(options: CheckOptions) {
   let exitCode = 0
   let resolvePkgs: GlobalPackageMeta[] = []
@@ -35,6 +48,7 @@ export async function checkGlobal(options: CheckOptions) {
   const globalPkgs = await Promise.all([
     loadGlobalNpmPackage(options),
     loadGlobalPnpmPackage(options),
+    loadGlobalBunPackage(options),
   ])
   const pkgs = globalPkgs.flat(1)
 
@@ -163,9 +177,65 @@ async function loadGlobalPnpmPackage(options: CheckOptions): Promise<GlobalPacka
   return pkgMetas
 }
 
-async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackageMeta> {
-  const { stdout } = await exec('npm', ['ls', '--global', '--depth=0', '--json'], { throwOnError: true })
-  const npmOut = JSON.parse(stdout) as NpmOut
+export async function loadGlobalBunPackage(options: CheckOptions): Promise<GlobalPackageMeta[]> {
+  // Bun has no machine-readable `pm ls -g`, but its global install is a regular
+  // project holding the manifest `bun add -g` writes, so read that instead.
+  const dir = process.env.BUN_INSTALL_GLOBAL_DIR || join(process.env.BUN_INSTALL || join(os.homedir(), '.bun'), 'install', 'global')
+  const filepath = join(dir, 'package.json')
+  if (!existsSync(filepath))
+    return []
+
+  const manifest = await readJSON(filepath) as BunManifest
+  const filter = createDependenciesFilter(options.include, options.exclude)
+
+  // `--dev|--optional|--peer` only decide which field records the package, so
+  // every section is installable; optional entries override same-named ones.
+  const specs = { ...manifest.devDependencies, ...manifest.peerDependencies, ...manifest.dependencies, ...manifest.optionalDependencies }
+  const deps = await Promise.all(Object.entries(specs).map(async ([name, spec]) => {
+    const alias = spec.startsWith('npm:') ? parseAliasedPackage(spec) : undefined
+    // Whatever is installed outranks the manifest, whose range can lag behind it
+    // and whose alias target can be shadowed by a duplicate declaration. Only
+    // semver ranges qualify: URLs, git refs, local paths, dist-tags and other
+    // protocols keep their declaration, or they would turn into registry packages.
+    const installed = alias || isValidRange(spec)
+      ? await readInstalledPackage(join(dir, 'node_modules', name))
+      : undefined
+    // widening a pinned version keeps it from being skipped as locked
+    const version = installed?.version ? `^${installed.version}` : alias?.version
+    const currentVersion = alias && version ? `npm:${installed?.name ?? alias.name}@${version}` : (version || spec)
+    return parseDependency({ name, version: currentVersion, type: 'dependencies', shouldUpdate: filter })
+  }))
+
+  return [{
+    agent: 'bun',
+    type: 'global',
+    private: true,
+    resolved: [],
+    raw: null,
+    version: '',
+    filepath,
+    relative: '',
+    deps,
+    name: c.red`bun` + c.gray.dim` (global) ` + c.gray.dim(dir),
+  }]
+}
+
+function readInstalledPackage(dir: string): Promise<{ name?: string, version?: string } | undefined> {
+  return readJSON(join(dir, 'package.json')).catch(() => undefined)
+}
+
+async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackageMeta[]> {
+  let npmStdout
+
+  try {
+    // npm may not be installed at all, e.g. on a bun-only machine
+    npmStdout = (await exec('npm', ['ls', '--global', '--depth=0', '--json'], { throwOnError: true })).stdout
+  }
+  catch {
+    return []
+  }
+
+  const npmOut = JSON.parse(npmStdout) as NpmOut
   const filter = createDependenciesFilter(options.include, options.exclude)
 
   let deps: RawDep[] = []
@@ -180,7 +250,7 @@ async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackag
       }))
   }
 
-  return {
+  return [{
     agent: 'npm',
     private: true,
     type: 'global',
@@ -191,7 +261,7 @@ async function loadGlobalNpmPackage(options: CheckOptions): Promise<GlobalPackag
     relative: '',
     deps,
     name: c.red`npm` + c.gray.dim` (global)`,
-  }
+  }]
 }
 
 async function installPkg(pkg: GlobalPackageMeta) {

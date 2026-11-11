@@ -18,6 +18,7 @@ export {
   getVersionOfTag,
   isLocalPackage,
   isUrlPackage,
+  parseAliasedPackage,
   updateTargetVersion,
 } from './npm/registry'
 export { getDiff } from './shared'
