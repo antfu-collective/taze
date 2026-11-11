@@ -185,7 +185,7 @@ function isAliasedPackage(currentVersion: string) {
   return /^(?:npm|jsr):/.test(currentVersion)
 }
 
-function parseAliasedPackage(currentVersion: string): { protocol: Protocol, name: string, version: string } {
+export function parseAliasedPackage(currentVersion: string): { protocol: Protocol, name: string, version: string } {
   const [protocol, rest] = currentVersion.split(':', 2) as [Protocol, string]
 
   if (protocol === 'npm') {
