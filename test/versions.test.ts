@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { changeVersionRange, filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getVersionRangePrefix } from '../src/utils/versions'
+import { changeVersionRange, filterDeprecatedVersions, filterVersionsByMaturityPeriod, getMaxSatisfying, getPrefixedVersion, getVersionRangePrefix } from '../src/utils/versions'
 
 it('getVersionRange', () => {
   expect('~').toBe(getVersionRangePrefix('~1.2.3'))
@@ -24,6 +24,28 @@ it('getVersionRange', () => {
   expect('^').toBe(getVersionRangePrefix('1.x'))
   expect('^').toBe(getVersionRangePrefix('1.x.0'))
   expect('*').toBe(getVersionRangePrefix('x'))
+})
+
+it('getVersionRangePrefix with * and X wildcards', () => {
+  expect(getVersionRangePrefix('4.*')).toBe('^')
+  expect(getVersionRangePrefix('4.X')).toBe('^')
+  expect(getVersionRangePrefix('4.4.*')).toBe('~')
+  expect(getVersionRangePrefix('4.4.X')).toBe('~')
+  expect(getVersionRangePrefix('X')).toBe('*')
+  expect(getPrefixedVersion('4.*', '4.4.3')).toBe('^4.4.3')
+})
+
+it('getPrefixedVersion keeps the upper bound of a bounded range', () => {
+  expect(getPrefixedVersion('>=6.0.0 <7.0.0', '6.3.2')).toBe('>=6.3.2 <7.0.0')
+  expect(getPrefixedVersion('>=2.0.0 <=2.1.0', '2.1.0')).toBe('>=2.1.0 <=2.1.0')
+  expect(getPrefixedVersion('>= 6.0.0 < 7.0.0', '6.3.2')).toBe('>=6.3.2 <7.0.0')
+  expect(getPrefixedVersion('>6.0.0 <7.0.0', '6.3.2')).toBe('>6.3.2 <7.0.0')
+  // a target past the upper bound (e.g. `taze major`) drops it, as before
+  expect(getPrefixedVersion('>=6.0.0 <7.0.0', '7.8.6')).toBe('>=7.8.6')
+  // other ranges are unchanged
+  expect(getPrefixedVersion('>=6.0.0', '7.8.6')).toBe('>=7.8.6')
+  expect(getPrefixedVersion('^6.0.0', '6.3.2')).toBe('^6.3.2')
+  expect(getPrefixedVersion('^1.0.0 || ^2.0.0', '2.3.0')).toBe('^2.3.0')
 })
 
 it('changeVersionRange', () => {
