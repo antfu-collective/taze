@@ -13,13 +13,14 @@ export function getVersionRangePrefix(v: string) {
     if (ver.startsWith(leading))
       return leading
   }
-  if (ver.includes('x')) {
+  if (/[x*]/i.test(ver)) {
     const parts = ver.split('.')
-    if (parts[0] === 'x')
+    const isWildcard = (part?: string) => part === 'x' || part === 'X' || part === '*'
+    if (isWildcard(parts[0]))
       return '*'
-    if (parts[1] === 'x')
+    if (isWildcard(parts[1]))
       return '^'
-    if (parts[2] === 'x')
+    if (isWildcard(parts[2]))
       return '~'
   }
   if (+ver[0] < 10)
@@ -55,12 +56,21 @@ function applyVersionRangePrefix(version: string | null, prefix: string | null) 
   return prefix + version
 }
 
+// A lower bound followed by an upper bound, like `>=6.0.0 <7.0.0`
+const BOUNDED_RANGE_RE = /^\s*>=?\s*\S+\s+(<=?\s*\S+)\s*$/
+
 export function getPrefixedVersion(current: string, target: string) {
   const prefix = getVersionRangePrefix(current)
-  return applyVersionRangePrefix(
+  const version = applyVersionRangePrefix(
     target,
     prefix,
   )
+  // Keep the upper bound of `>=6.0.0 <7.0.0` while the target is still below it,
+  // so `>=6.3.2 <7.0.0` does not widen to `>=6.3.2`
+  const upper = current.match(BOUNDED_RANGE_RE)?.[1]
+  if (version && upper && satisfies(target, upper))
+    return `${version} ${upper.replace(/\s+/g, '')}`
+  return version
 }
 
 /**
